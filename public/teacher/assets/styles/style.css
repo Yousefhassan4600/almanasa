@@ -1,0 +1,67 @@
+.my-container {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+/* sm */
+@media (min-width: 640px) {
+  .my-container {
+    max-width: 640px;
+  }
+}
+
+/* md */
+@media (min-width: 768px) {
+  .my-container {
+    max-width: 768px;
+  }
+}
+
+/* lg */
+@media (min-width: 1024px) {
+  .my-container {
+    max-width: 100%;
+    padding-inline: 24px;
+  }
+}
+
+/* xl */
+@media (min-width: 1280px) {
+  .my-container {
+    max-width: 1200px;
+    padding-inline: 32px;
+  }
+}
+
+/* xl */
+@media (min-width: 1280px) {
+  .my-container {
+    max-width: 1400px;
+    padding-inline: 40px;
+  }
+}
+/* إخفاء شريط التمرير لجميع المتصفحات مع الحفاظ على ميزة السكرول */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* Premium animation for student levels content transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

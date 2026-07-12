@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('banners', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('account_id')->nullable()->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('title');
+            $table->text('title');
             $table->string('subtitle')->nullable();
             $table->string('image')->nullable();
             $table->string('button_text')->nullable();

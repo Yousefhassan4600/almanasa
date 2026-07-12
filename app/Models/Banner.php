@@ -4,10 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Translatable\HasTranslations;
 
 class Banner extends Model
 {
+    use HasTranslations;
+
     protected $guarded = [];
+
+    public array $translatable = [
+        'title',
+    ];
 
     protected function casts(): array
     {

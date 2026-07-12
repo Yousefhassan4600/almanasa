@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('packages', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('name');
+            $table->text('name');
             $table->text('description')->nullable();
             $table->integer('duration_days');
             $table->decimal('price', 10, 2);

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('subjects', function (Blueprint $table): void {
             $table->id();
-            $table->string('name');
+            $table->text('name');
             $table->string('icon')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
@@ -18,7 +18,7 @@ return new class extends Migration
 
         Schema::create('tracks', function (Blueprint $table): void {
             $table->id();
-            $table->string('name')->unique();
+            $table->text('name');
             $table->string('code')->nullable()->unique();
             $table->integer('sort_order')->default(0);
             $table->timestamps();

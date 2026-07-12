@@ -49,78 +49,187 @@ class DatabaseSeeder extends Seeder
         $egypt = Country::query()->firstOrCreate([
             'code' => 'EG',
         ], [
-            'name' => 'Egypt',
+            'name' => $this->translation('Egypt', 'مصر'),
             'phone_code' => '+20',
             'currency_code' => 'EGP',
         ]);
 
         $cairo = City::query()->firstOrCreate([
             'country_id' => $egypt->id,
-            'name' => 'Cairo',
+        ], [
+            'name' => $this->translation('Cairo', 'القاهرة'),
+        ]);
+
+        $elementary = EducationStage::query()->firstOrCreate([
+            'sort_order' => 1,
+        ], [
+            'name' => $this->translation('Elementary', 'المرحلة الابتدائية'),
+        ]);
+
+        $primary = EducationStage::query()->firstOrCreate([
+            'sort_order' => 2,
+        ], [
+            'name' => $this->translation('Primary', 'المرحلة الإعدادية'),
         ]);
 
         $secondary = EducationStage::query()->firstOrCreate([
-            'name' => 'Secondary',
-        ], [
             'sort_order' => 3,
+        ], [
+            'name' => $this->translation('Secondary', 'المرحلة الثانوية'),
+        ]);
+
+        $elementaryOne = Grade::query()->firstOrCreate([
+            'education_stage_id' => $elementary->id,
+            'sort_order' => 1,
+        ], [
+            'name' => $this->translation('One', 'الصف الأول'),
+        ]);
+
+        $elementaryTwo = Grade::query()->firstOrCreate([
+            'education_stage_id' => $elementary->id,
+            'sort_order' => 2,
+        ], [
+            'name' => $this->translation('Two', 'الصف الثاني'),
+        ]);
+
+        $elementaryThree = Grade::query()->firstOrCreate([
+            'education_stage_id' => $elementary->id,
+            'sort_order' => 3,
+        ], [
+            'name' => $this->translation('Three', 'الصف الثالث'),
+        ]);
+
+        $elementaryFour = Grade::query()->firstOrCreate([
+            'education_stage_id' => $elementary->id,
+            'sort_order' => 4,
+        ], [
+            'name' => $this->translation('Four', 'الصف الرابع'),
+        ]);
+
+        $elementaryFive = Grade::query()->firstOrCreate([
+            'education_stage_id' => $elementary->id,
+            'sort_order' => 5,
+        ], [
+            'name' => $this->translation('Five', 'الصف الخامس'),
+        ]);
+
+        $elementarySix = Grade::query()->firstOrCreate([
+            'education_stage_id' => $elementary->id,
+            'sort_order' => 6,
+        ], [
+            'name' => $this->translation('Six', 'الصف السادس'),
+        ]);
+
+        $primaryOne = Grade::query()->firstOrCreate([
+            'education_stage_id' => $primary->id,
+            'sort_order' => 7,
+        ], [
+            'name' => $this->translation('One', 'الصف الأول'),
+        ]);
+
+        $primaryTwo = Grade::query()->firstOrCreate([
+            'education_stage_id' => $primary->id,
+            'sort_order' => 8,
+        ], [
+            'name' => $this->translation('Two', 'الصف الثاني'),
+        ]);
+
+        $primaryThree = Grade::query()->firstOrCreate([
+            'education_stage_id' => $primary->id,
+            'sort_order' => 9,
+        ], [
+            'name' => $this->translation('Three', 'الصف الثالث'),
         ]);
 
         $secondaryOne = Grade::query()->firstOrCreate([
             'education_stage_id' => $secondary->id,
-            'name' => 'Secondary 1',
+            'sort_order' => 10,
         ], [
-            'sort_order' => 1,
+            'name' => $this->translation('One', 'الصف الأول'),
         ]);
 
         $secondaryTwo = Grade::query()->firstOrCreate([
             'education_stage_id' => $secondary->id,
-            'name' => 'Secondary 2',
+            'sort_order' => 11,
         ], [
-            'sort_order' => 2,
+            'name' => $this->translation('Two', 'الصف الثاني'),
         ]);
 
-        $math = Subject::query()->firstOrCreate([
-            'name' => 'Mathematics',
+        $secondaryThree = Grade::query()->firstOrCreate([
+            'education_stage_id' => $secondary->id,
+            'sort_order' => 12,
         ], [
-            'description' => 'Core secondary mathematics subject.',
+            'name' => $this->translation('Three', 'الصف الثالث'),
         ]);
 
-        $physics = Subject::query()->firstOrCreate([
-            'name' => 'Physics',
-        ], [
-            'description' => 'Secondary physics subject.',
-        ]);
+        $math = Subject::query()
+            ->where('name->en', 'Mathematics')
+            ->firstOrCreate([], [
+                'name' => $this->translation('Mathematics', 'الرياضيات'),
+                'description' => $this->translation(
+                    'Core secondary mathematics subject.',
+                    'مادة الرياضيات الأساسية للمرحلة الثانوية.'
+                ),
+            ]);
 
-        $generalTrack = Track::query()->firstOrCreate([
-            'name' => 'General',
+        $physics = Subject::query()
+            ->where('name->en', 'Physics')
+            ->firstOrCreate([], [
+                'name' => $this->translation('Physics', 'الفيزياء'),
+                'description' => $this->translation(
+                    'Secondary physics subject.',
+                    'مادة الفيزياء للمرحلة الثانوية.'
+                ),
+            ]);
+
+        $scientificTrack = Track::query()->firstOrCreate([
+            'code' => 'scientific',
         ], [
-            'code' => 'general',
+            'name' => $this->translation('Scientific', 'علمي'),
+            'code' => 'scientific',
             'sort_order' => 1,
         ]);
 
-        $scienceTrack = Track::query()->firstOrCreate([
-            'name' => 'Science',
+        $literaryTrack = Track::query()->firstOrCreate([
+            'code' => 'literary',
         ], [
-            'code' => 'science',
+            'name' => $this->translation('Literary', 'أدبي'),
+            'code' => 'literary',
             'sort_order' => 2,
+        ]);
+
+        $scientificMathTrack = Track::query()->firstOrCreate([
+            'code' => 'scientific_math',
+        ], [
+            'name' => $this->translation('Scientific (Mathematics)', 'علمي رياضة'),
+            'code' => 'scientific_math',
+            'sort_order' => 3,
+        ]);
+
+        $scientificSciencesTrack = Track::query()->firstOrCreate([
+            'code' => 'scientific_sciences',
+        ], [
+            'name' => $this->translation('Scientific (Sciences)', 'علمي علوم'),
+            'code' => 'scientific_sciences',
+            'sort_order' => 4,
         ]);
 
         $secondaryOneMath = GradeSubject::query()->firstOrCreate([
             'grade_id' => $secondaryOne->id,
             'subject_id' => $math->id,
-            'track_id' => $generalTrack->id,
+            'track_id' => $scientificTrack->id,
         ]);
 
         $secondaryOnePhysics = GradeSubject::query()->firstOrCreate([
             'grade_id' => $secondaryOne->id,
             'subject_id' => $physics->id,
-            'track_id' => $scienceTrack->id,
+            'track_id' => $literaryTrack->id,
         ]);
 
         $secondaryTwoMath = GradeSubject::query()->firstOrCreate([
             'grade_id' => $secondaryTwo->id,
             'subject_id' => $math->id,
-            'track_id' => $scienceTrack->id,
+            'track_id' => $literaryTrack->id,
         ]);
 
         $saasOwner = $this->user('01000000000', 'Almanasa', 'Owner', 'admin@almanasa.test');
@@ -334,8 +443,14 @@ class DatabaseSeeder extends Seeder
         ], [
             'account_subject_id' => $academyMathCoverage->id,
             'teacher_account_id' => $academyTeacherAccount->id,
-            'title' => 'Secondary 1 Mathematics - First Term',
-            'description' => 'Recorded mathematics course for Secondary 1 students.',
+            'title' => $this->translation(
+                'Secondary 1 Mathematics - First Term',
+                'رياضيات الصف الأول الثانوي - الترم الأول'
+            ),
+            'description' => $this->translation(
+                'Recorded mathematics course for Secondary 1 students.',
+                'كورس رياضيات مسجل لطلاب الصف الأول الثانوي.'
+            ),
             'term' => 'First Term',
             'price' => 500,
             'monthly_price' => 180,
@@ -347,14 +462,21 @@ class DatabaseSeeder extends Seeder
 
         CourseOutcome::query()->firstOrCreate([
             'course_id' => $academyCourse->id,
-            'title' => 'Solve first-term algebra and geometry problems confidently.',
+        ], [
+            'title' => $this->translation(
+                'Solve first-term algebra and geometry problems confidently.',
+                'حل مسائل الجبر والهندسة للترم الأول بثقة.'
+            ),
         ]);
 
         $unit = CourseUnit::query()->firstOrCreate([
             'course_id' => $academyCourse->id,
             'title' => 'Algebra Foundations',
         ], [
-            'description' => 'Numbers, expressions, and equations.',
+            'description' => $this->translation(
+                'Numbers, expressions, and equations.',
+                'الأعداد والتعبيرات والمعادلات.'
+            ),
             'term' => 'First Term',
             'sort_order' => 1,
             'status' => ContentStatus::Published,
@@ -363,12 +485,15 @@ class DatabaseSeeder extends Seeder
         $lesson = Lesson::query()->firstOrCreate([
             'course_id' => $academyCourse->id,
             'course_unit_id' => $unit->id,
-            'title' => 'Linear Equations',
+            'sort_order' => 1,
         ], [
-            'description' => 'Recorded explanation and practice for linear equations.',
+            'title' => $this->translation('Linear Equations', 'المعادلات الخطية'),
+            'description' => $this->translation(
+                'Recorded explanation and practice for linear equations.',
+                'شرح مسجل وتدريبات على المعادلات الخطية.'
+            ),
             'duration_seconds' => 1800,
             'is_free' => true,
-            'sort_order' => 1,
             'status' => ContentStatus::Published,
             'published_at' => now(),
         ]);
@@ -376,8 +501,11 @@ class DatabaseSeeder extends Seeder
         LessonItem::query()->firstOrCreate([
             'lesson_id' => $lesson->id,
             'type' => LessonItemType::Video,
-            'title' => 'Linear Equations Recorded Lesson',
         ], [
+            'title' => $this->translation(
+                'Linear Equations Recorded Lesson',
+                'درس مسجل عن المعادلات الخطية'
+            ),
             'video_url' => 'https://videos.example.test/linear-equations',
             'duration_seconds' => 1800,
             'sort_order' => 1,
@@ -387,8 +515,11 @@ class DatabaseSeeder extends Seeder
         LessonItem::query()->firstOrCreate([
             'lesson_id' => $lesson->id,
             'type' => LessonItemType::Pdf,
-            'title' => 'Linear Equations Summary PDF',
         ], [
+            'title' => $this->translation(
+                'Linear Equations Summary PDF',
+                'ملخص المعادلات الخطية PDF'
+            ),
             'file_url' => 'resources/linear-equations-summary.pdf',
             'sort_order' => 2,
             'is_required' => false,
@@ -396,10 +527,16 @@ class DatabaseSeeder extends Seeder
 
         $package = Package::query()->firstOrCreate([
             'account_id' => $academyAccount->id,
-            'name' => 'Secondary 1 Mathematics Term Package',
-        ], [
-            'description' => 'Access to the full first-term mathematics course.',
             'duration_days' => 120,
+        ], [
+            'name' => $this->translation(
+                'Secondary 1 Mathematics Term Package',
+                'باقة رياضيات الصف الأول الثانوي للترم'
+            ),
+            'description' => $this->translation(
+                'Access to the full first-term mathematics course.',
+                'وصول كامل إلى كورس الرياضيات للترم الأول.'
+            ),
             'price' => 500,
             'is_featured' => true,
             'status' => ContentStatus::Published,
@@ -573,5 +710,13 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
             'joined_at' => now(),
         ]);
+    }
+
+    private function translation(string $en, string $ar): array
+    {
+        return [
+            'en' => $en,
+            'ar' => $ar,
+        ];
     }
 }

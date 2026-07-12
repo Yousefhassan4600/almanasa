@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('course_outcomes', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('course_id')->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('title');
+            $table->text('title');
             $table->integer('sort_order')->default(0);
             $table->timestamps();
         });

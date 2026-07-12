@@ -15,11 +15,15 @@ class AcademySiteController extends Controller
         $account = Account::query()
             ->where('subdomain', $accountSubdomain)
             ->where('status', AccountStatus::Active->value)
-            ->where('type', AccountType::Academy->value)
+            ->whereIn('type', [
+                AccountType::Academy->value,
+                AccountType::StandaloneTeacher->value,
+            ])
             ->firstOrFail();
 
         $page = $this->normalizePage($page);
-        $path = config('almanasa.academy_template_path').DIRECTORY_SEPARATOR.$page;
+        $template = $this->templateFor($account);
+        $path = $template['path'].DIRECTORY_SEPARATOR.$page;
 
         abort_unless(is_file($path), 404);
 
@@ -27,9 +31,27 @@ class AcademySiteController extends Controller
 
         abort_if($html === false, 404);
 
-        return response($this->prepareHtml($html, $account), 200, [
+        return response($this->prepareHtml($html, $account, $template['asset_path']), 200, [
             'Content-Type' => 'text/html; charset=UTF-8',
         ]);
+    }
+
+    /**
+     * @return array{path: string, asset_path: string}
+     */
+    private function templateFor(Account $account): array
+    {
+        return match ($account->type) {
+            AccountType::Academy => [
+                'path' => config('almanasa.academy_template_path'),
+                'asset_path' => config('almanasa.academy_template_asset_path'),
+            ],
+            AccountType::StandaloneTeacher => [
+                'path' => config('almanasa.teacher_template_path'),
+                'asset_path' => config('almanasa.teacher_template_asset_path'),
+            ],
+            default => abort(404),
+        };
     }
 
     private function normalizePage(?string $page): string
@@ -47,19 +69,23 @@ class AcademySiteController extends Controller
         return $page;
     }
 
-    private function prepareHtml(string $html, Account $account): string
+    private function prepareHtml(string $html, Account $account, string $assetPath): string
     {
-        $assetPath = rtrim(config('almanasa.academy_template_asset_path'), '/').'/';
+        $assetPath = rtrim($assetPath, '/').'/';
 
         return str_replace(
             [
                 'href="assets/',
+                'href="./assets/',
                 'src="assets/',
+                'src="./assets/',
                 '<title>Document</title>',
                 'Edu Learning',
             ],
             [
                 'href="'.$assetPath,
+                'href="'.$assetPath,
+                'src="'.$assetPath,
                 'src="'.$assetPath,
                 '<title>'.e($account->name).'</title>',
                 e($account->name),

@@ -2,82 +2,41 @@
 
 namespace App\Filament\Resources\CourseOutcomes;
 
-use App\Filament\Resources\CourseOutcomes\Pages\ManageCourseOutcomes;
+use App\Filament\Base\BaseResource;
+use App\Filament\Resources\CourseOutcomes\Schemas\CourseOutcomeForm;
+use App\Filament\Resources\CourseOutcomes\Tables\CourseOutcomesTable;
 use App\Models\CourseOutcome;
-use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class CourseOutcomeResource extends Resource
+class CourseOutcomeResource extends BaseResource
 {
     protected static ?string $model = CourseOutcome::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static string|UnitEnum|null $navigationGroup = 'Learning Content';
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('course_id')
-                    ->label('Course Id')
-                    ->numeric()
-                    ->required(),
-                TextInput::make('title')
-                    ->label('Title')
-                    ->required(),
-                TextInput::make('sort_order')
-                    ->label('Sort Order')
-                    ->numeric()
-                    ->required(),
-            ]);
+        return CourseOutcomeForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('course_id')
-                    ->label('Course Id')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('title')
-                    ->label('Title')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('sort_order')
-                    ->label('Sort Order')
-                    ->searchable()
-                    ->sortable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return CourseOutcomesTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ManageCourseOutcomes::route('/'),
+            'index' => Pages\ListCourseOutcomes::route('/'),
+            'create' => Pages\CreateCourseOutcome::route('/create'),
+            'edit' => Pages\EditCourseOutcome::route('/{record}/edit'),
         ];
     }
 }

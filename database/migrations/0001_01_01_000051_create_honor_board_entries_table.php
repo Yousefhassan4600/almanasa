@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('account_id')->nullable()->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('student_user_id')->nullable()->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('name');
+            $table->text('name');
             $table->string('grade_name')->nullable();
             $table->decimal('score_percentage', 10, 2)->nullable();
             $table->string('rank_label')->nullable();

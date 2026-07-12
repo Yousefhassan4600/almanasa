@@ -6,4 +6,6 @@ return [
     'root_domain' => env('PLATFORM_ROOT_DOMAIN', $appHost),
     'academy_template_path' => public_path('academy'),
     'academy_template_asset_path' => '/academy/assets/',
+    'teacher_template_path' => public_path('teacher'),
+    'teacher_template_asset_path' => '/teacher/assets/',
 ];

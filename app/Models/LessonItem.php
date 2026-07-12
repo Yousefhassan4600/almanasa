@@ -5,10 +5,18 @@ namespace App\Models;
 use App\Enums\LessonItemType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Translatable\HasTranslations;
 
 class LessonItem extends Model
 {
+    use HasTranslations;
+
     protected $guarded = [];
+
+    public array $translatable = [
+        'title',
+        'description',
+    ];
 
     protected function casts(): array
     {

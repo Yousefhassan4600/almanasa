@@ -2,74 +2,45 @@
 
 namespace App\Filament\Resources\EducationStages;
 
-use App\Filament\Resources\EducationStages\Pages\ManageEducationStages;
+use App\Filament\Base\BaseResource;
+use App\Filament\Resources\EducationStages\Schemas\EducationStageForm;
+use App\Filament\Resources\EducationStages\Tables\EducationStagesTable;
 use App\Models\EducationStage;
-use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class EducationStageResource extends Resource
+class EducationStageResource extends BaseResource
 {
     protected static ?string $model = EducationStage::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|UnitEnum|null $navigationGroup = BaseResource::PROJECT_DATA_NAVIGATION_GROUP;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Education Setup';
+    protected static ?string $navigationParentItem = BaseResource::EDUCATION_CATALOG_NAVIGATION_PARENT;
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('name')
-                    ->label('Name')
-                    ->required(),
-                TextInput::make('sort_order')
-                    ->label('Sort Order')
-                    ->numeric()
-                    ->required(),
-            ]);
+        return EducationStageForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('name')
-                    ->label('Name')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('sort_order')
-                    ->label('Sort Order')
-                    ->searchable()
-                    ->sortable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return EducationStagesTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ManageEducationStages::route('/'),
+            'index' => Pages\ListEducationStages::route('/'),
+            'create' => Pages\CreateEducationStage::route('/create'),
+            'edit' => Pages\EditEducationStage::route('/{record}/edit'),
         ];
     }
 }

@@ -6,12 +6,18 @@ use App\Enums\ContentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Translatable\HasTranslations;
 
 class Course extends Model
 {
-    use SoftDeletes;
+    use HasTranslations, SoftDeletes;
 
     protected $guarded = [];
+
+    public array $translatable = [
+        'title',
+        'description',
+    ];
 
     protected function casts(): array
     {

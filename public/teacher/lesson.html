@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/ts_congig.js"></script>
+    <link rel="stylesheet" href="assets/styles/style.css" />
+    <script src="assets/js/ts_congig.js"></script>
+</head>
+<!-- Header -->
+<header class="shadow-xl bg-white relative">
+    <nav class="p-4 lg:p-6 my-container flex items-center justify-between">
+
+        <div class="flex items-center gap-4">
+            <button id="openSidebarBtn" class="block lg:hidden text-gray-700 hover:text-[#FEB008] transition-colors">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+                </svg>
+            </button>
+
+            <a href="index.html" class="text-[#FEB008] font-bold text-xl lg:text-2xl whitespace-nowrap">Edu
+                Learning</a>
+        </div>
+
+        <ul class="hidden lg:flex items-center gap-4 xl:gap-6 text-sm xl:text-base whitespace-nowrap">
+            <li><a href="index.html" class="hover:text-[#FEB008] font-medium text-[#FEB008]">الرئيسية</a></li>
+
+            <li class="group">
+                <button id="dropdownNvbarButton" class="flex items-center gap-1 py-2 font-medium hover:text-[#FEB008]">
+                    المواد
+                    <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                        </path>
+                    </svg>
+                </button>
+
+                <div id="dropdownNavbar"
+                    class="absolute left-0 right-0 top-full mt-2 z-50 hidden bg-white border border-gray-100 rounded-2xl shadow-xl p-8 w-full max-w-4xl mx-auto">
+                    <div class="grid grid-cols-3 gap-8 text-right" dir="rtl">
+                        <div>
+                            <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الابتدائية</h3>
+                            <ul class="space-y-3 text-gray-500 text-sm">
+                                <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الأول</a>
+                                </li>
+                                <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الثاني</a>
+                                </li>
+                                <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الثالث</a>
+                                </li>
+                                <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الرابع</a>
+                                </li>
+                                <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الخامس</a>
+                                </li>
+                                <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف السادس</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الإعدادية</h3>
+                            <ul class="space-y-3 text-gray-500 text-sm">
+                                <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الأول</a>
+                                </li>
+                                <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الثاني</a>
+                                </li>
+                                <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الثالث</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الثانوية</h3>
+                            <ul class="space-y-3 text-gray-500 text-sm">
+                                <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الأول</a>
+                                </li>
+                                <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الثاني</a>
+                                </li>
+                                <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الثالث</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            <li><a href="packages.html" class="text-gray-700 hover:text-[#FEB008] font-medium">الباقات</a></li>
+            <!-- <li><a href="#" class="text-gray-700 hover:text-[#FEB008] font-medium">عن المنصة</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-[#FEB008] font-medium">تواصل معنا</a></li> -->
+        </ul>
+
+        <div class="flex items-center gap-2 lg:gap-4" dir="rtl">
+            <a href="register.html"
+                class="hidden lg:flex bg-[#FEB008] text-white rounded-[12px] py-2.5 px-4 text-sm lg:text-base font-semibold transition-all hover:bg-[#4c32b3] active:scale-95 items-center justify-center whitespace-nowrap">
+                إنشاء حساب
+            </a>
+
+            <a href="login.html"
+                class="hidden lg:flex bg-transparent text-[#FEB008] border-2 border-[#FEB008] py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-[#FEB008]/5 active:scale-95 items-center justify-center whitespace-nowrap">
+                تسجيل الدخول
+            </a>
+
+            <a href="cart.html" class="text-gray-700 hover:text-[#FEB008] transition-colors p-2 shrink-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z">
+                    </path>
+                </svg>
+            </a>
+
+            <button class="text-gray-700 hover:text-[#FEB008] transition-colors p-2 shrink-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0">
+                    </path>
+                </svg>
+            </button>
+            <a href="profile.html" class="text-gray-700 hover:text-[#FEB008] transition-colors p-2 shrink-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z">
+                    </path>
+                </svg>
+            </a>
+        </div>
+    </nav>
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-300 opacity-0">
+    </div>
+
+    <div id="mobileSidebar"
+        class="fixed top-0 right-0 bottom-0 w-[300px] bg-white z-50 p-6 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out lg:hidden flex flex-col justify-between overflow-y-auto"
+        dir="rtl">
+        <div>
+            <div class="flex items-center justify-between border-b pb-4 mb-6">
+                <p class="text-[#FEB008] font-bold text-xl">Edu Learning</p>
+                <button id="closeSidebarBtn" class="text-gray-500 hover:text-red-500 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <ul class="space-y-4 text-right">
+                <li><a href="#" class="block py-2 text-[#FEB008] font-semibold text-lg">الرئيسية</a></li>
+
+                <li>
+                    <button id="mobileDropdownBtn"
+                        class="flex items-center justify-between w-full py-2 text-gray-700 font-semibold text-lg text-right">
+                        <span>المواد</span>
+                        <svg id="mobileArrow" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor"
+                            stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"></path>
+                        </svg>
+                    </button>
+
+                    <div id="mobileDropdownContent" class="hidden pr-4 mt-2 space-y-4 border-r-2 border-gray-100">
+                        <div>
+                            <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الابتدائية</h4>
+                            <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الأول</a>
+                                <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الثاني</a>
+                                <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الثالث</a>
+                                <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الرابع</a>
+                                <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الخامس</a>
+                                <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف السادس</a>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الإعدادية</h4>
+                            <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الأول</a>
+                                <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الثاني</a>
+                                <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الثالث</a>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الثانوية</h4>
+                            <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الأول</a>
+                                <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الثاني</a>
+                                <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الثالث</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- <li><a href="teachers.html" class="block py-2 text-gray-700 font-semibold text-lg">المدرسون</a></li> -->
+                <li><a href="packages.html" class="block py-2 text-gray-700 font-semibold text-lg">الباقات</a></li>
+                <!-- <li><a href="#" class="block py-2 text-gray-700 font-semibold text-lg">عن المنصة</a></li>
+                    <li><a href="#" class="block py-2 text-gray-700 font-semibold text-lg">تواصل معنا</a></li> -->
+                <div class="space-y-3 mt-8 border-t pt-4 flex flex-col">
+                    <a href="register.html"
+                        class="w-full bg-[#FEB008] text-center text-white rounded-[12px] py-3 px-6 font-semibold transition-all hover:bg-[#4c32b3]">إنشاء
+                        حساب</a>
+                    <a href="login.html"
+                        class="w-full text-center bg-transparent text-[#FEB008] border-2 border-[#FEB008] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-[#FEB008]/5">تسجيل
+                        الدخول</a>
+
+                    <a href="profile.html"
+                        class="w-full text-center bg-transparent text-[#FEB008] border-2 border-[#FEB008] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-[#FEB008]/5">الملف
+                        الشخصي</a>
+                </div>
+            </ul>
+        </div>
+
+
+    </div>
+</header>
+<!-- videos section  -->
+<div class="max-w-7xl mx-auto px-4 md:px-8 py-6" dir="rtl">
+
+    <nav class="flex flex-wrap items-center gap-1.5 text-xs text-gray-400 mb-6 font-medium">
+        <a href="#" class="hover:text-[#FEB008]">الرئيسية</a>
+        <span>/</span>
+        <a href="#" class="hover:text-[#FEB008]">المواد</a>
+        <span>/</span>
+        <a href="#" class="hover:text-[#FEB008]">الرياضيات - أولى ثانوي</a>
+        <span>/</span>
+        <a href="#" class="hover:text-[#FEB008]">الترم الأول</a>
+        <span>/</span>
+        <span class="text-gray-600 font-bold">مقدمة في الأعداد الحقيقية</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <div class="lg:col-span-8 space-y-5">
+            <!-- Video content section -->
+            <div id="video-content-wrapper" class="space-y-5">
+                <div class="relative bg-black rounded-3xl overflow-hidden aspect-video shadow-lg group">
+                    <video id="main-video-player" class="w-full h-full" src="assets/videos/video1.mp4" controls
+                        controlsList="nodownload">
+                    </video>
+                </div>
+
+                <div class="bg-gray-50 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-2 text-xs font-bold text-gray-500">
+                        <span>المنقضي لتفعيل الإتمام:</span>
+                        <span id="remaining-time" class="text-gray-700">18 دقيقة</span>
+                    </div>
+                    <div class="flex items-center gap-3 flex-1 sm:max-w-md">
+                        <span id="progress-percentage" class="text-xs font-black text-[#FEB008]">28%</span>
+                        <div class="w-full bg-purple-100 h-2 rounded-full overflow-hidden">
+                            <div id="progress-bar-fill"
+                                class="bg-[#6342E8] h-full rounded-full transition-all duration-500" style="width: 28%">
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-gray-400 whitespace-nowrap">تقدم المشاهدة الفعلي</span>
+                    </div>
+                </div>
+
+                <div id="note-card"
+                    class="bg-amber-50 border-r-4 border-amber-500 rounded-2xl p-4 flex items-start gap-3">
+                    <i class="fa-solid fa-circle-info text-amber-600 text-lg mt-0.5"></i>
+                    <div class="text-right space-y-1">
+                        <h5 class="text-xs font-black text-amber-900">ملاحظة هامة:</h5>
+                        <p id="note-text" class="text-xs text-amber-800/90 font-medium leading-relaxed">
+                            يجب مشاهدة 70% من وقت الفيديو الفعلي ليتم احتساب حضورك لهذا الدرس وتفعيل علامة الإتمام.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex items-center justify-between">
+                    <div class="text-right space-y-1">
+                        <h1 id="video-main-title" class="text-lg sm:text-xl font-black text-blue-950">الشرح الأول:
+                            المفاهيم
+                            الأساسية</h1>
+                        <div class="flex items-center gap-3 text-xs text-gray-400 font-semibold">
+                            <span class="flex items-center gap-1"><i class="fa-regular fa-user"></i> أ. أحمد محمد</span>
+                            <span class="flex items-center gap-1"><i class="fa-regular fa-clock"></i> <span
+                                    id="video-main-duration">45 دقيقة</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Homework Content Section -->
+            <div id="homework-content-wrapper" class="space-y-6 hidden animate-fade-in-up">
+                <h1 class="text-xl sm:text-2xl font-black text-gray-800 text-right">واجب المرحلة الاساسية</h1>
+                <div
+                    class="bg-[#F1F3FF] border-r-[6px] border-[#FEB008] rounded-[24px] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm hover:shadow-md transition-all duration-300">
+                    <!-- Right side (Info & Icon) -->
+                    <div class="flex items-center gap-4 text-right">
+                        <!-- Icon circular container -->
+                        <div
+                            class="w-12 h-12 rounded-2xl bg-[#FEB008] text-white flex items-center justify-center text-lg shrink-0 shadow-md shadow-[#FEB008]/15">
+                            <i class="fa-regular fa-clipboard"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-base font-bold text-gray-800">واجب الحصة الاولي</h4>
+                            <span class="text-xs text-gray-400 block mt-1 font-semibold">مده حل الواجب 30 دقيقة</span>
+                        </div>
+                    </div>
+                    <!-- Left side (Button) -->
+                    <div class="text-left shrink-0">
+                        <a href="home_work.html"
+                            class="w-full sm:w-auto bg-[#FEB008] hover:bg-[#4c32b3] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all shadow-md shadow-[#FEB008]/15 active:scale-95">ابدأ
+                            الان</a href="home_work.html">
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row mt-10 items-center text-center md:text-right gap-6">
+                    <div
+                        class="relative w-44 h-44 flex-shrink-0 rounded-full bg-[#FEB008] flex flex-col items-center justify-center text-white shadow-xl shadow-[#FEB008]/20">
+                        <span
+                            class="absolute -top-2 right-1 bg-[#46F0B4] text-blue-950 font-black text-xs px-3 py-1.5 rounded-full shadow-md">
+                            ممتاز!
+                        </span>
+                        <span class="text-4xl font-black tracking-tight">18/20</span>
+                        <span class="text-lg font-bold opacity-90 mt-1">90%</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h2 class="text-2xl md:text-4xl font-black text-blue-950">أحسنت! لقد أنهيت الواجب</h2>
+                        <p class="text-sm md:text-base font-bold text-gray-400 max-w-xl">
+                            لقد قدمت أداءً رائعاً. أنت تسير على الطريق الصحيح لتحقيق التميز الدراسي.
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    class="flex flex-col md:flex-row mt-6 md:mt-10 items-stretch md:items-start gap-6 w-full max-w-4xl mx-auto">
+                    <div
+                        class="w-full md:max-w-md bg-[#FAFAFA] border border-gray-100 rounded-3xl p-6 space-y-2 text-right">
+                        <div class="text-[#FEB008] text-2xl flex items-start justify-start">
+                            <i class="fa-regular fa-clock text-3xl text-start"></i>
+                        </div>
+                        <p class="text-xs font-bold text-gray-400">الوقت المستغرق</p>
+                        <h3 class="text-4xl font-black text-[#FEB008] tracking-tight">14:25</h3>
+                        <p class="text-[11px] font-bold text-gray-400">من أصل 30:00 دقيقة</p>
+                    </div>
+
+                    <div class="w-full md:max-w-md flex flex-col items-center justify-center gap-4 md:pt-4">
+                        <a href="lesson.html"
+                            class="w-full bg-[#FEB008] hover:bg-[#4a32b0] text-white font-black text-sm py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#FEB008]/15">
+                            <i class="fa-solid fa-shapes"></i>
+                            <span>إعادة حل الواجب</span>
+                        </a>
+
+                        <button
+                            class="w-full bg-white border-2 border-[#FEB008] text-[#FEB008] hover:bg-[#F2EEFF] font-black text-sm py-4 rounded-xl transition-all flex items-center justify-center gap-2">
+                            <i class="fa-regular fa-square-check"></i>
+                            <span>مراجعة الإجابات الصحيحة</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF Content Section -->
+            <div id="pdf-content-wrapper" class="space-y-6 hidden animate-fade-in-up">
+                <h1 class="text-xl sm:text-2xl font-black text-gray-800 text-right">ملخصات وحقائب الدرس</h1>
+                <div
+                    class="bg-[#FCF6ED] border-r-[6px] border-[#D97706] rounded-[24px] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div class="flex items-center gap-4 text-right">
+                        <div
+                            class="w-12 h-12 rounded-2xl bg-[#D97706] text-white flex items-center justify-center text-lg shrink-0 shadow-md shadow-[#D97706]/15">
+                            <i class="fa-regular fa-file-pdf"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-base font-bold text-gray-800">ملخص الدرس الشامل (PDF)</h4>
+                            <span class="text-xs text-gray-400 block mt-1 font-semibold">حجم الملف: 2.4 MB</span>
+                        </div>
+                    </div>
+                    <div class="text-left shrink-0">
+                        <button
+                            class="w-full sm:w-auto bg-[#D97706] hover:bg-[#b45309] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all shadow-md shadow-[#D97706]/15 active:scale-95">تحميل
+                            الملف</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Content Section -->
+            <div id="quiz-content-wrapper" class="space-y-6 hidden animate-fade-in-up">
+                <h1 class="text-xl sm:text-2xl font-black text-gray-800 text-right">اختبارات الحصة</h1>
+                <div
+                    class="bg-[#FFF1F2] border-r-[6px] border-[#E11D48] rounded-[24px] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div class="flex items-center gap-4 text-right">
+                        <div
+                            class="w-12 h-12 rounded-2xl bg-[#E11D48] text-white flex items-center justify-center text-lg shrink-0 shadow-md shadow-[#E11D48]/15">
+                            <i class="fa-regular fa-circle-question"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-base font-bold text-gray-800">اختبار قصير: قياس مستوى الفهم</h4>
+                            <span class="text-xs text-gray-400 block mt-1 font-semibold">مدة الاختبار: 10 دقائق</span>
+                        </div>
+                    </div>
+                    <div class="text-left shrink-0">
+                        <a href="quiz.html"
+                            class="w-full sm:w-auto bg-[#E11D48] hover:bg-[#be123c] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all shadow-md shadow-[#E11D48]/15 active:scale-95">ابدأ
+                            الاختبار</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 space-y-4">
+
+            <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="bg-[#FEB008] text-white p-5 text-right space-y-1">
+                    <h3 class="text-base font-black tracking-wide">قائمة محتوى الدرس</h3>
+                    <p class="text-purple-200 text-xs font-medium">الحصة الأولى: مقدمة في الجبر</p>
+                </div>
+
+                <div id="playlist-container" class="p-2 space-y-1.5 max-h-[480px] overflow-y-auto">
+
+                    <!-- Item 1: الشرح الأول (Active by default) -->
+                    <div onclick="selectPlaylistItem(this, 'video', { videoId: 'assets/videos/video1.mp4', title: 'الشرح الأول: المفاهيم الأساسية', duration: '45 دقيقة', progress: '28%', remaining: '18 دقيقة', note: 'يجب مشاهدة 70% من وقت الفيديو الفعلي ليتم احتساب حضورك لهذا الدرس وتفعيل علامة الإتمام.' })"
+                        class="playlist-item p-3.5 flex items-center justify-between rounded-2xl cursor-pointer transition-all bg-purple-50/70 border border-purple-100 text-[#FEB008]">
+                        <div class="flex items-center gap-3">
+                            <span
+                                class="active-indicator w-7 h-7 rounded-lg bg-purple-100 text-[#FEB008] flex items-center justify-center text-xs shrink-0">
+                                <i class="fa-solid fa-chart-simple"></i>
+                            </span>
+                            <div class="text-right">
+                                <h4 class="playlist-title text-xs font-bold text-[#FEB008]">الشرح الأول: المفاهيم</h4>
+                                <span class="playlist-subtitle text-[10px] text-purple-400 block mt-0.5">45:00
+                                    دقيقة</span>
+                            </div>
+                        </div>
+                        <span
+                            class="w-8 h-8 rounded-full bg-[#EBE7FF] text-[#FEB008] flex items-center justify-center text-xs shrink-0">
+                            <i class="fa-solid fa-play text-[9px] pr-[1px]"></i>
+                        </span>
+                    </div>
+
+                    <!-- Item 2: الشرح الثاني -->
+                    <div onclick="selectPlaylistItem(this, 'video', { videoId: 'assets/videos/video2.mp4', title: 'الشرح الثاني: التطبيقات والمسائل المتطورة', duration: '32 دقيقة', progress: '0%', remaining: '32 دقيقة', note: 'يرجى التركيز في هذا الجزء التطبيقي لأنه يشتمل على أسئلة امتحانات سابقة.' })"
+                        class="playlist-item p-3.5 flex items-center justify-between rounded-2xl cursor-pointer transition-all bg-white hover:bg-gray-50 border border-transparent text-gray-600">
+                        <div class="flex items-center gap-3">
+                            <span
+                                class="active-indicator w-7 h-7 rounded-lg bg-purple-100 text-[#FEB008] flex items-center justify-center text-xs shrink-0 hidden">
+                                <i class="fa-solid fa-chart-simple"></i>
+                            </span>
+                            <div class="text-right">
+                                <h4 class="playlist-title text-xs font-bold text-blue-950">الشرح الثاني: التطبيقات</h4>
+                                <span class="playlist-subtitle text-[10px] text-gray-400 block mt-0.5">32:00
+                                    دقيقة</span>
+                            </div>
+                        </div>
+                        <span
+                            class="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-xs shrink-0">
+                            <i class="fa-solid fa-play text-[9px] pr-[1px]"></i>
+                        </span>
+                    </div>
+
+                    <!-- Item 3: الواجب المنزلي -->
+                    <div onclick="selectPlaylistItem(this, 'homework')"
+                        class="playlist-item p-3.5 flex items-center justify-between rounded-2xl cursor-pointer transition-all bg-white hover:bg-gray-50 border border-transparent text-gray-600">
+                        <div class="flex items-center gap-3">
+                            <span
+                                class="active-indicator w-7 h-7 rounded-lg bg-purple-100 text-[#FEB008] flex items-center justify-center text-xs shrink-0 hidden">
+                                <i class="fa-solid fa-chart-simple"></i>
+                            </span>
+                            <div class="text-right">
+                                <h4 class="playlist-title text-xs font-bold text-blue-950">الواجب المنزلي</h4>
+                                <span class="playlist-subtitle text-[10px] text-gray-400 block mt-0.5">15 سؤال</span>
+                            </div>
+                        </div>
+                        <span
+                            class="w-8 h-8 rounded-full bg-[#E6F7F0] text-[#00AA6C] flex items-center justify-center text-xs shrink-0">
+                            <i class="fa-regular fa-clipboard"></i>
+                        </span>
+                    </div>
+
+                    <!-- Item 4: ملخص الدرس PDF -->
+                    <div onclick="selectPlaylistItem(this, 'pdf')"
+                        class="playlist-item p-3.5 flex items-center justify-between rounded-2xl cursor-pointer transition-all bg-white hover:bg-gray-50 border border-transparent text-gray-600">
+                        <div class="flex items-center gap-3">
+                            <span
+                                class="active-indicator w-7 h-7 rounded-lg bg-purple-100 text-[#FEB008] flex items-center justify-center text-xs shrink-0 hidden">
+                                <i class="fa-solid fa-chart-simple"></i>
+                            </span>
+                            <div class="text-right">
+                                <h4 class="playlist-title text-xs font-bold text-blue-950">ملخص الدرس PDF</h4>
+                                <span class="playlist-subtitle text-[10px] text-gray-400 block mt-0.5">2.4 MB</span>
+                            </div>
+                        </div>
+                        <span
+                            class="w-8 h-8 rounded-full bg-[#FFF3E0] text-[#D97706] flex items-center justify-center text-xs shrink-0">
+                            <i class="fa-regular fa-file-pdf"></i>
+                        </span>
+                    </div>
+
+                    <!-- Item 5: اختبار قصير -->
+                    <div onclick="selectPlaylistItem(this, 'quiz')"
+                        class="playlist-item p-3.5 flex items-center justify-between rounded-2xl cursor-pointer transition-all bg-white hover:bg-gray-50 border border-transparent text-gray-600">
+                        <div class="flex items-center gap-3">
+                            <span
+                                class="active-indicator w-7 h-7 rounded-lg bg-purple-100 text-[#FEB008] flex items-center justify-center text-xs shrink-0 hidden">
+                                <i class="fa-solid fa-chart-simple"></i>
+                            </span>
+                            <div class="text-right">
+                                <h4 class="playlist-title text-xs font-bold text-blue-950">اختبار قصير</h4>
+                                <span class="playlist-subtitle text-[10px] text-gray-400 block mt-0.5">10 دقائق</span>
+                            </div>
+                        </div>
+                        <span
+                            class="w-8 h-8 rounded-full bg-[#FFE4E6] text-[#F43F5E] flex items-center justify-center text-xs shrink-0">
+                            <i class="fa-regular fa-circle-question"></i>
+                        </span>
+                    </div>
+
+                    <a href="packages.html"
+                        class="w-full border border-purple-200 text-[#FEB008] hover:bg-purple-50 font-bold text-sm py-3.5 rounded-xl transition-colors bg-transparent flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-bolt text-xs"></i> اشترك الآن
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 rounded-3xl p-5 border border-gray-100 flex items-start justify-between gap-4">
+                <div class="text-right space-y-1">
+                    <h4 class="text-xs font-black text-blue-950">واجهتك مشكلة؟</h4>
+                    <p class="text-[11px] text-gray-400 font-medium">تواصل مع الدعم الفني لحل أي مشكلة تقنية في
+                        المشاهدة.</p>
+                    <a href="#" class="text-[11px] font-bold text-[#FEB008] inline-block pt-1 hover:underline">مركز
+                        المساعدة ←</a>
+                </div>
+                <span
+                    class="w-8 h-8 rounded-full bg-purple-100 text-[#FEB008] flex items-center justify-center text-xs"><i
+                        class="fa-regular fa-circle-question"></i></span>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function selectPlaylistItem(element, type, payload) {
+        // 1. Reset all items to inactive state
+        const items = document.querySelectorAll('.playlist-item');
+        items.forEach(item => {
+            item.className = "playlist-item p-3.5 flex items-center justify-between rounded-2xl cursor-pointer transition-all bg-white hover:bg-gray-50 border border-transparent text-gray-600";
+
+            // Hide active indicators
+            const indicator = item.querySelector('.active-indicator');
+            if (indicator) {
+                indicator.classList.add('hidden');
+            }
+
+            // Reset text colors
+            const title = item.querySelector('.playlist-title');
+            if (title) {
+                title.className = "playlist-title text-xs font-bold text-blue-950";
+            }
+            const subtitle = item.querySelector('.playlist-subtitle');
+            if (subtitle) {
+                subtitle.className = "playlist-subtitle text-[10px] text-gray-400 block mt-0.5";
+            }
+        });
+
+        // 2. Set current item to active
+        element.className = "playlist-item p-3.5 flex items-center justify-between rounded-2xl cursor-pointer transition-all bg-purple-50/70 border border-purple-100 text-[#FEB008]";
+
+        const indicator = element.querySelector('.active-indicator');
+        if (indicator) {
+            indicator.classList.remove('hidden');
+        }
+
+        const title = element.querySelector('.playlist-title');
+        if (title) {
+            title.className = "playlist-title text-xs font-bold text-[#FEB008]";
+        }
+
+        const subtitle = element.querySelector('.playlist-subtitle');
+        if (subtitle) {
+            subtitle.className = "playlist-subtitle text-[10px] text-purple-400 block mt-0.5";
+        }
+
+        // 3. Toggle content sections
+        const videoWrapper = document.getElementById('video-content-wrapper');
+        const homeworkWrapper = document.getElementById('homework-content-wrapper');
+        const pdfWrapper = document.getElementById('pdf-content-wrapper');
+        const quizWrapper = document.getElementById('quiz-content-wrapper');
+
+        videoWrapper.classList.add('hidden');
+        homeworkWrapper.classList.add('hidden');
+        if (pdfWrapper) pdfWrapper.classList.add('hidden');
+        if (quizWrapper) quizWrapper.classList.add('hidden');
+
+        if (type === 'video') {
+            videoWrapper.classList.remove('hidden');
+
+            const player = document.getElementById('main-video-player');
+            player.src = payload.videoId;
+
+            document.getElementById('video-main-title').innerText = payload.title;
+            document.getElementById('video-main-duration').innerText = payload.duration;
+            document.getElementById('remaining-time').innerText = payload.remaining;
+            document.getElementById('progress-percentage').innerText = payload.progress;
+            document.getElementById('progress-bar-fill').style.width = payload.progress;
+
+            const noteCard = document.getElementById('note-card');
+            if (payload.note) {
+                noteCard.style.display = 'flex';
+                document.getElementById('note-text').innerText = payload.note;
+            } else {
+                noteCard.style.display = 'none';
+            }
+        } else if (type === 'homework') {
+            homeworkWrapper.classList.remove('hidden');
+        } else if (type === 'pdf') {
+            if (pdfWrapper) pdfWrapper.classList.remove('hidden');
+        } else if (type === 'quiz') {
+            if (quizWrapper) quizWrapper.classList.remove('hidden');
+        }
+    }
+</script>
+<script src="assets/js/main.js"></script>
+
+<body>
+
+</body>
+
+</html>

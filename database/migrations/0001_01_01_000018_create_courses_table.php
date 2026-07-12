@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('account_subject_id')->constrained('account_subjects')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('teacher_account_id')->nullable()->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('title');
+            $table->text('title');
             $table->string('slug');
             $table->text('description')->nullable();
             $table->string('thumbnail')->nullable();

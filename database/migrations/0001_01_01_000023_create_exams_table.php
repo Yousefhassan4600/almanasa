@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('course_id')->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('lesson_id')->nullable()->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('title');
+            $table->text('title');
             $table->text('description')->nullable();
             $table->integer('duration_minutes')->nullable();
             $table->decimal('max_score', 10, 2)->default(100);

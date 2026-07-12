@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('lesson_id')->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('type');
-            $table->string('title');
+            $table->text('title');
             $table->text('description')->nullable();
             $table->string('video_url')->nullable();
             $table->string('file_url')->nullable();

@@ -2,95 +2,41 @@
 
 namespace App\Filament\Resources\Notifications;
 
-use App\Filament\Resources\Notifications\Pages\ManageNotifications;
+use App\Filament\Base\BaseResource;
+use App\Filament\Resources\Notifications\Schemas\NotificationForm;
+use App\Filament\Resources\Notifications\Tables\NotificationsTable;
 use App\Models\Notification;
-use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class NotificationResource extends Resource
+class NotificationResource extends BaseResource
 {
     protected static ?string $model = Notification::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static string|UnitEnum|null $navigationGroup = 'Communication & Website';
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('user_id')
-                    ->label('User Id')
-                    ->numeric()
-                    ->required(),
-                TextInput::make('account_id')
-                    ->label('Account Id')
-                    ->numeric(),
-                TextInput::make('title')
-                    ->label('Title')
-                    ->required(),
-                Textarea::make('body')
-                    ->label('Body')
-                    ->columnSpanFull(),
-                Textarea::make('data')
-                    ->label('Data')
-                    ->columnSpanFull(),
-                DateTimePicker::make('read_at')
-                    ->label('Read At'),
-            ]);
+        return NotificationForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('user_id')
-                    ->label('User Id')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('account_id')
-                    ->label('Account Id')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('title')
-                    ->label('Title')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('read_at')
-                    ->label('Read At')
-                    ->searchable()
-                    ->sortable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return NotificationsTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ManageNotifications::route('/'),
+            'index' => Pages\ListNotifications::route('/'),
+            'create' => Pages\CreateNotification::route('/create'),
+            'edit' => Pages\EditNotification::route('/{record}/edit'),
         ];
     }
 }

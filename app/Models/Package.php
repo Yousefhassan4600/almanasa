@@ -5,10 +5,18 @@ namespace App\Models;
 use App\Enums\ContentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Translatable\HasTranslations;
 
 class Package extends Model
 {
+    use HasTranslations;
+
     protected $guarded = [];
+
+    public array $translatable = [
+        'name',
+        'description',
+    ];
 
     protected function casts(): array
     {

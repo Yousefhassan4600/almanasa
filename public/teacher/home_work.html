@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الملف الشخصي - منصة إلمنصة التعليمية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/ts_congig.js"></script>
+    <link rel="stylesheet" href="assets/styles/style.css" />
+    <script src="assets/js/ts_congig.js"></script>
+</head>
+
+<body>
+    <header class="shadow-xl bg-white relative">
+        <nav class="p-4 lg:p-6 my-container flex items-center justify-between">
+
+            <div class="flex items-center gap-4">
+                <button id="openSidebarBtn"
+                    class="block lg:hidden text-gray-700 hover:text-[#FEB008] transition-colors">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+                    </svg>
+                </button>
+
+                <a href="index.html" class="text-[#FEB008] font-bold text-xl lg:text-2xl whitespace-nowrap">Edu
+                    Learning</a>
+            </div>
+
+            <ul class="hidden lg:flex items-center gap-4 xl:gap-6 text-sm xl:text-base whitespace-nowrap">
+                <li><a href="index.html" class="hover:text-[#FEB008] font-medium text-[#FEB008]">الرئيسية</a></li>
+
+                <li class="group">
+                    <button id="dropdownNvbarButton"
+                        class="flex items-center gap-1 py-2 font-medium hover:text-[#FEB008]">
+                        المواد
+                        <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+
+                    <div id="dropdownNavbar"
+                        class="absolute left-0 right-0 top-full mt-2 z-50 hidden bg-white border border-gray-100 rounded-2xl shadow-xl p-8 w-full max-w-4xl mx-auto">
+                        <div class="grid grid-cols-3 gap-8 text-right" dir="rtl">
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الابتدائية</h3>
+                                <ul class="space-y-3 text-gray-500 text-sm">
+                                    <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الأول</a>
+                                    </li>
+                                    <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الثاني</a>
+                                    </li>
+                                    <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الثالث</a>
+                                    </li>
+                                    <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الرابع</a>
+                                    </li>
+                                    <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الخامس</a>
+                                    </li>
+                                    <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف السادس</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الإعدادية</h3>
+                                <ul class="space-y-3 text-gray-500 text-sm">
+                                    <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الأول</a>
+                                    </li>
+                                    <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الثاني</a>
+                                    </li>
+                                    <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الثالث</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الثانوية</h3>
+                                <ul class="space-y-3 text-gray-500 text-sm">
+                                    <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الأول</a>
+                                    </li>
+                                    <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الثاني</a>
+                                    </li>
+                                    <li><a href="single_teacher.html" class="hover:text-[#FEB008] block">الصف الثالث</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <li><a href="packages.html" class="text-gray-700 hover:text-[#FEB008] font-medium">الباقات</a></li>
+                <!-- <li><a href="#" class="text-gray-700 hover:text-[#FEB008] font-medium">عن المنصة</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-[#FEB008] font-medium">تواصل معنا</a></li> -->
+            </ul>
+
+            <div class="flex items-center gap-2 lg:gap-4" dir="rtl">
+                <a href="register.html"
+                    class="hidden lg:flex bg-[#FEB008] text-white rounded-[12px] py-2.5 px-4 text-sm lg:text-base font-semibold transition-all hover:bg-[#4c32b3] active:scale-95 items-center justify-center whitespace-nowrap">
+                    إنشاء حساب
+                </a>
+
+                <a href="login.html"
+                    class="hidden lg:flex bg-transparent text-[#FEB008] border-2 border-[#FEB008] py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-[#FEB008]/5 active:scale-95 items-center justify-center whitespace-nowrap">
+                    تسجيل الدخول
+                </a>
+
+                <a href="cart.html" class="text-gray-700 hover:text-[#FEB008] transition-colors p-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z">
+                        </path>
+                    </svg>
+                </a>
+
+                <button class="text-gray-700 hover:text-[#FEB008] transition-colors p-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0">
+                        </path>
+                    </svg>
+                </button>
+                <a href="profile.html" class="text-gray-700 hover:text-[#FEB008] transition-colors p-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z">
+                        </path>
+                    </svg>
+                </a>
+            </div>
+        </nav>
+        <div id="sidebarOverlay"
+            class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-300 opacity-0"></div>
+
+        <div id="mobileSidebar"
+            class="fixed top-0 right-0 bottom-0 w-[300px] bg-white z-50 p-6 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out lg:hidden flex flex-col justify-between overflow-y-auto"
+            dir="rtl">
+            <div>
+                <div class="flex items-center justify-between border-b pb-4 mb-6">
+                    <p class="text-[#FEB008] font-bold text-xl">Edu Learning</p>
+                    <button id="closeSidebarBtn" class="text-gray-500 hover:text-red-500 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <ul class="space-y-4 text-right">
+                    <li><a href="#" class="block py-2 text-[#FEB008] font-semibold text-lg">الرئيسية</a></li>
+
+                    <li>
+                        <button id="mobileDropdownBtn"
+                            class="flex items-center justify-between w-full py-2 text-gray-700 font-semibold text-lg text-right">
+                            <span>المواد</span>
+                            <svg id="mobileArrow" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor"
+                                stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div id="mobileDropdownContent" class="hidden pr-4 mt-2 space-y-4 border-r-2 border-gray-100">
+                            <div>
+                                <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الابتدائية</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                    <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الأول</a>
+                                    <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الثاني</a>
+                                    <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الثالث</a>
+                                    <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الرابع</a>
+                                    <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الخامس</a>
+                                    <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف السادس</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الإعدادية</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                    <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الأول</a>
+                                    <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الثاني</a>
+                                    <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الثالث</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الثانوية</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                    <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الأول</a>
+                                    <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الثاني</a>
+                                    <a href="single_teacher.html" class="hover:text-[#FEB008]">الصف الثالث</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- <li><a href="teachers.html" class="block py-2 text-gray-700 font-semibold text-lg">المدرسون</a></li> -->
+                    <li><a href="packages.html" class="block py-2 text-gray-700 font-semibold text-lg">الباقات</a></li>
+                    <!-- <li><a href="#" class="block py-2 text-gray-700 font-semibold text-lg">عن المنصة</a></li>
+                    <li><a href="#" class="block py-2 text-gray-700 font-semibold text-lg">تواصل معنا</a></li> -->
+                    <div class="space-y-3 mt-8 border-t pt-4 flex flex-col">
+                        <a href="register.html"
+                            class="w-full bg-[#FEB008] text-center text-white rounded-[12px] py-3 px-6 font-semibold transition-all hover:bg-[#4c32b3]">إنشاء
+                            حساب</a>
+                        <a href="login.html"
+                            class="w-full text-center bg-transparent text-[#FEB008] border-2 border-[#FEB008] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-[#FEB008]/5">تسجيل
+                            الدخول</a>
+
+                        <a href="profile.html"
+                            class="w-full text-center bg-transparent text-[#FEB008] border-2 border-[#FEB008] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-[#FEB008]/5">الملف
+                            الشخصي</a>
+                    </div>
+                </ul>
+            </div>
+
+
+        </div>
+    </header>
+    <div class="min-h-screen p-4 md:p-8 flex flex-col items-center justify-center">
+        <div class="w-full max-w-4xl bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm space-y-8">
+
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-gray-50 pb-6">
+                <div class="flex items-center gap-2 text-[#FEB008]">
+                    <span class="text-xs font-bold text-gray-400">الوقت المتبقي</span>
+                    <span class="text-2xl md:text-3xl font-black tracking-wider">44:59</span>
+                </div>
+
+                <div class="w-full sm:w-1/2 space-y-1">
+                    <div class="flex justify-between items-center text-xs font-bold text-gray-400">
+                        <span class="text-emerald-500 font-black">60%</span>
+                        <span>التقدم: 12 / 20 سؤال</span>
+                    </div>
+                    <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="w-[60%] bg-emerald-500 h-full rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <span
+                    class="bg-[#FEB008] text-white text-xs font-black px-4 py-1.5 rounded-full shadow-sm shadow-[#FEB008]/10">السؤال
+                    13</span>
+                <button
+                    class="text-xs font-bold text-red-400 hover:text-red-500 transition-all flex items-center gap-1.5">
+                    <i class="fa-regular fa-flag"></i>
+                    <span>تبليغ عن خطأ</span>
+                </button>
+            </div>
+
+            <div class="bg-white border border-gray-100 rounded-2xl p-6 md:p-8 text-center shadow-sm">
+                <h1 class="text-lg md:text-xl font-black text-blue-950 leading-relaxed max-w-2xl mx-auto">
+                    إذا كان المثلث أ ب ج قائم الزاوية في ب، وكان طول الضلع أ ب يساوي 6 سم، وطول الضلع ب ج يساوي 8 سم،
+                    فما هو
+                    طول الوتر أ ج؟
+                </h1>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="options-container">
+
+                <div onclick="selectOption(this)"
+                    class="option-card relative border-2 border-[#FEB008] bg-[#F2EEFF] rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all select-none">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="badge w-8 h-8 rounded-xl bg-[#FEB008] text-white flex items-center justify-center font-black text-xs transition-all">أ</span>
+                        <span class="text-sm font-black text-blue-950">10 سم</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-400">الخيار الأول</span>
+                </div>
+
+                <div onclick="selectOption(this)"
+                    class="option-card relative border border-gray-100 bg-white hover:border-gray-200 rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all select-none">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="badge w-8 h-8 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center font-black text-xs transition-all">ب</span>
+                        <span class="text-sm font-black text-blue-950">12 سم</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-400">الخيار الثاني</span>
+                </div>
+
+                <div onclick="selectOption(this)"
+                    class="option-card relative border border-gray-100 bg-white hover:border-gray-200 rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all select-none">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="badge w-8 h-8 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center font-black text-xs transition-all">ج</span>
+                        <span class="text-sm font-black text-blue-950">14 سم</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-400">الخيار الثالث</span>
+                </div>
+
+                <div onclick="selectOption(this)"
+                    class="option-card relative border border-gray-100 bg-white hover:border-gray-200 rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all select-none">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="badge w-8 h-8 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center font-black text-xs transition-all">د</span>
+                        <span class="text-sm font-black text-blue-950">16 سم</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-400">الخيار الرابع</span>
+                </div>
+
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-gray-50">
+                <a href="home_work_done.html"
+                    class="w-full sm:w-auto bg-[#FEB008] hover:bg-[#4a32b0] text-white font-black text-xs px-8 py-3.5 rounded-xl transition-all shadow-sm shadow-[#FEB008]/20">
+                    إنهاء الاختبار
+                </a>
+
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <button
+                        class="flex-1 sm:flex-none bg-[#F8F9FD] hover:bg-gray-100 text-gray-400 font-bold text-xs px-6 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
+                        <span>السابق</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                    <button
+                        class="flex-1 sm:flex-none bg-[#F8F9FD] hover:bg-gray-100 text-blue-950 font-black text-xs px-6 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                        <span>التالي</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script>
+        function selectOption(element) {
+            // 1. Get all option cards
+            const allOptions = document.querySelectorAll('.option-card');
+
+            // 2. Reset classes for all options to unselected state
+            allOptions.forEach(opt => {
+                opt.className = "option-card relative border border-gray-100 bg-white hover:border-gray-200 rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all select-none";
+
+                // Reset the letter badge inside
+                const badge = opt.querySelector('.badge');
+                if (badge) {
+                    badge.className = "badge w-8 h-8 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center font-black text-xs transition-all";
+                }
+            });
+
+            // 3. Apply selected classes to the clicked option
+            element.className = "option-card relative border-2 border-[#FEB008] bg-[#F2EEFF] rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all select-none";
+
+            // Highlight the letter badge of the clicked option
+            const activeBadge = element.querySelector('.badge');
+            if (activeBadge) {
+                activeBadge.className = "badge w-8 h-8 rounded-xl bg-[#FEB008] text-white flex items-center justify-center font-black text-xs transition-all";
+            }
+        }
+    </script>
+    <script src="assets/js/main.js"></script>
+
+</body>
+
+</html>

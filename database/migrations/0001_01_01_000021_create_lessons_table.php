@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('course_id')->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('course_unit_id')->nullable()->constrained('course_units')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('title');
+            $table->text('title');
             $table->text('description')->nullable();
             $table->integer('duration_seconds')->nullable();
             $table->boolean('is_free')->default(false);

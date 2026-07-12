@@ -2,73 +2,41 @@
 
 namespace App\Filament\Resources\ParentProfiles;
 
-use App\Filament\Resources\ParentProfiles\Pages\ManageParentProfiles;
+use App\Filament\Base\BaseResource;
+use App\Filament\Resources\ParentProfiles\Schemas\ParentProfileForm;
+use App\Filament\Resources\ParentProfiles\Tables\ParentProfilesTable;
 use App\Models\ParentProfile;
-use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class ParentProfileResource extends Resource
+class ParentProfileResource extends BaseResource
 {
     protected static ?string $model = ParentProfile::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static string|UnitEnum|null $navigationGroup = 'Students & Families';
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('user_id')
-                    ->label('User Id')
-                    ->numeric()
-                    ->required(),
-                TextInput::make('occupation')
-                    ->label('Occupation'),
-            ]);
+        return ParentProfileForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('user_id')
-                    ->label('User Id')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('occupation')
-                    ->label('Occupation')
-                    ->searchable()
-                    ->sortable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return ParentProfilesTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ManageParentProfiles::route('/'),
+            'index' => Pages\ListParentProfiles::route('/'),
+            'create' => Pages\CreateParentProfile::route('/create'),
+            'edit' => Pages\EditParentProfile::route('/{record}/edit'),
         ];
     }
 }

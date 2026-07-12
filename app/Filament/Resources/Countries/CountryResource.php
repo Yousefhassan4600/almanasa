@@ -2,85 +2,45 @@
 
 namespace App\Filament\Resources\Countries;
 
-use App\Filament\Resources\Countries\Pages\ManageCountries;
+use App\Filament\Base\BaseResource;
+use App\Filament\Resources\Countries\Schemas\CountryForm;
+use App\Filament\Resources\Countries\Tables\CountriesTable;
 use App\Models\Country;
-use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class CountryResource extends Resource
+class CountryResource extends BaseResource
 {
     protected static ?string $model = Country::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|UnitEnum|null $navigationGroup = BaseResource::PROJECT_DATA_NAVIGATION_GROUP;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Education Setup';
+    protected static ?string $navigationParentItem = BaseResource::LOCATIONS_NAVIGATION_PARENT;
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('name')
-                    ->label('Name')
-                    ->required(),
-                TextInput::make('code')
-                    ->label('Code')
-                    ->required(),
-                TextInput::make('phone_code')
-                    ->label('Phone Code'),
-                TextInput::make('currency_code')
-                    ->label('Currency Code'),
-            ]);
+        return CountryForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('name')
-                    ->label('Name')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('code')
-                    ->label('Code')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('phone_code')
-                    ->label('Phone Code')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('currency_code')
-                    ->label('Currency Code')
-                    ->searchable()
-                    ->sortable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return CountriesTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ManageCountries::route('/'),
+            'index' => Pages\ListCountries::route('/'),
+            'create' => Pages\CreateCountry::route('/create'),
+            'edit' => Pages\EditCountry::route('/{record}/edit'),
         ];
     }
 }

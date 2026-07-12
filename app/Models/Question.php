@@ -6,10 +6,17 @@ use App\Enums\QuestionType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Spatie\Translatable\HasTranslations;
 
 class Question extends Model
 {
+    use HasTranslations;
+
     protected $guarded = [];
+
+    public array $translatable = [
+        'title',
+    ];
 
     protected function casts(): array
     {

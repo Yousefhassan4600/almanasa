@@ -1,0 +1,660 @@
+Project almanasa {
+  database_type: "PostgreSQL"
+  Note: "Generated from Laravel migrations for dbdiagram.io"
+}
+
+Table users {
+  id bigint [pk]
+  name varchar
+  email varchar [unique]
+  email_verified_at timestamp [null]
+  password varchar
+  remember_token varchar [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table tenants {
+  id bigint [pk]
+  owner_user_id bigint [null]
+  name varchar
+  slug varchar [unique]
+  type varchar
+  status varchar [default: "pending"]
+  domain varchar [null, unique]
+  settings json [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table tenant_users {
+  id bigint [pk]
+  tenant_id bigint
+  user_id bigint
+  role varchar
+  status varchar [default: "active"]
+  joined_at timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (tenant_id, user_id, role) [unique, name: "tenant_user_role_unique"]
+  }
+}
+
+Table education_stages {
+  id bigint [pk]
+  name varchar
+  slug varchar [unique]
+  sort_order int [default: 0]
+  is_active boolean [default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table grades {
+  id bigint [pk]
+  education_stage_id bigint
+  name varchar
+  slug varchar [unique]
+  sort_order int [default: 0]
+  is_active boolean [default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table subjects {
+  id bigint [pk]
+  name varchar
+  slug varchar [unique]
+  description text [null]
+  icon varchar [null]
+  image varchar [null]
+  is_active boolean [default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table education_tracks {
+  id bigint [pk]
+  name varchar
+  slug varchar [unique]
+  sort_order int [default: 0]
+  is_active boolean [default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table grade_subjects {
+  id bigint [pk]
+  grade_id bigint
+  subject_id bigint
+  education_track_id bigint [null]
+  is_active boolean [default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (grade_id, subject_id, education_track_id) [unique, name: "grade_subject_track_unique"]
+  }
+}
+
+Table tenant_grade_subjects {
+  id bigint [pk]
+  tenant_id bigint
+  grade_subject_id bigint
+  is_active boolean [default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (tenant_id, grade_subject_id) [unique, name: "tenant_grade_subject_unique"]
+  }
+}
+
+Table teacher_grade_subject_assignments {
+  id bigint [pk]
+  tenant_id bigint
+  tenant_user_id bigint
+  tenant_grade_subject_id bigint
+  is_active boolean [default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (tenant_user_id, tenant_grade_subject_id) [unique, name: "teacher_grade_subject_unique"]
+  }
+}
+
+Table academic_years {
+  id bigint [pk]
+  tenant_id bigint [null]
+  name varchar
+  starts_at date [null]
+  ends_at date [null]
+  is_current boolean [default: false]
+  status varchar [default: "active"]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (tenant_id, name) [unique, name: "academic_year_tenant_name_unique"]
+  }
+}
+
+Table terms {
+  id bigint [pk]
+  academic_year_id bigint
+  name varchar
+  sort_order int [default: 0]
+  starts_at date [null]
+  ends_at date [null]
+  is_active boolean [default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table courses {
+  id bigint [pk]
+  tenant_id bigint
+  teacher_grade_subject_assignment_id bigint
+  academic_year_id bigint
+  term_id bigint [null]
+  title varchar
+  slug varchar
+  description text [null]
+  learning_outcomes json [null]
+  thumbnail varchar [null]
+  intro_video varchar [null]
+  price decimal [default: 0]
+  currency varchar(3) [default: "EGP"]
+  status varchar [default: "draft"]
+  is_featured boolean [default: false]
+  is_free boolean [default: false]
+  published_at timestamp [null]
+  available_from timestamp [null]
+  available_until timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (tenant_id, slug) [unique, name: "course_tenant_slug_unique"]
+  }
+}
+
+Table course_sections {
+  id bigint [pk]
+  course_id bigint
+  parent_id bigint [null]
+  title varchar
+  description text [null]
+  sort_order int [default: 0]
+  is_published boolean [default: false]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table lessons {
+  id bigint [pk]
+  course_id bigint
+  course_section_id bigint
+  title varchar
+  slug varchar
+  description text [null]
+  sort_order int [default: 0]
+  is_free boolean [default: false]
+  is_preview boolean [default: false]
+  is_published boolean [default: false]
+  available_at timestamp [null]
+  estimated_duration int [null]
+  completion_percentage_required int [default: 70]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (course_id, slug) [unique, name: "lesson_course_slug_unique"]
+  }
+}
+
+Table lesson_contents {
+  id bigint [pk]
+  lesson_id bigint
+  type varchar
+  title varchar
+  sort_order int [default: 0]
+  is_required boolean [default: true]
+  is_preview boolean [default: false]
+  available_at timestamp [null]
+  contentable_type varchar [null]
+  contentable_id bigint [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table videos {
+  id bigint [pk]
+  tenant_id bigint
+  lesson_content_id bigint [null]
+  uploaded_by bigint [null]
+  provider varchar
+  provider_video_id varchar [null]
+  video_url text [null]
+  duration_seconds int [null]
+  thumbnail varchar [null]
+  processing_status varchar [default: "pending"]
+  visibility varchar [default: "private"]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table resources {
+  id bigint [pk]
+  tenant_id bigint
+  resourceable_type varchar
+  resourceable_id bigint
+  uploaded_by bigint [null]
+  title varchar
+  file_path varchar [null]
+  disk varchar [default: "private"]
+  mime_type varchar [null]
+  file_size bigint [null]
+  is_downloadable boolean [default: false]
+  external_url varchar [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table student_academic_profiles {
+  id bigint [pk]
+  tenant_id bigint
+  student_id bigint
+  academic_year_id bigint [null]
+  grade_id bigint [null]
+  school_name varchar [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (tenant_id, student_id, academic_year_id) [unique, name: "student_profile_year_unique"]
+  }
+}
+
+Table assessments {
+  id bigint [pk]
+  tenant_id bigint
+  course_id bigint
+  lesson_id bigint [null]
+  type varchar
+  title varchar
+  description text [null]
+  instructions text [null]
+  duration_minutes int [null]
+  total_score decimal [default: 0]
+  passing_score decimal [null]
+  max_attempts int [null]
+  starts_at timestamp [null]
+  ends_at timestamp [null]
+  shuffle_questions boolean [default: false]
+  shuffle_options boolean [default: false]
+  show_result_immediately boolean [default: false]
+  show_correct_answers boolean [default: false]
+  show_explanations boolean [default: false]
+  allow_retry boolean [default: false]
+  is_published boolean [default: false]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table questions {
+  id bigint [pk]
+  tenant_id bigint
+  created_by bigint [null]
+  type varchar
+  text text
+  image varchar [null]
+  explanation_text text [null]
+  explanation_image varchar [null]
+  difficulty varchar [null]
+  default_score decimal [default: 1]
+  topic varchar [null]
+  status varchar [default: "draft"]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table question_options {
+  id bigint [pk]
+  question_id bigint
+  text text [null]
+  image varchar [null]
+  is_correct boolean [default: false]
+  sort_order int [default: 0]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table assessment_questions {
+  id bigint [pk]
+  assessment_id bigint
+  question_id bigint
+  score decimal [null]
+  sort_order int [default: 0]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (assessment_id, question_id) [unique, name: "assessment_question_unique"]
+  }
+}
+
+Table assessment_attempts {
+  id bigint [pk]
+  tenant_id bigint
+  assessment_id bigint
+  student_id bigint
+  attempt_number int
+  started_at timestamp [null]
+  submitted_at timestamp [null]
+  expires_at timestamp [null]
+  time_spent_seconds int [default: 0]
+  score decimal [null]
+  percentage decimal [null]
+  is_passed boolean [null]
+  status varchar [default: "in_progress"]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (assessment_id, student_id, attempt_number) [unique, name: "assessment_student_attempt_unique"]
+  }
+}
+
+Table attempt_answers {
+  id bigint [pk]
+  assessment_attempt_id bigint
+  question_id bigint
+  answer json [null]
+  is_correct boolean [null]
+  score decimal [null]
+  feedback text [null]
+  graded_at timestamp [null]
+  graded_by bigint [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table plans {
+  id bigint [pk]
+  tenant_id bigint
+  name varchar
+  type varchar
+  description text [null]
+  price decimal [default: 0]
+  currency varchar(3) [default: "EGP"]
+  duration_type varchar [default: "days"]
+  duration_value int [null]
+  is_active boolean [default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table plan_items {
+  id bigint [pk]
+  plan_id bigint
+  item_type varchar
+  item_id bigint
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (plan_id, item_type, item_id) [unique, name: "plan_item_unique"]
+  }
+}
+
+Table orders {
+  id bigint [pk]
+  tenant_id bigint
+  student_id bigint
+  order_number varchar [unique]
+  subtotal decimal [default: 0]
+  discount decimal [default: 0]
+  tax decimal [default: 0]
+  total decimal [default: 0]
+  currency varchar(3) [default: "EGP"]
+  status varchar [default: "pending"]
+  payment_status varchar [default: "pending"]
+  billing_name varchar [null]
+  billing_email varchar [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table order_items {
+  id bigint [pk]
+  order_id bigint
+  item_type varchar
+  item_id bigint
+  title varchar
+  unit_price decimal [default: 0]
+  quantity int [default: 1]
+  total decimal [default: 0]
+  metadata json [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table payments {
+  id bigint [pk]
+  tenant_id bigint
+  order_id bigint
+  student_id bigint
+  method varchar
+  amount decimal [default: 0]
+  currency varchar(3) [default: "EGP"]
+  status varchar [default: "pending"]
+  transaction_reference varchar [null]
+  provider_reference varchar [null]
+  paid_at timestamp [null]
+  metadata json [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table payment_proofs {
+  id bigint [pk]
+  payment_id bigint
+  sender_phone varchar [null]
+  transfer_reference varchar [null]
+  receipt_path varchar [null]
+  status varchar [default: "awaiting_review"]
+  reviewed_by bigint [null]
+  reviewed_at timestamp [null]
+  rejection_reason text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table subscriptions {
+  id bigint [pk]
+  tenant_id bigint
+  student_id bigint
+  plan_id bigint
+  order_id bigint [null]
+  starts_at timestamp [null]
+  ends_at timestamp [null]
+  status varchar [default: "pending"]
+  auto_renew boolean [default: false]
+  cancelled_at timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table enrollments {
+  id bigint [pk]
+  tenant_id bigint
+  student_id bigint
+  course_id bigint
+  subscription_id bigint [null]
+  order_item_id bigint [null]
+  starts_at timestamp [null]
+  expires_at timestamp [null]
+  status varchar [default: "pending"]
+  access_type varchar [default: "paid"]
+  granted_by bigint [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (tenant_id, student_id, course_id) [unique, name: "student_course_enrollment_unique"]
+  }
+}
+
+Table carts {
+  id bigint [pk]
+  tenant_id bigint
+  student_id bigint
+  status varchar [default: "active"]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (tenant_id, student_id, status) [unique, name: "tenant_student_cart_status_unique"]
+  }
+}
+
+Table cart_items {
+  id bigint [pk]
+  cart_id bigint
+  item_type varchar
+  item_id bigint
+  unit_price decimal [default: 0]
+  quantity int [default: 1]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (cart_id, item_type, item_id) [unique, name: "cart_item_unique"]
+  }
+}
+
+Table lesson_progress {
+  id bigint [pk]
+  tenant_id bigint
+  student_id bigint
+  lesson_id bigint
+  status varchar [default: "not_started"]
+  started_at timestamp [null]
+  completed_at timestamp [null]
+  last_activity_at timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (tenant_id, student_id, lesson_id) [unique, name: "student_lesson_progress_unique"]
+  }
+}
+
+Table video_progress {
+  id bigint [pk]
+  tenant_id bigint
+  student_id bigint
+  video_id bigint [null]
+  lesson_content_id bigint [null]
+  watched_seconds int [default: 0]
+  last_position_seconds int [default: 0]
+  watch_percentage decimal [default: 0]
+  started_at timestamp [null]
+  completed_at timestamp [null]
+  last_watched_at timestamp [null]
+  status varchar [default: "not_started"]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (tenant_id, student_id, lesson_content_id) [unique, name: "student_content_video_progress_unique"]
+  }
+}
+
+Ref: tenants.owner_user_id > users.id [delete: set null]
+Ref: tenant_users.tenant_id > tenants.id [delete: cascade]
+Ref: tenant_users.user_id > users.id [delete: cascade]
+
+Ref: grades.education_stage_id > education_stages.id [delete: cascade]
+Ref: grade_subjects.grade_id > grades.id [delete: cascade]
+Ref: grade_subjects.subject_id > subjects.id [delete: cascade]
+Ref: grade_subjects.education_track_id > education_tracks.id [delete: set null]
+
+Ref: tenant_grade_subjects.tenant_id > tenants.id [delete: cascade]
+Ref: tenant_grade_subjects.grade_subject_id > grade_subjects.id [delete: cascade]
+Ref: teacher_grade_subject_assignments.tenant_id > tenants.id [delete: cascade]
+Ref: teacher_grade_subject_assignments.tenant_user_id > tenant_users.id [delete: cascade]
+Ref: teacher_grade_subject_assignments.tenant_grade_subject_id > tenant_grade_subjects.id [delete: cascade]
+
+Ref: academic_years.tenant_id > tenants.id [delete: cascade]
+Ref: terms.academic_year_id > academic_years.id [delete: cascade]
+
+Ref: courses.tenant_id > tenants.id [delete: cascade]
+Ref: courses.teacher_grade_subject_assignment_id > teacher_grade_subject_assignments.id [delete: restrict]
+Ref: courses.academic_year_id > academic_years.id [delete: restrict]
+Ref: courses.term_id > terms.id [delete: set null]
+Ref: course_sections.course_id > courses.id [delete: cascade]
+Ref: course_sections.parent_id > course_sections.id [delete: cascade]
+Ref: lessons.course_id > courses.id [delete: cascade]
+Ref: lessons.course_section_id > course_sections.id [delete: cascade]
+Ref: lesson_contents.lesson_id > lessons.id [delete: cascade]
+Ref: videos.tenant_id > tenants.id [delete: cascade]
+Ref: videos.lesson_content_id > lesson_contents.id [delete: set null]
+Ref: videos.uploaded_by > users.id [delete: set null]
+Ref: resources.tenant_id > tenants.id [delete: cascade]
+Ref: resources.uploaded_by > users.id [delete: set null]
+
+Ref: student_academic_profiles.tenant_id > tenants.id [delete: cascade]
+Ref: student_academic_profiles.student_id > users.id [delete: cascade]
+Ref: student_academic_profiles.academic_year_id > academic_years.id [delete: set null]
+Ref: student_academic_profiles.grade_id > grades.id [delete: set null]
+
+Ref: assessments.tenant_id > tenants.id [delete: cascade]
+Ref: assessments.course_id > courses.id [delete: cascade]
+Ref: assessments.lesson_id > lessons.id [delete: cascade]
+Ref: questions.tenant_id > tenants.id [delete: cascade]
+Ref: questions.created_by > users.id [delete: set null]
+Ref: question_options.question_id > questions.id [delete: cascade]
+Ref: assessment_questions.assessment_id > assessments.id [delete: cascade]
+Ref: assessment_questions.question_id > questions.id [delete: cascade]
+Ref: assessment_attempts.tenant_id > tenants.id [delete: cascade]
+Ref: assessment_attempts.assessment_id > assessments.id [delete: cascade]
+Ref: assessment_attempts.student_id > users.id [delete: cascade]
+Ref: attempt_answers.assessment_attempt_id > assessment_attempts.id [delete: cascade]
+Ref: attempt_answers.question_id > questions.id [delete: cascade]
+Ref: attempt_answers.graded_by > users.id [delete: set null]
+
+Ref: plans.tenant_id > tenants.id [delete: cascade]
+Ref: plan_items.plan_id > plans.id [delete: cascade]
+Ref: orders.tenant_id > tenants.id [delete: cascade]
+Ref: orders.student_id > users.id [delete: cascade]
+Ref: order_items.order_id > orders.id [delete: cascade]
+Ref: payments.tenant_id > tenants.id [delete: cascade]
+Ref: payments.order_id > orders.id [delete: cascade]
+Ref: payments.student_id > users.id [delete: cascade]
+Ref: payment_proofs.payment_id > payments.id [delete: cascade]
+Ref: payment_proofs.reviewed_by > users.id [delete: set null]
+Ref: subscriptions.tenant_id > tenants.id [delete: cascade]
+Ref: subscriptions.student_id > users.id [delete: cascade]
+Ref: subscriptions.plan_id > plans.id [delete: restrict]
+Ref: subscriptions.order_id > orders.id [delete: set null]
+Ref: enrollments.tenant_id > tenants.id [delete: cascade]
+Ref: enrollments.student_id > users.id [delete: cascade]
+Ref: enrollments.course_id > courses.id [delete: cascade]
+Ref: enrollments.subscription_id > subscriptions.id [delete: set null]
+Ref: enrollments.order_item_id > order_items.id [delete: set null]
+Ref: enrollments.granted_by > users.id [delete: set null]
+Ref: carts.tenant_id > tenants.id [delete: cascade]
+Ref: carts.student_id > users.id [delete: cascade]
+Ref: cart_items.cart_id > carts.id [delete: cascade]
+Ref: lesson_progress.tenant_id > tenants.id [delete: cascade]
+Ref: lesson_progress.student_id > users.id [delete: cascade]
+Ref: lesson_progress.lesson_id > lessons.id [delete: cascade]
+Ref: video_progress.tenant_id > tenants.id [delete: cascade]
+Ref: video_progress.student_id > users.id [delete: cascade]
+Ref: video_progress.video_id > videos.id [delete: cascade]
+Ref: video_progress.lesson_content_id > lesson_contents.id [delete: cascade]

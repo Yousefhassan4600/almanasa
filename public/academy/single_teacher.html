@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/ts_congig.js"></script>
+    <link rel="stylesheet" href="assets/styles/style.css" />
+    <script src="assets/js/ts_congig.js"></script>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="shadow-xl bg-white relative">
+        <nav class="p-4 lg:p-6 my-container flex items-center justify-between">
+
+            <div class="flex items-center gap-4">
+                <button id="openSidebarBtn"
+                    class="block lg:hidden text-gray-700 hover:text-[#5D3FD3] transition-colors">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+                    </svg>
+                </button>
+
+                <a href="index.html" class="text-[#5D3FD3] font-bold text-xl lg:text-2xl whitespace-nowrap">Edu
+                    Learning</a>
+            </div>
+
+            <ul class="hidden lg:flex items-center gap-4 xl:gap-6 text-sm xl:text-base whitespace-nowrap">
+                <li><a href="index.html" class="hover:text-[#5D3FD3] font-medium text-[#5D3FD3]">الرئيسية</a></li>
+
+                <li class="group">
+                    <button id="dropdownNvbarButton"
+                        class="flex items-center gap-1 py-2 font-medium hover:text-[#5D3FD3]">
+                        المواد
+                        <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+
+                    <div id="dropdownNavbar"
+                        class="absolute left-0 right-0 top-full mt-2 z-50 hidden bg-white border border-gray-100 rounded-2xl shadow-xl p-8 w-full max-w-4xl mx-auto">
+                        <div class="grid grid-cols-3 gap-8 text-right" dir="rtl">
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الابتدائية</h3>
+                                <ul class="space-y-3 text-gray-500 text-sm">
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الأول</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثاني</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثالث</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الرابع</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الخامس</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف السادس</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الإعدادية</h3>
+                                <ul class="space-y-3 text-gray-500 text-sm">
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الأول</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثاني</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثالث</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الثانوية</h3>
+                                <ul class="space-y-3 text-gray-500 text-sm">
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الأول</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثاني</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثالث</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <li><a href="teachers.html" class="text-gray-700 hover:text-[#5D3FD3] font-medium">المدرسون</a></li>
+                <li><a href="packages.html" class="text-gray-700 hover:text-[#5D3FD3] font-medium">الباقات</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-[#5D3FD3] font-medium">عن المنصة</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-[#5D3FD3] font-medium">تواصل معنا</a></li>
+            </ul>
+
+            <div class="flex items-center gap-2 lg:gap-4" dir="rtl">
+                <a href="register.html"
+                    class="hidden lg:flex bg-[#5D3FD3] text-white rounded-[12px] py-2.5 px-4 text-sm lg:text-base font-semibold transition-all hover:bg-[#4c32b3] active:scale-95 items-center justify-center whitespace-nowrap">
+                    إنشاء حساب
+                </a>
+
+                <a href="login.html"
+                    class="hidden lg:flex bg-transparent text-[#5D3FD3] border-2 border-[#5D3FD3] py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-[#5D3FD3]/5 active:scale-95 items-center justify-center whitespace-nowrap">
+                    تسجيل الدخول
+                </a>
+
+                <a href="cart.html" class="text-gray-700 hover:text-[#5D3FD3] transition-colors p-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z">
+                        </path>
+                    </svg>
+                </a>
+
+                <button class="text-gray-700 hover:text-[#5D3FD3] transition-colors p-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0">
+                        </path>
+                    </svg>
+                </button>
+                <a href="profile.html" class="text-gray-700 hover:text-[#5D3FD3] transition-colors p-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z">
+                        </path>
+                    </svg>
+                </a>
+            </div>
+        </nav>
+        <div id="sidebarOverlay"
+            class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-300 opacity-0"></div>
+
+        <div id="mobileSidebar"
+            class="fixed top-0 right-0 bottom-0 w-[300px] bg-white z-50 p-6 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out lg:hidden flex flex-col justify-between overflow-y-auto"
+            dir="rtl">
+            <div>
+                <div class="flex items-center justify-between border-b pb-4 mb-6">
+                    <p class="text-[#5D3FD3] font-bold text-xl">Edu Learning</p>
+                    <button id="closeSidebarBtn" class="text-gray-500 hover:text-red-500 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <ul class="space-y-4 text-right">
+                    <li><a href="#" class="block py-2 text-[#5D3FD3] font-semibold text-lg">الرئيسية</a></li>
+
+                    <li>
+                        <button id="mobileDropdownBtn"
+                            class="flex items-center justify-between w-full py-2 text-gray-700 font-semibold text-lg text-right">
+                            <span>المواد</span>
+                            <svg id="mobileArrow" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor"
+                                stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div id="mobileDropdownContent" class="hidden pr-4 mt-2 space-y-4 border-r-2 border-gray-100">
+                            <div>
+                                <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الابتدائية</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الأول</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثاني</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثالث</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الرابع</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الخامس</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف السادس</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الإعدادية</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الأول</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثاني</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثالث</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الثانوية</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الأول</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثاني</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثالث</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li><a href="teachers.html" class="block py-2 text-gray-700 font-semibold text-lg">المدرسون</a></li>
+                    <li><a href="packages.html" class="block py-2 text-gray-700 font-semibold text-lg">الباقات</a></li>
+                    <li><a href="#" class="block py-2 text-gray-700 font-semibold text-lg">عن المنصة</a></li>
+                    <li><a href="#" class="block py-2 text-gray-700 font-semibold text-lg">تواصل معنا</a></li>
+                </ul>
+            </div>
+
+            <div class="space-y-3 mt-8 border-t pt-4">
+                <a href="register.html"
+                    class="w-full bg-[#5D3FD3] text-white rounded-[12px] py-3 px-6 font-semibold transition-all hover:bg-[#4c32b3]">إنشاء
+                    حساب</a>
+                <a href="login.html"
+                    class="w-full bg-transparent text-[#5D3FD3] border-2 border-[#5D3FD3] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-[#5D3FD3]/5">تسجيل
+                    الدخول</a>
+
+                <a href="profile.html"
+                    class="w-full bg-transparent text-[#5D3FD3] border-2 border-[#5D3FD3] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-[#5D3FD3]/5">الملف
+                    الشخصي</a>
+            </div>
+        </div>
+    </header>
+    <!-- hero -->
+    <div class="max-w-[80%] mx-auto px-4 md:px-8 py-8" dir="rtl">
+
+        <!-- شريط التنقل العلوي (Breadcrumbs) -->
+        <nav class="flex items-center gap-2 text-xs text-gray-400 mb-5 font-medium">
+            <a href="#" class="hover:text-[#5D3FD3] transition-colors">الرئيسية</a>
+            <span class="text-gray-300">/</span>
+            <a href="#" class="hover:text-[#5D3FD3] transition-colors">المواد</a>
+            <span class="text-gray-300">/</span>
+            <a href="#" class="hover:text-[#5D3FD3] transition-colors">الرياضيات</a>
+            <span class="text-gray-300">/</span>
+            <span class="text-gray-500 font-semibold">أولى ثانوي</span>
+        </nav>
+
+        <!-- بنر الكورس الرئيسي -->
+        <div
+            class="bg-[#6342E8] text-white rounded-[32px] p-6 md:p-10 shadow-xl shadow-purple-900/10 relative overflow-hidden">
+
+            <!-- شبكة التوزيع: مقسومة بالتساوي 2 columns في الشاشات الكبيرة -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+
+                <!-- الجانب الأيمن: الترحيب والإحصائيات -->
+                <div class="space-y-6 text-center lg:text-right">
+                    <div class="space-y-2">
+                        <h1 class="text-2xl sm:text-3xl md:text-4xl font-black tracking-wide">
+                            أهلاً بك في كورس الرياضيات
+                        </h1>
+                        <p class="text-purple-200/90 text-sm sm:text-base font-medium">
+                            الصف الأول الثانوي - علمي رياضة
+                        </p>
+                    </div>
+
+                    <!-- كروت الإحصائيات -->
+                    <div class="flex flex-wrap justify-center lg:justify-start gap-4 pt-2">
+                        <div
+                            class="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl py-3 px-5 flex items-center gap-4 min-w-[130px] justify-between">
+                            <div class="text-right">
+                                <span class="block text-[10px] text-purple-200">الطلاب</span>
+                                <span class="block text-base font-black">8,500</span>
+                            </div>
+                            <i class="fa-solid fa-users text-xl text-purple-200/80"></i>
+                        </div>
+
+                        <div
+                            class="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl py-3 px-5 flex items-center gap-4 min-w-[130px] justify-between">
+                            <div class="text-right">
+                                <span class="block text-[10px] text-purple-200">الدروس</span>
+                                <span class="block text-base font-black">65</span>
+                            </div>
+                            <i class="fa-solid fa-book-bookmark text-xl text-purple-200/80"></i>
+                        </div>
+
+                        <div
+                            class="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl py-3 px-5 flex items-center gap-4 min-w-[130px] justify-between">
+                            <div class="text-right">
+                                <span class="block text-[10px] text-purple-200">ساعة محتوى</span>
+                                <span class="block text-base font-black">12</span>
+                            </div>
+                            <i class="fa-regular fa-clock text-xl text-purple-200/80"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الجانب الأيسر: بيانات المعلم وصورته الشخصية -->
+                <div class="flex flex-row items-center justify-center lg:justify-end gap-5">
+                    <div class="text-right space-y-1">
+                        <h2 class="text-xl sm:text-2xl font-bold tracking-tight">أ. أحمد محمد</h2>
+                        <div class="flex items-center justify-end gap-1.5 text-xs">
+                            <span class="text-purple-200 font-medium">(8,500 تقييم)</span>
+                            <span class="font-bold text-amber-300">4.8</span>
+                            <i class="fa-solid fa-star text-amber-300 text-[11px]"></i>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div
+                            class="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-1 bg-white/20 backdrop-blur-sm border border-white/40 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200"
+                                alt="أ. أحمد محمد" class="w-full h-full object-cover rounded-full bg-teal-600" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= الخط الفاصل السحري ================= -->
+                <!-- يتمموضع مطلقاً في شاشات lg ليقبع في السنتر الأفقي تماماً (left-1/2) وبطول محدد -->
+                <div
+                    class="hidden lg:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-32 w-[1px] bg-white/20">
+                </div>
+
+            </div>
+
+            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none">
+            </div>
+        </div>
+    </div>
+    <!-- nested tabs -->
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-6" dir="rtl">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div class="lg:col-span-8 space-y-6">
+
+                <div class="border-b border-gray-100 flex items-center justify-start gap-8">
+                    <button onclick="switchMainTab('lessons')" id="btn-tab-lessons"
+                        class="pb-3 text-sm font-bold border-b-2 border-[#5D3FD3] text-[#5D3FD3] transition-all">
+                        الدروس والوحدات
+                    </button>
+                    <button onclick="switchMainTab('reviews')" id="btn-tab-reviews"
+                        class="pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-gray-600 transition-all">
+                        المراجعات النهائية
+                    </button>
+                    <button onclick="switchMainTab('student_level')" id="btn-tab-student_level"
+                        class="pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-gray-600 transition-all">
+                        مستوى الطالب
+                    </button>
+                </div>
+
+                <div id="content-main-lessons" class="space-y-6 block">
+
+                    <div class="flex items-center gap-2 p-1 bg-gray-50 rounded-xl w-fit">
+                        <button onclick="filterTerm('all')" id="btn-sub-all"
+                            class="term-btn px-4 py-1.5 text-xs font-bold rounded-lg bg-[#5D3FD3] text-white transition-all shadow-sm">
+                            الكل
+                        </button>
+                        <button onclick="filterTerm('term1')" id="btn-sub-term1"
+                            class="term-btn px-4 py-1.5 text-xs font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all">
+                            الترم الأول
+                        </button>
+                        <button onclick="filterTerm('term2')" id="btn-sub-term2"
+                            class="term-btn px-4 py-1.5 text-xs font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all">
+                            الترم الثاني
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+
+                        <div class="accordion-item bg-gray-50/50 rounded-2xl border border-gray-100 overflow-hidden transition-all duration-300"
+                            data-term="term1">
+                            <div onclick="toggleAccordion(this)"
+                                class="accordion-header p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors select-none">
+                                <div class="flex items-center gap-3">
+                                    <span
+                                        class="w-8 h-8 rounded-xl bg-purple-50 text-[#5D3FD3] flex items-center justify-center text-sm"><i
+                                            class="fa-solid fa-book-open"></i></span>
+                                    <div class="text-right">
+                                        <h3 class="text-sm font-bold text-blue-950">الحصة الأولى: مقدمة الأعداد الحقيقية
+                                            (ترم أول)</h3>
+                                        <span class="text-[10px] text-gray-400 block mt-0.5">5 عناصر . مكتملة بنسبة
+                                            40%</span>
+                                    </div>
+                                </div>
+                                <i
+                                    class="arrow-icon fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-300"></i>
+                            </div>
+
+                            <div
+                                class="accordion-body border-t border-gray-100 bg-white transition-all duration-300 max-h-0 overflow-hidden">
+                                <div class="p-2 divide-y divide-gray-50">
+                                    <div class="p-3.5 flex items-center justify-between text-xs">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fa-regular fa-circle-play text-gray-400 text-sm"></i>
+                                            <a href="lesson.html" class="font-semibold text-gray-700 cursor-pointer">1.
+                                                مقدمة في
+                                                الأعداد
+                                                الحقيقية</a>
+                                            <span
+                                                class="bg-emerald-50 text-emerald-600 text-[9px] font-bold px-2 py-0.5 rounded">مجاني</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[10px] text-gray-400 hidden sm:inline">تحت المشاهدة</span>
+                                            <i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i>
+                                        </div>
+                                    </div>
+                                    <div class="p-3.5 flex items-center justify-between text-xs opacity-75">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fa-regular fa-circle-play text-gray-400 text-sm"></i>
+                                            <span class="font-medium text-gray-600">الشرح الثاني: تطبيقات عملية</span>
+                                        </div>
+                                        <i class="fa-solid fa-lock text-gray-300 text-xs"></i>
+                                    </div>
+                                    <div class="p-3.5 flex items-center justify-between text-xs opacity-75">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fa-regular fa-file-pdf text-gray-400 text-sm"></i>
+                                            <span class="font-medium text-gray-600">الملخص الورقي المساعد (PDF)</span>
+                                        </div>
+                                        <i class="fa-solid fa-lock text-gray-300 text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item bg-gray-50/50 rounded-2xl border border-gray-100 overflow-hidden transition-all duration-300"
+                            data-term="term1">
+                            <div onclick="toggleAccordion(this)"
+                                class="accordion-header p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors select-none">
+                                <div class="flex items-center gap-3">
+                                    <span
+                                        class="w-8 h-8 rounded-xl bg-purple-50 text-[#5D3FD3] flex items-center justify-center text-sm"><i
+                                            class="fa-solid fa-book-open"></i></span>
+                                    <div class="text-right">
+                                        <h3 class="text-sm font-bold text-blue-950">الحصة الثانية: الهندسة والقياس (ترم
+                                            أول)</h3>
+                                        <span class="text-[10px] text-gray-400 block mt-0.5">4 عناصر . مغلق</span>
+                                    </div>
+                                </div>
+                                <i
+                                    class="arrow-icon fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-300"></i>
+                            </div>
+
+                            <div
+                                class="accordion-body border-t border-gray-100 bg-white transition-all duration-300 max-h-0 overflow-hidden">
+                                <div class="p-4 text-xs text-gray-500">المحتوى التعليمي الخاص بالهندسة والقياس يظهر هنا
+                                    عند الاشتراك بالباقة...</div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item bg-gray-50/50 rounded-2xl border border-gray-100 overflow-hidden transition-all duration-300"
+                            data-term="term2">
+                            <div onclick="toggleAccordion(this)"
+                                class="accordion-header p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors select-none">
+                                <div class="flex items-center gap-3">
+                                    <span
+                                        class="w-8 h-8 rounded-xl bg-purple-50 text-[#5D3FD3] flex items-center justify-center text-sm"><i
+                                            class="fa-solid fa-book-open"></i></span>
+                                    <div class="text-right">
+                                        <h3 class="text-sm font-bold text-blue-950">الحصة الأولى: حساب المثلثات (ترم
+                                            ثاني)</h3>
+                                        <span class="text-[10px] text-gray-400 block mt-0.5">6 عناصر مضافة</span>
+                                    </div>
+                                </div>
+                                <i
+                                    class="arrow-icon fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-300"></i>
+                            </div>
+
+                            <div
+                                class="accordion-body border-t border-gray-100 bg-white transition-all duration-300 max-h-0 overflow-hidden">
+                                <div class="p-4 text-xs text-gray-500">أهلاً بك في أولى دروس حساب المثلثات المخصصة للفصل
+                                    الدراسي الثاني...</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div id="content-main-reviews"
+                    class="p-8 bg-gray-50 rounded-2xl text-center text-sm font-semibold text-gray-400 hidden">
+                    قسم المراجعات النهائية والامتحانات الشاملة سيتم تفعيله وتحديثه قريباً قبل نهاية الفصل الدراسي.
+                </div>
+
+                <div id="content-main-student_level" class="space-y-6 hidden">
+                    <!-- Sub Filters -->
+                    <div class="flex items-center gap-2 p-1 bg-gray-50 rounded-xl w-fit">
+                        <button onclick="filterStudentTerm('all')" id="btn-student-all"
+                            class="student-term-btn px-4 py-1.5 text-xs font-bold rounded-lg bg-[#5D3FD3] text-white transition-all shadow-sm">
+                            الكل
+                        </button>
+                        <button onclick="filterStudentTerm('term1')" id="btn-student-term1"
+                            class="student-term-btn px-4 py-1.5 text-xs font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all">
+                            الترم الأول
+                        </button>
+                        <button onclick="filterStudentTerm('term2')" id="btn-student-term2"
+                            class="student-term-btn px-4 py-1.5 text-xs font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all">
+                            الترم الثاني
+                        </button>
+                    </div>
+
+                    <!-- Main Content Container with fade-in-up class on tab change/filter trigger -->
+                    <div id="student-level-container" class="space-y-6 animate-fade-in-up">
+                        <!-- Top Row Grid (General Level & Learning Time) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <!-- General Level Card -->
+                            <div
+                                class="bg-white border border-gray-100 rounded-3xl p-6 flex items-center justify-between shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                                <!-- Left: Badge -->
+                                <div
+                                    class="flex items-center gap-1 bg-[#E6F7F0] text-[#00AA6C] px-3.5 py-2 rounded-2xl text-xs font-bold transition-all duration-300">
+                                    <span id="student-general-level-percent">92%</span>
+                                    <i class="fa-solid fa-arrow-trend-up text-[10px]"></i>
+                                </div>
+                                <!-- Right: Info -->
+                                <div class="text-right">
+                                    <span class="text-xs text-gray-400 block mb-1 font-semibold">المستوى العام</span>
+                                    <h3 id="student-general-level" class="text-base md:text-lg font-bold text-gray-800">
+                                        ممتاز</h3>
+                                </div>
+                            </div>
+
+                            <!-- Time Spent Card -->
+                            <div
+                                class="bg-white border border-gray-100 rounded-3xl p-6 flex items-center justify-between shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                                <!-- Left: Icon -->
+                                <div
+                                    class="w-12 h-12 rounded-2xl bg-[#EBE7FF] text-[#5D3FD3] flex items-center justify-center text-lg shrink-0">
+                                    <i class="fa-regular fa-clock"></i>
+                                </div>
+                                <!-- Right: Info -->
+                                <div class="text-right">
+                                    <span class="text-xs text-gray-400 block mb-1 font-semibold">الوقت المستغرق في
+                                        التعلم</span>
+                                    <h3 id="student-time-spent" class="text-base md:text-lg font-bold text-gray-800">18
+                                        ساعة و 45 دقيقة</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Middle Row Grid (Attendance & Homework Analysis) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Attendance Tracking Card -->
+                            <div
+                                class="bg-white border border-gray-100 rounded-3xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 min-h-[170px]">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span
+                                        class="w-8 h-8 rounded-xl bg-purple-50 text-[#5D3FD3] flex items-center justify-center text-sm"><i
+                                            class="fa-regular fa-eye"></i></span>
+                                    <h4 class="text-xs font-bold text-gray-800">متابعة الحضور والمشاهدة</h4>
+                                </div>
+                                <div class="flex items-center justify-between gap-4 mt-auto">
+                                    <!-- Progress bars info -->
+                                    <div class="flex-1 text-right">
+                                        <div
+                                            class="flex justify-between items-center text-[10px] sm:text-xs mb-1.5 font-semibold text-gray-500">
+                                            <span>دروس مكتملة</span>
+                                            <span id="student-lessons-ratio" class="font-bold text-gray-700">52 /
+                                                65</span>
+                                        </div>
+                                        <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                            <div id="student-attendance-progress-bar"
+                                                class="bg-[#5D3FD3] h-full rounded-full transition-all duration-700 ease-out"
+                                                style="width: 80%;"></div>
+                                        </div>
+                                    </div>
+                                    <!-- Circular Progress -->
+                                    <div class="relative w-16 h-16 flex items-center justify-center shrink-0">
+                                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                            <path class="text-gray-100" stroke-width="3" stroke="currentColor"
+                                                fill="none"
+                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                            <path id="student-circle-progress"
+                                                class="text-[#5D3FD3] transition-all duration-[800ms] ease-out"
+                                                stroke-dasharray="80, 100" stroke-width="3" stroke-linecap="round"
+                                                stroke="currentColor" fill="none"
+                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        </svg>
+                                        <div class="absolute text-[11px] font-bold text-gray-800"
+                                            id="student-attendance-percent">80%</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Homework Analysis Card -->
+                            <div
+                                class="bg-white border border-gray-100 rounded-3xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 min-h-[170px]">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span
+                                        class="w-8 h-8 rounded-xl bg-emerald-50 text-[#00AA6C] flex items-center justify-center text-sm"><i
+                                            class="fa-regular fa-square-check"></i></span>
+                                    <h4 class="text-xs font-bold text-gray-800">تحليل الواجبات</h4>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3 mb-3">
+                                    <div class="bg-[#E8F8F2] p-2.5 rounded-2xl text-right">
+                                        <span class="text-[9px] text-[#00AA6C] block mb-0.5 font-bold">إجابات
+                                            صحيحة</span>
+                                        <span id="student-homework-correct"
+                                            class="text-base font-black text-[#00AA6C] block">145</span>
+                                    </div>
+                                    <div class="bg-[#FFF0F0] p-2.5 rounded-2xl text-right">
+                                        <span class="text-[9px] text-red-500 block mb-0.5 font-bold">إجابات خاطئة</span>
+                                        <span id="student-homework-wrong"
+                                            class="text-base font-black text-red-500 block">12</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center justify-between text-xs font-semibold pt-2 border-t border-gray-50 mt-auto">
+                                    <span class="text-gray-400">نسبة الإنجاز الكلية</span>
+                                    <span id="student-homework-rate"
+                                        class="text-[#00AA6C] font-black text-[13px]">94%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Exams Performance Card -->
+                        <div
+                            class="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                            <div class="flex items-center justify-between mb-5">
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        class="w-8 h-8 rounded-xl bg-amber-50 text-[#D97706] flex items-center justify-center text-sm"><i
+                                            class="fa-solid fa-chart-line"></i></span>
+                                    <h4 class="text-xs font-bold text-gray-800">أداء الامتحانات</h4>
+                                </div>
+                                <span class="text-[11px] text-gray-400 font-semibold">متوسط الدرجات: <span
+                                        id="student-exams-avg" class="font-bold text-gray-700">18.5 / 20</span></span>
+                            </div>
+                            <div id="student-exams-list" class="space-y-3">
+                                <!-- Loaded dynamically by JS -->
+                                <div
+                                    class="flex items-center justify-between p-4 bg-[#F8F7FF] rounded-2xl border border-[#ECECFF]/50 hover:border-[#5D3FD3]/20 transition-all duration-300 shadow-sm">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-bold text-gray-700 text-sm shadow-sm border border-gray-100">
+                                            1</div>
+                                        <div class="text-right">
+                                            <h5 class="text-xs font-bold text-gray-800">اختبار الوحدة الأولى</h5>
+                                            <span class="text-[10px] text-gray-400 block mt-0.5">منذ أسبوعين</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-left">
+                                        <span class="text-xs font-bold text-[#5D3FD3] block">19 / 20</span>
+                                        <span class="text-[10px] font-bold text-[#00AA6C] block mt-0.5">ممتاز</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center justify-between p-4 bg-[#F8F7FF] rounded-2xl border border-[#ECECFF]/50 hover:border-[#5D3FD3]/20 transition-all duration-300 shadow-sm">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-bold text-gray-700 text-sm shadow-sm border border-gray-100">
+                                            2</div>
+                                        <div class="text-right">
+                                            <h5 class="text-xs font-bold text-gray-800">اختبار الدرس الثالث</h5>
+                                            <span class="text-[10px] text-gray-400 block mt-0.5">منذ 3 أيام</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-left">
+                                        <span class="text-xs font-bold text-[#5D3FD3] block">18 / 20</span>
+                                        <span class="text-[10px] font-bold text-[#008B5B] block mt-0.5">جيد جداً</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Strengths and Opportunities Split -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <!-- Strengths Card -->
+                            <div
+                                class="bg-[#F1F9F6] border border-[#E2F0EA] rounded-[24px] p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <span
+                                        class="w-8 h-8 rounded-xl bg-[#E6F7F0] text-[#00AA6C] flex items-center justify-center text-sm"><i
+                                            class="fa-solid fa-award"></i></span>
+                                    <h4 class="text-xs font-bold text-[#008B5B]">نقاط القوة</h4>
+                                </div>
+                                <ul id="student-strengths-list" class="space-y-3 text-xs text-[#006C49] font-semibold">
+                                    <li class="flex items-center gap-2">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-[#00AA6C] shrink-0"></span>
+                                        <span>الجبر والعمليات الحسابية</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-[#00AA6C] shrink-0"></span>
+                                        <span>سرعة حل المسائل اللفظية</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Opportunities Card -->
+                            <div
+                                class="bg-[#FAF4EB] border border-[#F3E8DA] rounded-[24px] p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <span
+                                        class="w-8 h-8 rounded-xl bg-[#FCF6ED] text-[#D97706] flex items-center justify-center text-sm"><i
+                                            class="fa-regular fa-lightbulb"></i></span>
+                                    <h4 class="text-xs font-bold text-[#925F24]">فرص التحسين</h4>
+                                </div>
+                                <ul id="student-opportunities-list"
+                                    class="space-y-3 text-xs text-[#925F24] font-semibold">
+                                    <li class="flex items-center gap-2">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-[#D97706] shrink-0"></span>
+                                        <span>التركيز في خطوات البرهان الهندسي</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-[#D97706] shrink-0"></span>
+                                        <span>مراجعة قوانين حساب المثلثات</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="lg:col-span-4 bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-6">
+                <div class="flex items-center gap-2">
+                    <span class="bg-amber-50 text-amber-600 text-xs font-bold px-3 py-1 rounded-full">أولى ثانوي</span>
+                    <span class="bg-blue-50 text-blue-600 text-xs font-bold px-3 py-1 rounded-full">علمي</span>
+                </div>
+                <div class="p-8 border border-[#006C49] rounded-xl bg-[#006C491A]">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-circle-check text-[#006C49] mt-0.5 text-sm"></i>
+                        <span class="block text-right text-sm font-semibold text-[#006C49]">فهم القوانين والمفاهيم بعمق
+                            وسهولة.</span>
+                    </div>
+                    <p class="text-right text-xs font-semibold  mt-2 mx-2">عدد الأيام المتبقي لتجديد الاشتراك: 15
+                        يوم</p>
+                </div>
+
+                <div class="space-y-1">
+                    <span class="text-xs text-gray-400 block font-medium">سعر الاشتراك الشهري</span>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-3xl font-black text-blue-950">199</span>
+                        <span class="text-sm font-bold text-gray-500">جنيه</span>
+                    </div>
+                    <span class="text-[10px] text-gray-400 block pt-1">تجديد الاشتراك كل 30 يوم تلقائياً</span>
+                </div>
+
+                <div class="space-y-3 pt-2">
+                    <button
+                        class="w-full bg-[#5D3FD3] hover:bg-[#4c32b3] text-white font-bold text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-[#5D3FD3]/10">
+                        <i class="fa-solid fa-cart-plus text-xs"></i> أضف إلى سلة التعلم
+                    </button>
+                    <button
+                        class="w-full border border-purple-200 text-[#5D3FD3] hover:bg-purple-50 font-bold text-sm py-3.5 rounded-xl transition-colors bg-transparent flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-bolt text-xs"></i> اشترك الآن
+                    </button>
+                </div>
+
+                <div class="space-y-3 pt-2">
+                    <h4 class="font-extrabold text-blue-950 text-sm">ماذا ستتعلم في هذا الكورس؟</h4>
+                    <ul class="space-y-2.5 text-xs text-gray-500 font-medium">
+                        <li class="flex items-start gap-2 text-right">
+                            <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5 text-sm"></i>
+                            <span>إتقان جميع دروس منهج رياضيات المقرر.</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-right">
+                            <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5 text-sm"></i>
+                            <span>حل جميع أنواع المسائل والتدريبات المتنوعة.</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-right">
+                            <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5 text-sm"></i>
+                            <span>فهم القوانين والمفاهيم بعمق وسهولة.</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-right">
+                            <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5 text-sm"></i>
+                            <span>التدريب المكثف على أسئلة الامتحانات.</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-right">
+                            <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5 text-sm"></i>
+                            <span>تحقيق أعلى الدرجات بإذن الله.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+    <script src="assets/js/main.js"></script>
+
+    <script src="./assets/js/single_teacher.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/ts_congig.js"></script>
+    <link rel="stylesheet" href="assets/styles/style.css" />
+    <script src="assets/js/ts_congig.js"></script>
+</head>
+
+<body>
+    <header class="shadow-xl bg-white relative">
+        <nav class="p-4 lg:p-6 my-container flex items-center justify-between">
+
+            <div class="flex items-center gap-4">
+                <button id="openSidebarBtn"
+                    class="block lg:hidden text-gray-700 hover:text-[#5D3FD3] transition-colors">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+                    </svg>
+                </button>
+
+                <a href="index.html" class="text-[#5D3FD3] font-bold text-xl lg:text-2xl whitespace-nowrap">Edu
+                    Learning</a>
+            </div>
+
+            <ul class="hidden lg:flex items-center gap-4 xl:gap-6 text-sm xl:text-base whitespace-nowrap">
+                <li><a href="index.html" class="hover:text-[#5D3FD3] font-medium text-[#5D3FD3]">الرئيسية</a></li>
+
+                <li class="group">
+                    <button id="dropdownNvbarButton"
+                        class="flex items-center gap-1 py-2 font-medium hover:text-[#5D3FD3]">
+                        المواد
+                        <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+
+                    <div id="dropdownNavbar"
+                        class="absolute left-0 right-0 top-full mt-2 z-50 hidden bg-white border border-gray-100 rounded-2xl shadow-xl p-8 w-full max-w-4xl mx-auto">
+                        <div class="grid grid-cols-3 gap-8 text-right" dir="rtl">
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الابتدائية</h3>
+                                <ul class="space-y-3 text-gray-500 text-sm">
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الأول</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثاني</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثالث</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الرابع</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الخامس</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف السادس</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الإعدادية</h3>
+                                <ul class="space-y-3 text-gray-500 text-sm">
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الأول</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثاني</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثالث</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الثانوية</h3>
+                                <ul class="space-y-3 text-gray-500 text-sm">
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الأول</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثاني</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثالث</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <li><a href="teachers.html" class="text-gray-700 hover:text-[#5D3FD3] font-medium">المدرسون</a></li>
+                <li><a href="packages.html" class="text-gray-700 hover:text-[#5D3FD3] font-medium">الباقات</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-[#5D3FD3] font-medium">عن المنصة</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-[#5D3FD3] font-medium">تواصل معنا</a></li>
+            </ul>
+
+            <div class="flex items-center gap-2 lg:gap-4" dir="rtl">
+                <a href="register.html"
+                    class="hidden lg:flex bg-[#5D3FD3] text-white rounded-[12px] py-2.5 px-4 text-sm lg:text-base font-semibold transition-all hover:bg-[#4c32b3] active:scale-95 items-center justify-center whitespace-nowrap">
+                    إنشاء حساب
+                </a>
+
+                <a href="login.html"
+                    class="hidden lg:flex bg-transparent text-[#5D3FD3] border-2 border-[#5D3FD3] py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-[#5D3FD3]/5 active:scale-95 items-center justify-center whitespace-nowrap">
+                    تسجيل الدخول
+                </a>
+
+                <a href="cart.html" class="text-gray-700 hover:text-[#5D3FD3] transition-colors p-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z">
+                        </path>
+                    </svg>
+                </a>
+
+                <button class="text-gray-700 hover:text-[#5D3FD3] transition-colors p-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0">
+                        </path>
+                    </svg>
+                </button>
+                <a href="profile.html" class="text-gray-700 hover:text-[#5D3FD3] transition-colors p-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z">
+                        </path>
+                    </svg>
+                </a>
+            </div>
+        </nav>
+        <div id="sidebarOverlay"
+            class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-300 opacity-0"></div>
+
+        <div id="mobileSidebar"
+            class="fixed top-0 right-0 bottom-0 w-[300px] bg-white z-50 p-6 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out lg:hidden flex flex-col justify-between overflow-y-auto"
+            dir="rtl">
+            <div>
+                <div class="flex items-center justify-between border-b pb-4 mb-6">
+                    <p class="text-[#5D3FD3] font-bold text-xl">Edu Learning</p>
+                    <button id="closeSidebarBtn" class="text-gray-500 hover:text-red-500 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <ul class="space-y-4 text-right">
+                    <li><a href="#" class="block py-2 text-[#5D3FD3] font-semibold text-lg">الرئيسية</a></li>
+
+                    <li>
+                        <button id="mobileDropdownBtn"
+                            class="flex items-center justify-between w-full py-2 text-gray-700 font-semibold text-lg text-right">
+                            <span>المواد</span>
+                            <svg id="mobileArrow" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor"
+                                stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div id="mobileDropdownContent" class="hidden pr-4 mt-2 space-y-4 border-r-2 border-gray-100">
+                            <div>
+                                <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الابتدائية</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الأول</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثاني</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثالث</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الرابع</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الخامس</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف السادس</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الإعدادية</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الأول</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثاني</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثالث</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الثانوية</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الأول</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثاني</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثالث</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li><a href="teachers.html" class="block py-2 text-gray-700 font-semibold text-lg">المدرسون</a></li>
+                    <li><a href="packages.html" class="block py-2 text-gray-700 font-semibold text-lg">الباقات</a></li>
+                    <li><a href="#" class="block py-2 text-gray-700 font-semibold text-lg">عن المنصة</a></li>
+                    <li><a href="#" class="block py-2 text-gray-700 font-semibold text-lg">تواصل معنا</a></li>
+                </ul>
+            </div>
+
+            <div class="space-y-3 mt-8 border-t pt-4">
+                <a href="register.html"
+                    class="w-full bg-[#5D3FD3] text-white rounded-[12px] py-3 px-6 font-semibold transition-all hover:bg-[#4c32b3]">إنشاء
+                    حساب</a>
+                <a href="login.html"
+                    class="w-full bg-transparent text-[#5D3FD3] border-2 border-[#5D3FD3] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-[#5D3FD3]/5">تسجيل
+                    الدخول</a>
+
+                <a href="profile.html"
+                    class="w-full bg-transparent text-[#5D3FD3] border-2 border-[#5D3FD3] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-[#5D3FD3]/5">الملف
+                    الشخصي</a>
+            </div>
+        </div>
+    </header>
+    <!-- login card -->
+    <div class="min-h-screen bg-[#FAFAFA] flex flex-col items-center justify-center p-4 font-sans" dir="rtl">
+
+        <div class="w-full max-w-xl mb-3 flex flex-col gap-2">
+            <div class="flex justify-between items-center text-xs font-bold text-gray-500">
+                <span class="text-[#5D3FD3]">الخطوة 1: التحقق من الهاتف</span>
+                <span>1 من 2</span>
+            </div>
+            <div class="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden flex">
+                <div class="w-1/2 bg-emerald-400 h-full rounded-full"></div>
+                <div class="w-1/2 bg-purple-100 h-full"></div>
+            </div>
+        </div>
+
+        <div
+            class="w-full max-w-xl bg-white border border-gray-100 rounded-[2.5rem] p-8 md:p-12 shadow-sm text-center relative overflow-hidden">
+            <div class="absolute top-0 inset-x-0 h-1.5 bg-[#5D3FD3]"></div>
+
+            <h1 class="text-xl md:text-2xl font-black text-blue-950 mb-3">مرحباً بك في رحلة التعلُّم</h1>
+            <p class="text-xs md:text-sm font-semibold text-gray-400 mb-8">أدخل رقم هاتفك لتتمكن من تأمين حسابك</p>
+
+            <form id="phone-verification-form" onsubmit="handleFormSubmit(event)" novalidate class="space-y-6">
+
+                <div class="space-y-2 text-right">
+                    <label for="phone_number" class="text-xs font-black text-blue-950 mr-1">رقم الهاتف</label>
+
+                    <div class="relative">
+                        <input type="tel" id="phone_number" name="phone_number" placeholder="05XXXXXXXX"
+                            class="w-full bg-[#F3F4F9] text-gray-700 text-sm font-black px-4 py-4 rounded-2xl border-2 border-transparent focus:outline-none focus:border-[#5D3FD3] transition-all tracking-wider placeholder:tracking-normal text-left placeholder:text-right"
+                            dir="ltr">
+                        <div class="absolute inset-y-0 left-4 flex items-center text-gray-400 pointer-events-none">
+                            <i class="fa-solid fa-phone text-sm"></i>
+                        </div>
+                    </div>
+
+                    <p id="error-message"
+                        class="hidden text-[11px] font-bold text-red-500 mr-1 flex items-center gap-1 animate-fadeIn">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span id="error-text">برجاء إدخال رقم هاتف صحيح</span>
+                    </p>
+                </div>
+
+                <div class="pt-2">
+                    <a href="otp.html" type="submit" id="submitLoginBtn"
+                        class="w-full bg-[#5D3FD3] hover:bg-[#4c32b3] text-white font-black text-sm py-4 rounded-2xl transition-all shadow-md shadow-[#5D3FD3]/10 flex items-center justify-center gap-2">
+                        <span>إرسال كود التحقق</span>
+                        <i class="fa-solid fa-arrow-left text-xs"></i>
+                    </a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const formElement = document.getElementById('phone-verification-form');
+            const phoneInput = document.getElementById('phone_number');
+            const errorContainer = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            const submitLoginBtn = document.getElementById('submitLoginBtn');
+
+            const phoneValue = phoneInput.value.trim();
+
+            if (phoneValue === '') {
+                showError("عذراً، حقل رقم الهاتف مطلوب ولا يمكن تركه فارغاً.");
+                highlightInputError(true);
+                return;
+            }
+
+            const phoneRegex = /^(01|05)\d{8,9}$/;
+            if (!phoneRegex.test(phoneValue)) {
+                showError("يرجى إدخال رقم هاتف صحيح يبدأ بـ 05 أو 01 ومكون من أرقام فقط.");
+                highlightInputError(true);
+                return;
+            }
+
+            errorContainer.classList.add('hidden');
+            highlightInputError(false);
+
+            const formData = new FormData(formElement);
+            const dataObject = Object.fromEntries(formData.entries());
+
+            console.log("%c🎉 تم التحقق وإرسال البيانات بنجاح!", "color: #5D3FD3; font-size: 14px; font-weight: bold;");
+            console.log("البيانات المرسلة:", dataObject);
+
+            alert(`تم إرسال كود التحقق بنجاح لرقم الهاتف: ${dataObject.phone_number}`);
+            submitLoginBtn.href = "otp.html";
+        }
+
+        function showError(message) {
+            const errorContainer = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            errorText.innerText = message;
+            errorContainer.classList.remove('hidden');
+        }
+
+        function highlightInputError(isError) {
+            const phoneInput = document.getElementById('phone_number');
+            if (isError) {
+                phoneInput.classList.remove('focus:border-[#5D3FD3]', 'border-transparent');
+                phoneInput.classList.add('border-red-400', 'bg-red-50/30');
+            } else {
+                phoneInput.classList.remove('border-red-400', 'bg-red-50/30');
+                phoneInput.classList.add('border-transparent', 'focus:border-[#5D3FD3]');
+            }
+        }
+    </script>
+    <script src="assets/js/main.js"></script>
+
+    <style>
+        .animate-fadeIn {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-2px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</body>
+
+</html>

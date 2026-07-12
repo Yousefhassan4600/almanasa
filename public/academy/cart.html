@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/ts_congig.js"></script>
+    <link rel="stylesheet" href="assets/styles/style.css" />
+    <script src="assets/js/ts_congig.js"></script>
+</head>
+
+<body>
+    <header class="shadow-xl bg-white relative">
+        <nav class="p-4 lg:p-6 my-container flex items-center justify-between">
+
+            <div class="flex items-center gap-4">
+                <button id="openSidebarBtn"
+                    class="block lg:hidden text-gray-700 hover:text-[#5D3FD3] transition-colors">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+                    </svg>
+                </button>
+
+                <a href="index.html" class="text-[#5D3FD3] font-bold text-xl lg:text-2xl whitespace-nowrap">Edu
+                    Learning</a>
+            </div>
+
+            <ul class="hidden lg:flex items-center gap-4 xl:gap-6 text-sm xl:text-base whitespace-nowrap">
+                <li><a href="index.html" class="hover:text-[#5D3FD3] font-medium text-[#5D3FD3]">الرئيسية</a></li>
+
+                <li class="group">
+                    <button id="dropdownNvbarButton"
+                        class="flex items-center gap-1 py-2 font-medium hover:text-[#5D3FD3]">
+                        المواد
+                        <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+
+                    <div id="dropdownNavbar"
+                        class="absolute left-0 right-0 top-full mt-2 z-50 hidden bg-white border border-gray-100 rounded-2xl shadow-xl p-8 w-full max-w-4xl mx-auto">
+                        <div class="grid grid-cols-3 gap-8 text-right" dir="rtl">
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الابتدائية</h3>
+                                <ul class="space-y-3 text-gray-500 text-sm">
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الأول</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثاني</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثالث</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الرابع</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الخامس</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف السادس</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الإعدادية</h3>
+                                <ul class="space-y-3 text-gray-500 text-sm">
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الأول</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثاني</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثالث</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-900 mb-4">المرحلة الثانوية</h3>
+                                <ul class="space-y-3 text-gray-500 text-sm">
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الأول</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثاني</a></li>
+                                    <li><a href="subjects.html" class="hover:text-[#5D3FD3] block">الصف الثالث</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <li><a href="teachers.html" class="text-gray-700 hover:text-[#5D3FD3] font-medium">المدرسون</a></li>
+                <li><a href="packages.html" class="text-gray-700 hover:text-[#5D3FD3] font-medium">الباقات</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-[#5D3FD3] font-medium">عن المنصة</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-[#5D3FD3] font-medium">تواصل معنا</a></li>
+            </ul>
+
+            <div class="flex items-center gap-2 lg:gap-4" dir="rtl">
+                <a href="register.html"
+                    class="hidden lg:flex bg-[#5D3FD3] text-white rounded-[12px] py-2.5 px-4 text-sm lg:text-base font-semibold transition-all hover:bg-[#4c32b3] active:scale-95 items-center justify-center whitespace-nowrap">
+                    إنشاء حساب
+                </a>
+
+                <a href="login.html"
+                    class="hidden lg:flex bg-transparent text-[#5D3FD3] border-2 border-[#5D3FD3] py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-[#5D3FD3]/5 active:scale-95 items-center justify-center whitespace-nowrap">
+                    تسجيل الدخول
+                </a>
+
+                <a href="cart.html" class="text-gray-700 hover:text-[#5D3FD3] transition-colors p-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z">
+                        </path>
+                    </svg>
+                </a>
+
+                <button class="text-gray-700 hover:text-[#5D3FD3] transition-colors p-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0">
+                        </path>
+                    </svg>
+                </button>
+                <a href="profile.html" class="text-gray-700 hover:text-[#5D3FD3] transition-colors p-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z">
+                        </path>
+                    </svg>
+                </a>
+            </div>
+        </nav>
+        <div id="sidebarOverlay"
+            class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-300 opacity-0"></div>
+
+        <div id="mobileSidebar"
+            class="fixed top-0 right-0 bottom-0 w-[300px] bg-white z-50 p-6 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out lg:hidden flex flex-col justify-between overflow-y-auto"
+            dir="rtl">
+            <div>
+                <div class="flex items-center justify-between border-b pb-4 mb-6">
+                    <p class="text-[#5D3FD3] font-bold text-xl">Edu Learning</p>
+                    <button id="closeSidebarBtn" class="text-gray-500 hover:text-red-500 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <ul class="space-y-4 text-right">
+                    <li><a href="#" class="block py-2 text-[#5D3FD3] font-semibold text-lg">الرئيسية</a></li>
+
+                    <li>
+                        <button id="mobileDropdownBtn"
+                            class="flex items-center justify-between w-full py-2 text-gray-700 font-semibold text-lg text-right">
+                            <span>المواد</span>
+                            <svg id="mobileArrow" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor"
+                                stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div id="mobileDropdownContent" class="hidden pr-4 mt-2 space-y-4 border-r-2 border-gray-100">
+                            <div>
+                                <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الابتدائية</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الأول</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثاني</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثالث</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الرابع</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الخامس</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف السادس</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الإعدادية</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الأول</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثاني</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثالث</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-bold text-sm text-blue-900 mb-2">المرحلة الثانوية</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الأول</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثاني</a>
+                                    <a href="subjects.html" class="hover:text-[#5D3FD3]">الصف الثالث</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li><a href="teachers.html" class="block py-2 text-gray-700 font-semibold text-lg">المدرسون</a></li>
+                    <li><a href="packages.html" class="block py-2 text-gray-700 font-semibold text-lg">الباقات</a></li>
+                    <li><a href="#" class="block py-2 text-gray-700 font-semibold text-lg">عن المنصة</a></li>
+                    <li><a href="#" class="block py-2 text-gray-700 font-semibold text-lg">تواصل معنا</a></li>
+                </ul>
+            </div>
+
+            <div class="space-y-3 mt-8 border-t pt-4">
+                <a href="register.html"
+                    class="w-full bg-[#5D3FD3] text-white rounded-[12px] py-3 px-6 font-semibold transition-all hover:bg-[#4c32b3]">إنشاء
+                    حساب</a>
+                <a href="login.html"
+                    class="w-full bg-transparent text-[#5D3FD3] border-2 border-[#5D3FD3] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-[#5D3FD3]/5">تسجيل
+                    الدخول</a>
+
+                <a href="profile.html"
+                    class="w-full bg-transparent text-[#5D3FD3] border-2 border-[#5D3FD3] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-[#5D3FD3]/5">الملف
+                    الشخصي</a>
+            </div>
+        </div>
+    </header>
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-8 font-sans " dir="rtl">
+
+        <nav class="flex items-center gap-1.5 text-xs text-gray-400 mb-8 font-medium">
+            <a href="#" class="hover:text-[#5D3FD3]">الرئيسية</a>
+            <span>/</span>
+            <span class="text-gray-600 font-bold">السلة</span>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+            <div class="lg:col-span-8 space-y-6">
+
+                <div class="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm space-y-4">
+                    <h3 class="text-sm font-black text-gray-800 flex items-center gap-2">
+                        <i class="fa-regular fa-calendar-check text-gray-400"></i> مدة الاشتراك
+                    </h3>
+                    <div class="grid grid-cols-4 gap-2.5">
+                        <button onclick="changeDuration(this, 0.25)"
+                            class="duration-btn bg-[#F3F4F9] text-gray-600 text-xs font-bold py-3.5 rounded-xl transition-all">حصة</button>
+                        <button onclick="changeDuration(this, 1)"
+                            class="duration-btn bg-[#5D3FD3] text-white text-xs font-bold py-3.5 rounded-xl transition-all shadow-sm">شهر</button>
+                        <button onclick="changeDuration(this, 3)"
+                            class="duration-btn bg-[#F3F4F9] text-gray-600 text-xs font-bold py-3.5 rounded-xl transition-all">ترم</button>
+                        <button onclick="changeDuration(this, 9)"
+                            class="duration-btn bg-[#F3F4F9] text-gray-600 text-xs font-bold py-3.5 rounded-xl transition-all">سنة</button>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-black text-[#5D3FD3]">الباقة المخصصة</h2>
+                        <span id="items-count-badge"
+                            class="text-xs font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg">(3 مواد
+                            مختارة)</span>
+                    </div>
+
+                    <div id="cart-items-container" class="space-y-4">
+
+                        <div class="cart-item border border-gray-100 rounded-2xl p-4 flex items-center justify-between gap-4 transition-all hover:border-purple-100 relative overflow-hidden"
+                            data-base-price="250">
+                            <div class="absolute right-0 top-0 bottom-0 w-1 bg-[#5D3FD3]"></div>
+                            <div class="flex items-center gap-4 text-right">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop"
+                                    alt="المعلم"
+                                    class="w-14 h-14 object-cover rounded-xl border border-gray-100 shadow-sm">
+                                <div>
+
+                                    <h4 class="text-sm font-black text-blue-950">الرياضيات المتقدمة</h4>
+                                    <p class="text-[11px] text-gray-400 font-semibold mt-0.5">أ/ أحمد عبد الباسط</p>
+                                </div>
+
+                            </div>
+                            <div class="text-right flex items-center gap-4">
+                                <span class="text-sm font-bold text-gray-700 w-16 text-left"><span
+                                        class="item-price">250</span> ج.م</span>
+                                <button onclick="removeCartItem(this)"
+                                    class="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1 transition-colors">
+                                    <i class="fa-regular fa-trash-can"></i> حذف
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <div class="cart-item border border-gray-100 rounded-2xl p-4 flex items-center justify-between gap-4 transition-all hover:border-purple-100 relative overflow-hidden"
+                            data-base-price="250">
+                            <div class="absolute right-0 top-0 bottom-0 w-1 bg-[#5D3FD3]"></div>
+                            <div class="flex items-center gap-4 text-right">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop"
+                                    alt="المعلم"
+                                    class="w-14 h-14 object-cover rounded-xl border border-gray-100 shadow-sm">
+                                <div>
+
+                                    <h4 class="text-sm font-black text-blue-950">الرياضيات المتقدمة</h4>
+                                    <p class="text-[11px] text-gray-400 font-semibold mt-0.5">أ/ أحمد عبد الباسط</p>
+                                </div>
+
+                            </div>
+                            <div class="text-right flex items-center gap-4">
+                                <span class="text-sm font-bold text-gray-700 w-16 text-left"><span
+                                        class="item-price">250</span> ج.م</span>
+                                <button onclick="removeCartItem(this)"
+                                    class="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1 transition-colors">
+                                    <i class="fa-regular fa-trash-can"></i> حذف
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <div class="cart-item border border-gray-100 rounded-2xl p-4 flex items-center justify-between gap-4 transition-all hover:border-purple-100 relative overflow-hidden"
+                            data-base-price="250">
+                            <div class="absolute right-0 top-0 bottom-0 w-1 bg-[#5D3FD3]"></div>
+                            <div class="flex items-center gap-4 text-right">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop"
+                                    alt="المعلم"
+                                    class="w-14 h-14 object-cover rounded-xl border border-gray-100 shadow-sm">
+                                <div>
+
+                                    <h4 class="text-sm font-black text-blue-950">الرياضيات المتقدمة</h4>
+                                    <p class="text-[11px] text-gray-400 font-semibold mt-0.5">أ/ أحمد عبد الباسط</p>
+                                </div>
+
+                            </div>
+                            <div class="text-right flex items-center gap-4">
+                                <span class="text-sm font-bold text-gray-700 w-16 text-left"><span
+                                        class="item-price">250</span> ج.م</span>
+                                <button onclick="removeCartItem(this)"
+                                    class="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1 transition-colors">
+                                    <i class="fa-regular fa-trash-can"></i> حذف
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="lg:col-span-4 space-y-4">
+
+                <div class="bg-white rounded-[2rem] border border-gray-100 p-6 shadow-sm space-y-6">
+                    <h2 class="text-lg font-black text-blue-950 text-right">ملخص الطلب</h2>
+
+                    <div class="space-y-3 text-xs font-bold text-gray-400">
+                        <div class="flex justify-between">
+                            <span id="summary-items-count">المجموع الفرعي (3 مواد)</span>
+                            <span id="subtotal-display">640 ج.م</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>الضريبة (15%)</span>
+                            <span id="tax-display">96 ج.م</span>
+                        </div>
+
+                        <hr class="border-gray-100 my-2">
+
+                        <div class="flex justify-between items-baseline pt-1">
+                            <span>الإجمالي</span>
+                            <span id="total-display" class="text-[#5D3FD3] font-black text-2xl">736 ج.م</span>
+                        </div>
+                        <p class="text-[10px] text-gray-400 text-left font-semibold -mt-2">شامل الضريبة</p>
+                    </div>
+
+                    <button
+                        class="w-full bg-[#5D3FD3] hover:bg-[#4c32b3] text-white font-black text-sm py-4 rounded-2xl transition-all shadow-md shadow-[#5D3FD3]/20 flex items-center justify-center gap-2">
+                        إإتمام عملية الدفع <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+
+                    <div
+                        class="flex items-center justify-center gap-4 text-[10px] font-bold text-gray-400 pt-2 border-t border-gray-50">
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-rotate-left text-gray-300"></i>
+                            استرداد
+                            سهل</span>
+                        <span class="text-gray-200">|</span>
+                        <span class="flex items-center gap-1 text-emerald-600"><i class="fa-solid fa-shield-halved"></i>
+                            دفع
+                            آمن 100%</span>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white rounded-2xl border border-gray-100 p-4 flex items-center justify-between gap-4 shadow-sm">
+                    <button
+                        class="border border-purple-200 text-[#5D3FD3] hover:bg-purple-50 font-black text-xs px-4 py-2.5 rounded-xl transition-colors">تحدث
+                        معنا</button>
+                    <div class="text-right flex items-center gap-3">
+                        <div>
+                            <h4 class="text-xs font-black text-blue-950">هل تحتاج لمساعدة؟</h4>
+                            <p class="text-[10px] text-gray-400 font-semibold mt-0.5">فريقنا متاح لمساعدتك في أي وقت</p>
+                        </div>
+                        <span
+                            class="w-8 h-8 rounded-full bg-purple-50 text-[#5D3FD3] flex items-center justify-center text-sm"><i
+                                class="fa-regular fa-comments"></i></span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <script>
+        let currentDurationMultiplier = 1;
+
+        function changeDuration(button, multiplier) {
+            document.querySelectorAll('.duration-btn').forEach(btn => {
+                btn.className = "duration-btn bg-[#F3F4F9] text-gray-600 text-xs font-bold py-3.5 rounded-xl transition-all";
+            });
+            button.className = "duration-btn bg-[#5D3FD3] text-white text-xs font-bold py-3.5 rounded-xl transition-all shadow-sm";
+
+            currentDurationMultiplier = multiplier;
+            calculateCartTotals();
+        }
+    </script>
+    <script src="assets/js/main.js"></script>
+
+</body>
+
+</html>

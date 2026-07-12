@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Validation\ValidationException;
+
+class AcademyTeacherGradeSubject extends Model
+{
+    protected $guarded = [];
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (AcademyTeacherGradeSubject $assignment): void {
+            $academyTeacher = AcademyTeacher::query()->find($assignment->academy_teacher_id);
+            $accountSubject = AccountSubject::query()->find($assignment->account_subject_id);
+
+            if (
+                $academyTeacher
+                && $accountSubject
+                && $academyTeacher->academy_account_id !== $accountSubject->account_id
+            ) {
+                throw ValidationException::withMessages([
+                    'account_subject_id' => 'The selected grade subject must belong to the same academy account.',
+                ]);
+            }
+        });
+    }
+
+    public function academyTeacher(): BelongsTo
+    {
+        return $this->belongsTo(AcademyTeacher::class);
+    }
+
+    public function accountSubject(): BelongsTo
+    {
+        return $this->belongsTo(AccountSubject::class);
+    }
+}

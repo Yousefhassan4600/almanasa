@@ -1,6 +1,6 @@
 <?php
 
-$appHost = parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost';
+$appHost = parse_url(env('APP_URL', 'http://almanasa.test'), PHP_URL_HOST) ?: 'almanasa.test';
 
 return [
     'root_domain' => env('PLATFORM_ROOT_DOMAIN', $appHost),

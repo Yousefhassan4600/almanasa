@@ -2,15 +2,20 @@
 
 namespace App\Models;
 
+use App\Concerns\FiltersByTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Translatable\HasTranslations;
 
 class CourseOutcome extends Model
 {
-    use HasTranslations;
+    use FiltersByTenant, HasTranslations;
 
     protected $guarded = [];
+
+    protected array $tenantRelations = [
+        'course',
+    ];
 
     public array $translatable = [
         'title',

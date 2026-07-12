@@ -2,15 +2,20 @@
 
 namespace App\Models;
 
+use App\Concerns\FiltersByTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Translatable\HasTranslations;
 
 class QuestionOption extends Model
 {
-    use HasTranslations;
+    use FiltersByTenant, HasTranslations;
 
     protected $guarded = [];
+
+    protected array $tenantRelations = [
+        'question',
+    ];
 
     public array $translatable = [
         'title',

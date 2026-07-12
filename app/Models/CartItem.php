@@ -2,12 +2,21 @@
 
 namespace App\Models;
 
+use App\Concerns\FiltersByTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CartItem extends Model
 {
+    use FiltersByTenant;
+
     protected $guarded = [];
+
+    protected array $tenantRelations = [
+        'cart',
+        'course',
+        'package',
+    ];
 
     protected function casts(): array
     {

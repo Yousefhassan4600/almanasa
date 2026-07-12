@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Concerns\FiltersByTenant;
 use App\Enums\AttendanceStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LessonProgress extends Model
 {
+    use FiltersByTenant;
+
     protected $guarded = [];
 
     protected function casts(): array

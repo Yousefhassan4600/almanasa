@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\FiltersByTenant;
 use App\Enums\AttemptStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class StudentAttempt extends Model
 {
+    use FiltersByTenant;
+
     protected $guarded = [];
 
     protected function casts(): array

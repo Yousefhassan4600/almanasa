@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\FiltersByTenant;
 use App\Enums\ContentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Course extends Model
 {
-    use HasTranslations, SoftDeletes;
+    use FiltersByTenant, HasTranslations, SoftDeletes;
 
     protected $guarded = [];
 

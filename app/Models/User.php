@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\FiltersByTenant;
 use App\Enums\Gender;
 use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
@@ -17,10 +18,17 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements FilamentUser
 {
+    use FiltersByTenant;
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
 
     protected $guarded = [];
+
+    protected array $tenantRelations = [
+        'memberships',
+        'ownedAccounts',
+    ];
 
     protected $hidden = [
         'password',

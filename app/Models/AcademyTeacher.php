@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\FiltersByTenant;
 use App\Enums\AccountStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AcademyTeacher extends Model
 {
+    use FiltersByTenant;
+
     protected $guarded = [];
 
     protected function casts(): array

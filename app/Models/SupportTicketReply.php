@@ -2,12 +2,19 @@
 
 namespace App\Models;
 
+use App\Concerns\FiltersByTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SupportTicketReply extends Model
 {
+    use FiltersByTenant;
+
     protected $guarded = [];
+
+    protected array $tenantRelations = [
+        'support_ticket',
+    ];
 
     public function support_ticket(): BelongsTo
     {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\FiltersByTenant;
 use App\Enums\AccountStatus;
 use App\Enums\AccountType;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Account extends Model
 {
-    use HasTranslations, SoftDeletes;
+    use FiltersByTenant, HasTranslations, SoftDeletes;
 
     protected $guarded = [];
 

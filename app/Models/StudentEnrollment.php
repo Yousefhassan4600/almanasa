@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Concerns\FiltersByTenant;
 use App\Enums\EnrollmentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StudentEnrollment extends Model
 {
+    use FiltersByTenant;
+
     protected $guarded = [];
 
     protected function casts(): array

@@ -4,6 +4,7 @@ namespace App\Concerns;
 
 use App\Enums\AccountType;
 use App\Models\Account;
+use App\Models\Provider;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
@@ -32,7 +33,7 @@ trait FiltersByTenant
             return $query;
         }
 
-        return $this->applyTenantAccountScope($query, $account);
+        return $this->applyTenantProviderScope($query, $account);
     }
 
     protected function currentTenantAccount(): ?Account
@@ -58,29 +59,38 @@ trait FiltersByTenant
             return null;
         }
 
-        return Account::query()->find($accountId);
+        return Account::query()->with('provider')->find($accountId);
     }
 
-    protected function applyTenantAccountScope(Builder $query, Account $account): Builder
+    protected function applyTenantProviderScope(Builder $query, Account $account): Builder
     {
         $model = $query->getModel();
-        $accountIds = $this->tenantAccountIds($account);
+        $provider = $this->currentTenantProvider($account);
 
         if ($model instanceof Account) {
-            return $query->where(function (Builder $query) use ($accountIds): void {
-                $query
-                    ->whereIn($query->getModel()->qualifyColumn('id'), $accountIds)
-                    ->orWhereIn($query->getModel()->qualifyColumn('parent_account_id'), $accountIds);
-            });
+            return $this->applyTenantAccountScope($query, $account, $provider);
         }
 
-        $query->where(function (Builder $query) use ($account, $accountIds, $model): void {
+        if ($model instanceof Provider) {
+            return $provider
+                ? $query->whereKey($provider->id)
+                : $query->whereRaw('1 = 0');
+        }
+
+        $query->where(function (Builder $query) use ($account, $provider, $model): void {
             $hasDirectScope = false;
 
             foreach ($this->tenantScopeColumns($model) as $column) {
                 $hasDirectScope = true;
-                $ids = $column === 'teacher_account_id' ? [$account->id] : $accountIds;
-                $query->orWhereIn($model->qualifyColumn($column), $ids);
+                $ids = $column === 'teacher_account_id'
+                    ? [$account->id]
+                    : array_filter([$provider?->id]);
+
+                if ($ids !== []) {
+                    $query->orWhereIn($model->qualifyColumn($column), $ids);
+                } elseif ($column === 'provider_id') {
+                    $query->orWhereRaw('1 = 0');
+                }
             }
 
             foreach ($this->tenantScopeRelations() as $relation) {
@@ -100,14 +110,33 @@ trait FiltersByTenant
         return $query;
     }
 
+    protected function currentTenantProvider(Account $account): ?Provider
+    {
+        if ($account->relationLoaded('provider')) {
+            return $account->provider;
+        }
+
+        return $account->provider()->first();
+    }
+
+    protected function applyTenantAccountScope(Builder $query, Account $account, ?Provider $provider): Builder
+    {
+        return $query->where(function (Builder $query) use ($account, $provider): void {
+            $query->whereKey($account->id);
+
+            if ($provider) {
+                $query->orWhere($query->getModel()->qualifyColumn('provider_id'), $provider->id);
+            }
+        });
+    }
+
     /**
      * @return array<int, string>
      */
     protected function tenantScopeColumns(Model $model): array
     {
         $columns = [
-            'account_id',
-            'academy_account_id',
+            'provider_id',
             'teacher_account_id',
         ];
 
@@ -123,19 +152,6 @@ trait FiltersByTenant
     protected function tenantScopeRelations(): array
     {
         return property_exists($this, 'tenantRelations') ? $this->tenantRelations : [];
-    }
-
-    /**
-     * @return array<int, int>
-     */
-    protected function tenantAccountIds(Account $account): array
-    {
-        return Account::query()
-            ->whereKey($account->id)
-            ->orWhere('parent_account_id', $account->id)
-            ->pluck('id')
-            ->map(fn (int|string $id): int => (int) $id)
-            ->all();
     }
 
     protected function isSaasOwnerTenant(Account $account): bool

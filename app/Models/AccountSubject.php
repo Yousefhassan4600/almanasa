@@ -24,9 +24,9 @@ class AccountSubject extends Model
         ];
     }
 
-    public function account(): BelongsTo
+    public function provider(): BelongsTo
     {
-        return $this->belongsTo(Account::class, 'account_id');
+        return $this->belongsTo(Provider::class, 'provider_id');
     }
 
     public function gradeSubject(): BelongsTo
@@ -41,11 +41,11 @@ class AccountSubject extends Model
 
     public function getNameAttribute(): string
     {
-        $account = $this->relationLoaded('account') ? $this->account?->name : $this->account()->value('name');
+        $provider = $this->relationLoaded('provider') ? $this->provider?->name : $this->provider()->value('name');
         $gradeSubject = $this->relationLoaded('gradeSubject')
             ? $this->gradeSubject?->name
             : $this->gradeSubject()->with(['grade', 'subject', 'track'])->first()?->name;
 
-        return collect([$account, $gradeSubject])->filter()->join(' - ');
+        return collect([$provider, $gradeSubject])->filter()->join(' - ');
     }
 }

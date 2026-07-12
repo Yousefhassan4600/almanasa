@@ -14,8 +14,8 @@ class AcademyTeacherForm
     {
         return $schema
             ->components([
-                TextInput::make('academy_account_id')
-                    ->label('Academy Account Id')
+                TextInput::make('provider_id')
+                    ->label('Provider Id')
                     ->numeric()
                     ->required(),
                 TextInput::make('teacher_account_id')

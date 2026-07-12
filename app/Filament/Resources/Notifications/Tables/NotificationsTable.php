@@ -14,8 +14,8 @@ class NotificationsTable extends BaseTable
                 ->label('User Id')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('account_id')
-                ->label('Account Id')
+            TextColumn::make('provider_id')
+                ->label('Provider Id')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('title')

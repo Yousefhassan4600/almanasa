@@ -13,8 +13,8 @@ class TestimonialForm
     {
         return $schema
             ->components([
-                TextInput::make('account_id')
-                    ->label('Account Id')
+                TextInput::make('provider_id')
+                    ->label('Provider Id')
                     ->numeric(),
                 TextInput::make('user_id')
                     ->label('User Id')

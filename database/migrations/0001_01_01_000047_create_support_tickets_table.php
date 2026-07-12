@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('support_tickets', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('account_id')->nullable()->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('provider_id')->nullable()->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('subject');
             $table->text('message');

@@ -16,7 +16,7 @@ class RoleResource extends BaseResource
 
     protected static string|UnitEnum|null $navigationGroup = 'Identity & Accounts';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 7;
 
     public static function form(Schema $schema): Schema
     {

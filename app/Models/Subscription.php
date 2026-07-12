@@ -28,9 +28,9 @@ class Subscription extends Model
         return $this->belongsTo(User::class, 'student_user_id');
     }
 
-    public function account(): BelongsTo
+    public function provider(): BelongsTo
     {
-        return $this->belongsTo(Account::class, 'account_id');
+        return $this->belongsTo(Provider::class, 'provider_id');
     }
 
     public function package(): BelongsTo

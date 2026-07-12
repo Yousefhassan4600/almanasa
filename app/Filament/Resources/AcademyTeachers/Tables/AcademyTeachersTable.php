@@ -10,8 +10,8 @@ class AcademyTeachersTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('academy_account_id')
-                ->label('Academy Account Id')
+            TextColumn::make('provider_id')
+                ->label('Provider Id')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('teacher_account_id')

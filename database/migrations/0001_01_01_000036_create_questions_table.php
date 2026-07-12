@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('questions', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('questionable_type');
             $table->unsignedBigInteger('questionable_id');
             $table->string('type');

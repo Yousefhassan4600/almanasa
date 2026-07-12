@@ -10,6 +10,10 @@ class AccountsTable extends BaseTable
     protected function columns(): array
     {
         return [
+            TextColumn::make('provider_id')
+                ->label('Provider Id')
+                ->searchable()
+                ->sortable(),
             TextColumn::make('type')
                 ->label('Type')
                 ->searchable()
@@ -24,22 +28,6 @@ class AccountsTable extends BaseTable
                 ->sortable(),
             TextColumn::make('slug')
                 ->label('Slug')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('subdomain')
-                ->label('Subdomain')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('custom_domain')
-                ->label('Custom Domain')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('logo')
-                ->label('Logo')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('cover_image')
-                ->label('Cover Image')
                 ->searchable()
                 ->sortable(),
         ];

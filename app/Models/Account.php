@@ -9,28 +9,25 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Translatable\HasTranslations;
 
 class Account extends Model
 {
-    use FiltersByTenant, HasTranslations, SoftDeletes;
+    use FiltersByTenant, SoftDeletes;
 
     protected $guarded = [];
-
-    public array $translatable = [
-        'bio',
-        'address',
-    ];
 
     protected function casts(): array
     {
         return [
             'type' => AccountType::class,
-            'latitude' => 'decimal:2',
-            'longitude' => 'decimal:2',
             'status' => AccountStatus::class,
             'approved_at' => 'datetime',
         ];
+    }
+
+    public function provider(): BelongsTo
+    {
+        return $this->belongsTo(Provider::class);
     }
 
     public function owner(): BelongsTo
@@ -55,17 +52,17 @@ class Account extends Model
 
     public function roles(): HasMany
     {
-        return $this->hasMany(Role::class);
+        return $this->hasMany(Role::class, 'provider_id', 'provider_id');
     }
 
     public function accountSubjects(): HasMany
     {
-        return $this->hasMany(AccountSubject::class);
+        return $this->hasMany(AccountSubject::class, 'provider_id', 'provider_id');
     }
 
     public function courses(): HasMany
     {
-        return $this->hasMany(Course::class);
+        return $this->hasMany(Course::class, 'provider_id', 'provider_id');
     }
 
     public function academyTeacherAssignments(): HasMany
@@ -75,7 +72,7 @@ class Account extends Model
 
     public function academyTeachers(): HasMany
     {
-        return $this->hasMany(AcademyTeacher::class, 'academy_account_id');
+        return $this->hasMany(AcademyTeacher::class, 'provider_id', 'provider_id');
     }
 
     public function canAccessDashboard(): bool

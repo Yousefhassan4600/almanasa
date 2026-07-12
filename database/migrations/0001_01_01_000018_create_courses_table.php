@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('courses', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('account_subject_id')->constrained('account_subjects')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('teacher_account_id')->nullable()->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('title');
@@ -27,7 +27,7 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
             $table->unique([
-                0 => 'account_id',
+                0 => 'provider_id',
                 1 => 'slug',
             ]);
         });

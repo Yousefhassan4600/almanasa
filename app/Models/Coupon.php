@@ -22,8 +22,8 @@ class Coupon extends Model
         ];
     }
 
-    public function account(): BelongsTo
+    public function provider(): BelongsTo
     {
-        return $this->belongsTo(Account::class, 'account_id');
+        return $this->belongsTo(Provider::class, 'provider_id');
     }
 }

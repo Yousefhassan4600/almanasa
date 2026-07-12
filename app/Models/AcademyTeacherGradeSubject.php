@@ -34,10 +34,10 @@ class AcademyTeacherGradeSubject extends Model
             if (
                 $academyTeacher
                 && $accountSubject
-                && $academyTeacher->academy_account_id !== $accountSubject->account_id
+                && $academyTeacher->provider_id !== $accountSubject->provider_id
             ) {
                 throw ValidationException::withMessages([
-                    'account_subject_id' => 'The selected grade subject must belong to the same academy account.',
+                    'account_subject_id' => 'The selected grade subject must belong to the same provider.',
                 ]);
             }
         });

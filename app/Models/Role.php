@@ -20,9 +20,9 @@ class Role extends Model
         ];
     }
 
-    public function account(): BelongsTo
+    public function provider(): BelongsTo
     {
-        return $this->belongsTo(Account::class);
+        return $this->belongsTo(Provider::class);
     }
 
     public function creator(): BelongsTo

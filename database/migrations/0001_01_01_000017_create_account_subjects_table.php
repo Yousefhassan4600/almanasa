@@ -10,11 +10,11 @@ return new class extends Migration
     {
         Schema::create('account_subjects', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('grade_subject_id')->constrained('grade_subjects')->cascadeOnUpdate()->restrictOnDelete();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            $table->unique(['account_id', 'grade_subject_id'], 'account_subjects_account_grade_subject_unique');
+            $table->unique(['provider_id', 'grade_subject_id'], 'account_subjects_provider_grade_subject_unique');
         });
 
         Schema::create('academy_teacher_grade_subjects', function (Blueprint $table): void {

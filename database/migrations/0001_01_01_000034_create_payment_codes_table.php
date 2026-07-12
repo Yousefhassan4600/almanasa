@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('payment_codes', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('code')->unique();
             $table->decimal('amount', 10, 2)->nullable();
             $table->integer('duration_days')->nullable();

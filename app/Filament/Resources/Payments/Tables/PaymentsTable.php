@@ -14,8 +14,8 @@ class PaymentsTable extends BaseTable
                 ->label('Order Id')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('account_id')
-                ->label('Account Id')
+            TextColumn::make('provider_id')
+                ->label('Provider Id')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('student_user_id')

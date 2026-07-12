@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('subscriptions', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('student_user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('package_id')->nullable()->constrained('packages')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('course_id')->nullable()->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('status')->default('pending');

@@ -23,8 +23,12 @@ class EnsureCurrentAccount
             abort(403, 'No accessible account is available for this area.');
         }
 
+        $account->loadMissing('provider');
+
         $request->attributes->set('current_account', $account);
+        $request->attributes->set('current_provider', $account->provider);
         $request->session()->put('current_account_id', $account->id);
+        $request->session()->put('current_provider_id', $account->provider_id);
 
         return $next($request);
     }
@@ -52,6 +56,7 @@ class EnsureCurrentAccount
     {
         $query = Account::query()
             ->select('accounts.*')
+            ->with('provider')
             ->join('account_memberships', 'account_memberships.account_id', '=', 'accounts.id')
             ->where('account_memberships.user_id', $request->user()->id)
             ->where('account_memberships.status', 'active')

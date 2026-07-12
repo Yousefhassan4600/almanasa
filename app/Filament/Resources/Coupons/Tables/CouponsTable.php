@@ -10,8 +10,8 @@ class CouponsTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('account_id')
-                ->label('Account Id')
+            TextColumn::make('provider_id')
+                ->label('Provider Id')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('code')

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('account_settings', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('account_id')->unique()->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('provider_id')->unique()->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('primary_color')->nullable();
             $table->string('secondary_color')->nullable();
             $table->boolean('website_enabled')->default(true);

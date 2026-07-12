@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('carts', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('student_user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('status')->default('open');
             $table->decimal('subtotal', 10, 2)->default(0);
             $table->decimal('tax', 10, 2)->default(0);

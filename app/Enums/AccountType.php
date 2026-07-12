@@ -10,6 +10,7 @@ enum AccountType: string
     case StandaloneTeacher = 'standalone_teacher';
     case Student = 'student';
     case Parent = 'parent';
+    case Employee = 'employee';
 
     public static function options(): array
     {
@@ -20,29 +21,32 @@ enum AccountType: string
             self::StandaloneTeacher->value => 'Standalone Teacher',
             self::Student->value => 'Student',
             self::Parent->value => 'Parent',
+            self::Employee->value => 'Employee',
         ];
     }
 
     public function canAccessDashboard(): bool
     {
         return match ($this) {
-            self::SaasOwner,
-            self::Academy,
-            self::AcademyTeacher,
+            self::SaasOwner => true,
+            self::Academy => true,
+            self::AcademyTeacher => true,
             self::StandaloneTeacher => true,
-            self::Student,
+            self::Student => false,
             self::Parent => false,
+            self::Employee => true,
         };
     }
 
     public function canAccessWebsite(): bool
     {
         return match ($this) {
-            self::Student,
+            self::Student => true,
             self::Parent => true,
-            self::SaasOwner,
-            self::Academy,
-            self::AcademyTeacher,
+            self::Employee => false,
+            self::SaasOwner => false,
+            self::Academy => false,
+            self::AcademyTeacher => false,
             self::StandaloneTeacher => false,
         };
     }
@@ -50,12 +54,13 @@ enum AccountType: string
     public function canCreateSubAccounts(): bool
     {
         return match ($this) {
-            self::SaasOwner,
-            self::Academy,
+            self::SaasOwner => true,
+            self::Academy => true,
             self::StandaloneTeacher => true,
-            self::AcademyTeacher,
-            self::Student,
+            self::AcademyTeacher => false,
+            self::Student => false,
             self::Parent => false,
+            self::Employee => false,
         };
     }
 }

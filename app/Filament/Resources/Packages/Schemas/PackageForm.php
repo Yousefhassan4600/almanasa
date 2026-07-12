@@ -15,8 +15,8 @@ class PackageForm
     {
         return $schema
             ->components([
-                TextInput::make('account_id')
-                    ->label('Account Id')
+                TextInput::make('provider_id')
+                    ->label('Provider Id')
                     ->numeric()
                     ->required(),
                 TextInput::make('name')

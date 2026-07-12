@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('honor_board_entries', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('account_id')->nullable()->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('provider_id')->nullable()->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('student_user_id')->nullable()->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('name');
             $table->string('grade_name')->nullable();

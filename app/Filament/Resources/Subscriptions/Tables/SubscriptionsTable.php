@@ -15,8 +15,8 @@ class SubscriptionsTable extends BaseTable
                 ->label('Student User Id')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('account_id')
-                ->label('Account Id')
+            TextColumn::make('provider_id')
+                ->label('Provider Id')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('package_id')

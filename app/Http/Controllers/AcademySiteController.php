@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\AccountStatus;
-use App\Enums\AccountType;
-use App\Models\Account;
+use App\Enums\ProviderType;
+use App\Models\Provider;
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
 
@@ -12,17 +11,17 @@ class AcademySiteController extends Controller
 {
     public function __invoke(string $accountSubdomain, ?string $page = null): Response
     {
-        $account = Account::query()
+        $provider = Provider::query()
             ->where('subdomain', $accountSubdomain)
-            ->where('status', AccountStatus::Active->value)
+            ->whereHas('activeSubscription')
             ->whereIn('type', [
-                AccountType::Academy->value,
-                AccountType::StandaloneTeacher->value,
+                ProviderType::Academy->value,
+                ProviderType::StandaloneTeacher->value,
             ])
             ->firstOrFail();
 
         $page = $this->normalizePage($page);
-        $template = $this->templateFor($account);
+        $template = $this->templateFor($provider);
         $path = $template['path'].DIRECTORY_SEPARATOR.$page;
 
         abort_unless(is_file($path), 404);
@@ -31,7 +30,7 @@ class AcademySiteController extends Controller
 
         abort_if($html === false, 404);
 
-        return response($this->prepareHtml($html, $account, $template['asset_path']), 200, [
+        return response($this->prepareHtml($html, $provider, $template['asset_path']), 200, [
             'Content-Type' => 'text/html; charset=UTF-8',
         ]);
     }
@@ -39,14 +38,14 @@ class AcademySiteController extends Controller
     /**
      * @return array{path: string, asset_path: string}
      */
-    private function templateFor(Account $account): array
+    private function templateFor(Provider $provider): array
     {
-        return match ($account->type) {
-            AccountType::Academy => [
+        return match ($provider->type) {
+            ProviderType::Academy => [
                 'path' => config('almanasa.academy_template_path'),
                 'asset_path' => config('almanasa.academy_template_asset_path'),
             ],
-            AccountType::StandaloneTeacher => [
+            ProviderType::StandaloneTeacher => [
                 'path' => config('almanasa.teacher_template_path'),
                 'asset_path' => config('almanasa.teacher_template_asset_path'),
             ],
@@ -69,7 +68,7 @@ class AcademySiteController extends Controller
         return $page;
     }
 
-    private function prepareHtml(string $html, Account $account, string $assetPath): string
+    private function prepareHtml(string $html, Provider $provider, string $assetPath): string
     {
         $assetPath = rtrim($assetPath, '/').'/';
 
@@ -87,8 +86,8 @@ class AcademySiteController extends Controller
                 'href="'.$assetPath,
                 'src="'.$assetPath,
                 'src="'.$assetPath,
-                '<title>'.e($account->name).'</title>',
-                e($account->name),
+                '<title>'.e($provider->name).'</title>',
+                e($provider->name),
             ],
             $html,
         );

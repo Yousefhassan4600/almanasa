@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::create('academy_teachers', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('academy_account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('teacher_account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('status')->default('pending');
             $table->timestamp('joined_at')->nullable();
             $table->timestamps();
-            $table->unique(['academy_account_id', 'teacher_account_id']);
+            $table->unique(['provider_id', 'teacher_account_id']);
         });
     }
 

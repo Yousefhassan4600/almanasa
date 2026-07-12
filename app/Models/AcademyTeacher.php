@@ -23,9 +23,9 @@ class AcademyTeacher extends Model
         ];
     }
 
-    public function academy(): BelongsTo
+    public function provider(): BelongsTo
     {
-        return $this->belongsTo(Account::class, 'academy_account_id');
+        return $this->belongsTo(Provider::class);
     }
 
     public function teacher(): BelongsTo

@@ -10,6 +10,8 @@ use App\Enums\EnrollmentStatus;
 use App\Enums\LessonItemType;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Enums\ProviderSubscriptionStatus;
+use App\Enums\ProviderType;
 use App\Enums\SubscriptionStatus;
 use App\Models\AcademyTeacher;
 use App\Models\AcademyTeacherGradeSubject;
@@ -34,6 +36,9 @@ use App\Models\OrderItem;
 use App\Models\Package;
 use App\Models\PackageCourse;
 use App\Models\Payment;
+use App\Models\Provider;
+use App\Models\ProviderPlan;
+use App\Models\ProviderSubscription;
 use App\Models\Role;
 use App\Models\StudentEnrollment;
 use App\Models\Subject;
@@ -257,6 +262,63 @@ class DatabaseSeeder extends Seeder
 
         $this->membership($saasAccount, $saasOwner, AccountMemberRole::Owner, $saasOwner);
 
+        $academyPlan = ProviderPlan::query()->firstOrCreate([
+            'code' => 'academy-growth',
+        ], [
+            'name' => $this->translation('Academy Growth', 'نمو الأكاديمية'),
+            'description' => $this->translation(
+                'Core plan for academies with multiple teachers and students.',
+                'باقة أساسية للأكاديميات التي تضم عدة معلمين وطلاب.'
+            ),
+            'price' => 1500,
+            'currency_code' => 'EGP',
+            'billing_period_days' => 30,
+            'max_students' => 1000,
+            'max_courses' => 250,
+            'max_teachers' => 50,
+            'features' => [
+                'academy_subdomain' => true,
+                'teacher_accounts' => true,
+                'payments' => true,
+            ],
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $teacherPlan = ProviderPlan::query()->firstOrCreate([
+            'code' => 'teacher-starter',
+        ], [
+            'name' => $this->translation('Teacher Starter', 'بداية المعلم'),
+            'description' => $this->translation(
+                'Starter plan for standalone teachers.',
+                'باقة بداية للمعلمين المستقلين.'
+            ),
+            'price' => 500,
+            'currency_code' => 'EGP',
+            'billing_period_days' => 30,
+            'max_students' => 300,
+            'max_courses' => 50,
+            'max_teachers' => 1,
+            'features' => [
+                'teacher_subdomain' => true,
+                'payments' => true,
+            ],
+            'is_active' => true,
+            'sort_order' => 2,
+        ]);
+
+        $academyProvider = $this->provider(
+            type: ProviderType::Academy,
+            owner: $academyOwner,
+            slug: 'future-stars-academy',
+            name: 'Future Stars Academy',
+            country: $egypt,
+            city: $cairo,
+            subdomain: 'future-stars',
+        );
+
+        $this->providerSubscription($academyProvider, $academyPlan, amount: 1500);
+
         $academyAccount = $this->account(
             type: AccountType::Academy,
             owner: $academyOwner,
@@ -267,11 +329,11 @@ class DatabaseSeeder extends Seeder
             country: $egypt,
             city: $cairo,
             parent: $saasAccount,
-            subdomain: 'future-stars',
+            provider: $academyProvider,
         );
 
         AccountSetting::query()->firstOrCreate([
-            'account_id' => $academyAccount->id,
+            'provider_id' => $academyProvider->id,
         ], [
             'primary_color' => '#f59e0b',
             'secondary_color' => '#111827',
@@ -285,18 +347,30 @@ class DatabaseSeeder extends Seeder
         $this->membership($academyAccount, $saasOwner, AccountMemberRole::Admin, $academyOwner, $academyAdminRole);
 
         $academyMathCoverage = AccountSubject::query()->firstOrCreate([
-            'account_id' => $academyAccount->id,
+            'provider_id' => $academyProvider->id,
             'grade_subject_id' => $secondaryOneMath->id,
         ], [
             'is_active' => true,
         ]);
 
         $academyPhysicsCoverage = AccountSubject::query()->firstOrCreate([
-            'account_id' => $academyAccount->id,
+            'provider_id' => $academyProvider->id,
             'grade_subject_id' => $secondaryOnePhysics->id,
         ], [
             'is_active' => true,
         ]);
+
+        $secondAcademyProvider = $this->provider(
+            type: ProviderType::Academy,
+            owner: $secondAcademyOwner,
+            slug: 'science-gate-academy',
+            name: 'Science Gate Academy',
+            country: $egypt,
+            city: $cairo,
+            subdomain: 'science-gate',
+        );
+
+        $this->providerSubscription($secondAcademyProvider, $academyPlan, amount: 1500);
 
         $secondAcademyAccount = $this->account(
             type: AccountType::Academy,
@@ -308,11 +382,11 @@ class DatabaseSeeder extends Seeder
             country: $egypt,
             city: $cairo,
             parent: $saasAccount,
-            subdomain: 'science-gate',
+            provider: $secondAcademyProvider,
         );
 
         AccountSetting::query()->firstOrCreate([
-            'account_id' => $secondAcademyAccount->id,
+            'provider_id' => $secondAcademyProvider->id,
         ], [
             'primary_color' => '#16a34a',
             'secondary_color' => '#1f2937',
@@ -325,7 +399,7 @@ class DatabaseSeeder extends Seeder
         $this->membership($secondAcademyAccount, $saasOwner, AccountMemberRole::Admin, $secondAcademyOwner, $secondAcademyAdminRole);
 
         $secondAcademyPhysicsCoverage = AccountSubject::query()->firstOrCreate([
-            'account_id' => $secondAcademyAccount->id,
+            'provider_id' => $secondAcademyProvider->id,
             'grade_subject_id' => $secondaryOnePhysics->id,
         ], [
             'is_active' => true,
@@ -340,7 +414,8 @@ class DatabaseSeeder extends Seeder
             email: 'ahmed.teacher@almanasa.test',
             country: $egypt,
             city: $cairo,
-            parent: $saasAccount,
+            parent: $academyAccount,
+            provider: $academyProvider,
         );
 
         $assistantRole = $this->role($academyTeacherAccount, 'teaching_assistant', $academyTeacherUser);
@@ -348,7 +423,7 @@ class DatabaseSeeder extends Seeder
         $this->membership($academyTeacherAccount, $academyOwner, AccountMemberRole::Staff, $academyTeacherUser, $assistantRole);
 
         $academyTeacherAssignment = AcademyTeacher::query()->firstOrCreate([
-            'academy_account_id' => $academyAccount->id,
+            'provider_id' => $academyProvider->id,
             'teacher_account_id' => $academyTeacherAccount->id,
         ], [
             'status' => AccountStatus::Active,
@@ -369,9 +444,24 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
+        $secondAcademyTeacherAccount = $this->account(
+            type: AccountType::AcademyTeacher,
+            owner: $academyTeacherUser,
+            slug: 'ahmed-math-teacher-science-gate',
+            name: 'Ahmed Mathematics Teacher - Science Gate',
+            phone: '01000002000',
+            email: 'ahmed.teacher@almanasa.test',
+            country: $egypt,
+            city: $cairo,
+            parent: $secondAcademyAccount,
+            provider: $secondAcademyProvider,
+        );
+
+        $this->membership($secondAcademyTeacherAccount, $academyTeacherUser, AccountMemberRole::Teacher, $secondAcademyOwner);
+
         $secondAcademyTeacherAssignment = AcademyTeacher::query()->firstOrCreate([
-            'academy_account_id' => $secondAcademyAccount->id,
-            'teacher_account_id' => $academyTeacherAccount->id,
+            'provider_id' => $secondAcademyProvider->id,
+            'teacher_account_id' => $secondAcademyTeacherAccount->id,
         ], [
             'status' => AccountStatus::Active,
             'joined_at' => now(),
@@ -384,6 +474,18 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
+        $standaloneTeacherProvider = $this->provider(
+            type: ProviderType::StandaloneTeacher,
+            owner: $standaloneTeacherUser,
+            slug: 'mona-physics-platform',
+            name: 'Mona Physics Platform',
+            country: $egypt,
+            city: $cairo,
+            subdomain: 'mona-physics',
+        );
+
+        $this->providerSubscription($standaloneTeacherProvider, $teacherPlan, amount: 500);
+
         $standaloneTeacherAccount = $this->account(
             type: AccountType::StandaloneTeacher,
             owner: $standaloneTeacherUser,
@@ -394,11 +496,11 @@ class DatabaseSeeder extends Seeder
             country: $egypt,
             city: $cairo,
             parent: $saasAccount,
-            subdomain: 'mona-physics',
+            provider: $standaloneTeacherProvider,
         );
 
         AccountSetting::query()->firstOrCreate([
-            'account_id' => $standaloneTeacherAccount->id,
+            'provider_id' => $standaloneTeacherProvider->id,
         ], [
             'primary_color' => '#2563eb',
             'secondary_color' => '#0f172a',
@@ -419,6 +521,7 @@ class DatabaseSeeder extends Seeder
             country: $egypt,
             city: $cairo,
             parent: $academyAccount,
+            provider: $academyProvider,
         );
 
         $this->membership($studentAccount, $studentUser, AccountMemberRole::Student, $academyOwner);
@@ -433,12 +536,13 @@ class DatabaseSeeder extends Seeder
             country: $egypt,
             city: $cairo,
             parent: $studentAccount,
+            provider: $academyProvider,
         );
 
         $this->membership($parentAccount, $parentUser, AccountMemberRole::Parent, $studentUser);
 
         $academyCourse = Course::query()->firstOrCreate([
-            'account_id' => $academyAccount->id,
+            'provider_id' => $academyProvider->id,
             'slug' => 'secondary-1-mathematics-first-term',
         ], [
             'account_subject_id' => $academyMathCoverage->id,
@@ -526,7 +630,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $package = Package::query()->firstOrCreate([
-            'account_id' => $academyAccount->id,
+            'provider_id' => $academyProvider->id,
             'duration_days' => 120,
         ], [
             'name' => $this->translation(
@@ -549,7 +653,7 @@ class DatabaseSeeder extends Seeder
 
         $subscription = Subscription::query()->firstOrCreate([
             'student_user_id' => $studentUser->id,
-            'account_id' => $academyAccount->id,
+            'provider_id' => $academyProvider->id,
             'package_id' => $package->id,
         ], [
             'course_id' => $academyCourse->id,
@@ -561,7 +665,7 @@ class DatabaseSeeder extends Seeder
 
         StudentEnrollment::query()->firstOrCreate([
             'student_user_id' => $studentUser->id,
-            'account_id' => $academyAccount->id,
+            'provider_id' => $academyProvider->id,
             'course_id' => $academyCourse->id,
         ], [
             'package_id' => $package->id,
@@ -573,7 +677,7 @@ class DatabaseSeeder extends Seeder
 
         $cart = Cart::query()->firstOrCreate([
             'student_user_id' => $studentUser->id,
-            'account_id' => $academyAccount->id,
+            'provider_id' => $academyProvider->id,
             'status' => 'converted',
         ], [
             'subtotal' => 500,
@@ -595,7 +699,7 @@ class DatabaseSeeder extends Seeder
         $order = Order::query()->firstOrCreate([
             'order_number' => 'ORD-ALM-0001',
         ], [
-            'account_id' => $academyAccount->id,
+            'provider_id' => $academyProvider->id,
             'student_user_id' => $studentUser->id,
             'cart_id' => $cart->id,
             'subtotal' => 500,
@@ -621,7 +725,7 @@ class DatabaseSeeder extends Seeder
             'order_id' => $order->id,
             'transaction_reference' => 'PAY-ALM-0001',
         ], [
-            'account_id' => $academyAccount->id,
+            'provider_id' => $academyProvider->id,
             'student_user_id' => $studentUser->id,
             'method' => PaymentMethod::Instapay,
             'status' => PaymentStatus::Paid,
@@ -648,6 +752,41 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 
+    private function provider(
+        ProviderType $type,
+        User $owner,
+        string $slug,
+        string $name,
+        Country $country,
+        City $city,
+        ?string $subdomain = null,
+    ): Provider {
+        return Provider::query()->firstOrCreate([
+            'slug' => $slug,
+        ], [
+            'type' => $type,
+            'owner_user_id' => $owner->id,
+            'name' => $name,
+            'subdomain' => $subdomain,
+            'country_id' => $country->id,
+            'city_id' => $city->id,
+        ]);
+    }
+
+    private function providerSubscription(Provider $provider, ProviderPlan $plan, int $amount): ProviderSubscription
+    {
+        return ProviderSubscription::query()->firstOrCreate([
+            'provider_id' => $provider->id,
+            'provider_plan_id' => $plan->id,
+        ], [
+            'status' => ProviderSubscriptionStatus::Active,
+            'amount' => $amount,
+            'currency_code' => 'EGP',
+            'starts_at' => now(),
+            'ends_at' => now()->addDays($plan->billing_period_days),
+        ]);
+    }
+
     private function account(
         AccountType $type,
         User $owner,
@@ -658,16 +797,16 @@ class DatabaseSeeder extends Seeder
         Country $country,
         City $city,
         ?Account $parent = null,
-        ?string $subdomain = null,
+        ?Provider $provider = null,
     ): Account {
         return Account::query()->firstOrCreate([
             'slug' => $slug,
         ], [
+            'provider_id' => $provider?->id,
             'type' => $type,
             'owner_user_id' => $owner->id,
             'parent_account_id' => $parent?->id,
             'name' => $name,
-            'subdomain' => $subdomain,
             'phone' => $phone,
             'email' => $email,
             'country_id' => $country->id,
@@ -684,7 +823,7 @@ class DatabaseSeeder extends Seeder
         bool $isAssignable = true,
     ): Role {
         return Role::query()->firstOrCreate([
-            'account_id' => $account->id,
+            'provider_id' => $account->provider_id,
             'name' => $name,
         ], [
             'guard_name' => 'web',

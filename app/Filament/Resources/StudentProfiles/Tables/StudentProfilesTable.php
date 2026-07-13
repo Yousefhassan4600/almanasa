@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\StudentProfiles\Tables;
 
 use App\Filament\Base\BaseTable;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 
 class StudentProfilesTable extends BaseTable
@@ -10,24 +11,15 @@ class StudentProfilesTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('user.phone')
-                ->label('User Phone')
-                ->searchable()
+            TextColumn::make('id')
+                ->label('#')
                 ->sortable(),
-            TextColumn::make('email')
-                ->label('Email')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('gender')
-                ->label('Gender')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('country.name')
-                ->label('Country')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('city.name')
-                ->label('City')
+            ImageColumn::make('avatar')
+                ->label('Avatar')
+                ->circular()
+                ->size(50),
+            TextColumn::make('user.name')
+                ->label('User')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('education_stage.name')
@@ -42,6 +34,19 @@ class StudentProfilesTable extends BaseTable
                 ->label('School Name')
                 ->searchable()
                 ->sortable(),
+            TextColumn::make('gender')
+                ->label('Gender')
+                ->searchable()
+                ->sortable(),
+            TextColumn::make('country.name')
+                ->label('Country')
+                ->searchable()
+                ->sortable(),
+            TextColumn::make('city.name')
+                ->label('City')
+                ->searchable()
+                ->sortable(),
+
         ];
     }
 

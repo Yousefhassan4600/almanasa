@@ -2,12 +2,15 @@
 
 namespace App\Filament\Resources\StudentProfiles\RelationManagers;
 
+use App\Enums\AccountType;
 use App\Enums\RelationEnum;
 use App\Filament\Base\RelationManagers\BaseRelationManager;
+use App\Models\Account;
 use App\Models\ParentStudent;
 use App\Models\User;
 use Closure;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -20,6 +23,15 @@ use Filament\Tables\Table;
 class ParentStudentsRelationManager extends BaseRelationManager
 {
     protected static string $relationship = 'parentStudents';
+
+    public function getTableHeaderActions(): array
+    {
+        return [
+            CreateAction::make()
+                ->color('primary')
+                ->after(fn (ParentStudent $record): Account => $this->createParentAccount($record)),
+        ];
+    }
 
     public function form(Schema $schema): Schema
     {
@@ -109,5 +121,37 @@ class ParentStudentsRelationManager extends BaseRelationManager
     public function getTableFilters(): array
     {
         return [];
+    }
+
+    private function createParentAccount(ParentStudent $parentStudent): Account
+    {
+        return Account::query()->firstOrCreate([
+            'provider_id' => $this->parentAccountProviderId(),
+            'type' => AccountType::Parent->value,
+            'owner_user_id' => $parentStudent->parent_user_id,
+        ], [
+            'is_active' => true,
+            'approved_at' => now(),
+        ]);
+    }
+
+    private function parentAccountProviderId(): ?int
+    {
+        $currentAccount = request()->attributes->get('current_account');
+
+        if ($currentAccount instanceof Account && $currentAccount->provider_id) {
+            return $currentAccount->provider_id;
+        }
+
+        $currentProviderId = (int) request()->session()->get('current_provider_id');
+
+        if ($currentProviderId > 0) {
+            return $currentProviderId;
+        }
+
+        return Account::query()
+            ->where('owner_user_id', $this->getOwnerRecord()->user_id)
+            ->where('type', AccountType::Student->value)
+            ->value('provider_id');
     }
 }

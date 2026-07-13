@@ -19,10 +19,8 @@ class ProviderSubscription extends Model
         return [
             'status' => ProviderSubscriptionStatus::class,
             'amount' => 'decimal:2',
-            'trial_ends_at' => 'datetime',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
-            'cancelled_at' => 'datetime',
             'metadata' => 'array',
         ];
     }
@@ -32,9 +30,9 @@ class ProviderSubscription extends Model
         return $this->belongsTo(Provider::class);
     }
 
-    public function plan(): BelongsTo
+    public function planOption(): BelongsTo
     {
-        return $this->belongsTo(ProviderPlan::class, 'provider_plan_id');
+        return $this->belongsTo(ProviderPlanOption::class, 'provider_plan_option_id');
     }
 
     public function scopeActiveForAccess(Builder $query): Builder
@@ -53,11 +51,6 @@ class ProviderSubscription extends Model
                 $query
                     ->whereNull('ends_at')
                     ->orWhere('ends_at', '>=', now());
-            })
-            ->where(function (Builder $query): void {
-                $query
-                    ->whereNull('trial_ends_at')
-                    ->orWhere('trial_ends_at', '>=', now());
             });
     }
 }

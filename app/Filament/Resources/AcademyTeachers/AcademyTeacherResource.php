@@ -14,9 +14,9 @@ class AcademyTeacherResource extends BaseResource
 {
     protected static ?string $model = AcademyTeacher::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Identity & Accounts';
+    protected static string|UnitEnum|null $navigationGroup = 'Users & Accounts';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
     {

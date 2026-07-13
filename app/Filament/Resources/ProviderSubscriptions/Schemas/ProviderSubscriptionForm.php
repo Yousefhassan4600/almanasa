@@ -15,13 +15,23 @@ class ProviderSubscriptionForm
     {
         return $schema
             ->components([
-                TextInput::make('provider_id')
-                    ->label('Provider Id')
-                    ->numeric()
+                Select::make('provider_id')
+                    ->label('Provider')
+                    ->relationship('provider', 'name')
+                    ->preload()
+                    ->searchable()
                     ->required(),
-                TextInput::make('provider_plan_id')
-                    ->label('Provider Plan Id')
-                    ->numeric()
+                Select::make('provider_plan_option_id')
+                    ->label('Plan Option')
+                    ->relationship('planOption', 'id')
+                    ->getOptionLabelFromRecordUsing(fn ($record): string => sprintf(
+                        '%s - %s days - %s',
+                        $record->plan?->name ?? 'Plan',
+                        $record->billing_period_days,
+                        $record->price,
+                    ))
+                    ->preload()
+                    ->searchable()
                     ->required(),
                 Select::make('status')
                     ->label('Status')
@@ -31,18 +41,10 @@ class ProviderSubscriptionForm
                     ->label('Amount')
                     ->numeric()
                     ->required(),
-                TextInput::make('currency_code')
-                    ->label('Currency Code')
-                    ->required()
-                    ->maxLength(3),
-                DateTimePicker::make('trial_ends_at')
-                    ->label('Trial Ends At'),
                 DateTimePicker::make('starts_at')
                     ->label('Starts At'),
                 DateTimePicker::make('ends_at')
                     ->label('Ends At'),
-                DateTimePicker::make('cancelled_at')
-                    ->label('Cancelled At'),
                 KeyValue::make('metadata')
                     ->label('Metadata')
                     ->columnSpanFull(),

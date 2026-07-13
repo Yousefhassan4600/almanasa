@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\StudentProfiles;
 
 use App\Filament\Base\BaseResource;
+use App\Filament\Resources\StudentProfiles\RelationManagers\ParentStudentsRelationManager;
 use App\Filament\Resources\StudentProfiles\Schemas\StudentProfileForm;
 use App\Filament\Resources\StudentProfiles\Tables\StudentProfilesTable;
 use App\Models\StudentProfile;
@@ -14,9 +15,9 @@ class StudentProfileResource extends BaseResource
 {
     protected static ?string $model = StudentProfile::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Identity & Accounts';
+    protected static string|UnitEnum|null $navigationGroup = 'Users & Accounts';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
     {
@@ -30,7 +31,9 @@ class StudentProfileResource extends BaseResource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            ParentStudentsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

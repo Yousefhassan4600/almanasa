@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Providers\Schemas;
 
 use App\Enums\ProviderType;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -79,31 +80,34 @@ class ProviderForm
                     ]),
                 Section::make('Settings')
                     ->schema([
-                        TextInput::make('primary_color')
+                        ColorPicker::make('primary_color')
                             ->label('Primary Color'),
-                        TextInput::make('secondary_color')
+                        ColorPicker::make('secondary_color')
                             ->label('Secondary Color'),
-                        Toggle::make('website_enabled')
-                            ->label('Website Enabled')
-                            ->default(true),
-                        Toggle::make('registration_enabled')
-                            ->label('Registration Enabled')
-                            ->default(true),
-                        Toggle::make('chat_enabled')
-                            ->label('Chat Enabled')
-                            ->default(true),
-                        Toggle::make('payment_enabled')
-                            ->label('Payment Enabled')
-                            ->default(true),
-                        TextInput::make('tax_percentage')
-                            ->label('Tax Percentage')
-                            ->numeric()
-                            ->default(0),
                         TextInput::make('completion_watch_percentage')
                             ->label('Completion Watch Percentage')
                             ->numeric()
                             ->default(70),
-                    ]),
+                        Section::make('Features')
+                            ->schema([
+                                Toggle::make('website_enabled')
+                                    ->label('Website Enabled')
+                                    ->default(true),
+                                Toggle::make('registration_enabled')
+                                    ->label('Registration Enabled')
+                                    ->default(true),
+                                Toggle::make('chat_enabled')
+                                    ->label('Chat Enabled')
+                                    ->default(true),
+                                Toggle::make('payment_enabled')
+                                    ->label('Payment Enabled')
+                                    ->default(true),
+                            ])
+                            ->columns(4)
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpanFull()
+                    ->columns(2),
             ]);
     }
 }

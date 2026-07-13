@@ -16,19 +16,25 @@ class ProviderSubscriptionsTable extends BaseTable
     protected function columns(): array
     {
         return [
+            TextColumn::make('id')
+                ->label('#')
+                ->sortable(),
             TextColumn::make('provider.name')
                 ->label('Provider')
                 ->searchable(),
-            TextColumn::make('plan.name')
+            TextColumn::make('planOption.plan.name')
                 ->label('Plan')
                 ->searchable(),
+            TextColumn::make('planOption.billing_period_days')
+                ->label('Billing Days')
+                ->sortable(),
             TextColumn::make('status')
                 ->label('Status')
                 ->searchable()
+                ->badge()
                 ->sortable(),
             TextColumn::make('amount')
                 ->label('Amount')
-                ->money(fn ($record): string => $record->currency_code)
                 ->sortable(),
             TextColumn::make('starts_at')
                 ->label('Starts At')

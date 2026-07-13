@@ -22,10 +22,6 @@ class CountriesTable extends BaseTable
                 ->label('Phone Code')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('currency_code')
-                ->label('Currency Code')
-                ->searchable()
-                ->sortable(),
         ];
     }
 

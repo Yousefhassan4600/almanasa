@@ -14,9 +14,9 @@ class EmployeeResource extends BaseResource
 {
     protected static ?string $model = Employee::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Identity & Accounts';
+    protected static string|UnitEnum|null $navigationGroup = 'Users & Accounts';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {

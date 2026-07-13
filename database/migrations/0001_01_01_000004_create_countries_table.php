@@ -13,7 +13,6 @@ return new class extends Migration
             $table->text('name');
             $table->string('code');
             $table->string('phone_code')->nullable();
-            $table->string('currency_code')->nullable();
             $table->timestamps();
         });
     }

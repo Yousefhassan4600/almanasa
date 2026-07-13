@@ -6,6 +6,7 @@ use App\Concerns\FiltersByTenant;
 use App\Enums\Gender;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class StudentProfile extends Model
 {
@@ -40,6 +41,11 @@ class StudentProfile extends Model
     public function grade(): BelongsTo
     {
         return $this->belongsTo(Grade::class, 'grade_id');
+    }
+
+    public function parentStudents(): HasMany
+    {
+        return $this->hasMany(ParentStudent::class, 'student_user_id', 'user_id');
     }
 
     protected function casts(): array

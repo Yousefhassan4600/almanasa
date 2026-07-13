@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
-use App\Enums\AccountStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,8 +17,7 @@ class AcademyTeacher extends Model
     protected function casts(): array
     {
         return [
-            'status' => AccountStatus::class,
-            'joined_at' => 'datetime',
+            'is_active' => 'boolean',
         ];
     }
 

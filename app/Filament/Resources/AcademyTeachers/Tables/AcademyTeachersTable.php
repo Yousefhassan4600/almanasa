@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\AcademyTeachers\Tables;
 
 use App\Filament\Base\BaseTable;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 
 class AcademyTeachersTable extends BaseTable
@@ -10,21 +11,20 @@ class AcademyTeachersTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('provider_id')
-                ->label('Provider Id')
+            TextColumn::make('id')
+                ->label('#')
+                ->sortable(),
+            TextColumn::make('provider.name')
+                ->label('Provider')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('teacher_account_id')
-                ->label('Teacher Account Id')
+            TextColumn::make('teacher.owner.name')
+                ->label('User')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('status')
-                ->label('Status')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('joined_at')
-                ->label('Joined At')
-                ->searchable()
+            IconColumn::make('is_active')
+                ->label('Active')
+                ->boolean()
                 ->sortable(),
         ];
     }

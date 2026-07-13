@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users;
 
 use App\Filament\Base\BaseResource;
+use App\Filament\Resources\Users\RelationManagers\OwnedAccountsRelationManager;
 use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\User;
@@ -14,10 +15,9 @@ class UserResource extends BaseResource
 {
     protected static ?string $model = User::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Identity & Accounts';
+    protected static string|UnitEnum|null $navigationGroup = 'Users & Subscriptions';
 
     protected static ?int $navigationSort = 1;
-
 
     public static function form(Schema $schema): Schema
     {
@@ -31,7 +31,9 @@ class UserResource extends BaseResource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            OwnedAccountsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

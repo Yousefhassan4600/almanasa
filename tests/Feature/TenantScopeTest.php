@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\AccountStatus;
 use App\Enums\AccountType;
 use App\Enums\ProviderType;
 use App\Models\AcademyTeacher;
@@ -65,14 +64,12 @@ class TenantScopeTest extends TestCase
         $assignedToTeacher = AcademyTeacher::query()->create([
             'provider_id' => $provider->id,
             'teacher_account_id' => $teacher->id,
-            'status' => AccountStatus::Active,
-            'joined_at' => now(),
+            'is_active' => true,
         ]);
         AcademyTeacher::query()->create([
             'provider_id' => $otherProvider->id,
             'teacher_account_id' => $sameUserOtherTeacherAccount->id,
-            'status' => AccountStatus::Active,
-            'joined_at' => now(),
+            'is_active' => true,
         ]);
 
         $this->actingAsTenant($teacher);

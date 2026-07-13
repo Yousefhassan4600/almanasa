@@ -17,9 +17,9 @@ class ProviderSubscriptionResource extends BaseResource
 {
     protected static ?string $model = ProviderSubscription::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Identity & Accounts';
+    protected static string|UnitEnum|null $navigationGroup = 'Users & Subscriptions';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 5;
 
     public static function form(Schema $schema): Schema
     {

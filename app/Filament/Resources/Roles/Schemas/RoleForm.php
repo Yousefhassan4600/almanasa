@@ -12,20 +12,17 @@ class RoleForm
     {
         return $schema
             ->components([
-                TextInput::make('provider_id')
-                    ->label('Provider Id')
-                    ->numeric(),
-                TextInput::make('created_by_user_id')
-                    ->label('Created By User Id')
-                    ->numeric(),
                 TextInput::make('name')
                     ->label('Name')
                     ->required(),
                 TextInput::make('guard_name')
                     ->label('Guard Name')
+                    ->default('web')
+                    ->readOnly()
                     ->required(),
                 Toggle::make('is_assignable')
-                    ->label('Assignable'),
+                    ->label('Assignable')
+                    ->default(true),
             ]);
     }
 }

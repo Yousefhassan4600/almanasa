@@ -19,8 +19,6 @@ class CountryForm
                     ->required(),
                 TextInput::make('phone_code')
                     ->label('Phone Code'),
-                TextInput::make('currency_code')
-                    ->label('Currency Code'),
             ]);
     }
 }

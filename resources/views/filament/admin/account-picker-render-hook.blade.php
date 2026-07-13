@@ -1,0 +1,1 @@
+@livewire('admin.account-picker')

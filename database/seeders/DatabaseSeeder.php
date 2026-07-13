@@ -310,10 +310,9 @@ class DatabaseSeeder extends Seeder
             'completion_watch_percentage' => 75,
         ]);
 
-        $academyAdminRole = $this->role($academyAccount, 'academy_admin', $academyAccount);
+        $this->role($academyAccount, 'academy_admin', $academyAccount);
         $this->role($academyAccount, 'content_manager', $academyAccount);
         $this->role($academyAccount, 'payment_reviewer', $academyAccount);
-        $this->employee($academyAccount, $saasOwner, EmployeeRole::Admin, $academyOwner, $academyAdminRole);
 
         $academyMathCoverage = AccountSubject::query()->firstOrCreate([
             'provider_id' => $academyProvider->id,
@@ -353,9 +352,8 @@ class DatabaseSeeder extends Seeder
             'completion_watch_percentage' => 70,
         ]);
 
-        $secondAcademyAdminRole = $this->role($secondAcademyAccount, 'academy_admin', $secondAcademyAccount);
+        $this->role($secondAcademyAccount, 'academy_admin', $secondAcademyAccount);
         $this->role($secondAcademyAccount, 'content_manager', $secondAcademyAccount);
-        $this->employee($secondAcademyAccount, $saasOwner, EmployeeRole::Admin, $secondAcademyOwner, $secondAcademyAdminRole);
 
         $secondAcademyPhysicsCoverage = AccountSubject::query()->firstOrCreate([
             'provider_id' => $secondAcademyProvider->id,
@@ -369,9 +367,6 @@ class DatabaseSeeder extends Seeder
             owner: $academyTeacherUser,
             provider: $academyProvider,
         );
-
-        $assistantRole = $this->role($academyTeacherAccount, 'teaching_assistant', $academyTeacherAccount);
-        $this->employee($academyTeacherAccount, $academyOwner, EmployeeRole::Staff, $academyTeacherUser, $assistantRole);
 
         $academyTeacherAssignment = AcademyTeacher::query()->firstOrCreate([
             'provider_id' => $academyProvider->id,

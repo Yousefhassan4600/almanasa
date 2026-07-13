@@ -6,6 +6,7 @@ use App\Filament\Base\BaseTable;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 class ProviderPlansTable extends BaseTable
 {
@@ -17,21 +18,29 @@ class ProviderPlansTable extends BaseTable
     protected function columns(): array
     {
         return [
+            TextColumn::make('id')
+                ->label('#')
+                ->sortable(),
             TextColumn::make('name')
                 ->label('Name')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('code')
-                ->label('Code')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('price')
-                ->label('Price')
-                ->money(fn ($record): string => $record->currency_code)
-                ->sortable(),
-            TextColumn::make('billing_period_days')
-                ->label('Billing Days')
-                ->sortable(),
+            TextColumn::make('options')
+                ->label('Options')
+                ->html()
+                ->getStateUsing(function ($record) {
+                    if ($record->options->isEmpty()) {
+                        return '────';
+                    }
+
+                    return new HtmlString(
+                        "<div class='flex flex-wrap gap-1'>".
+                            $record->options->map(function ($option) {
+                                return "<span class='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200'>".e($option->billing_period_days ?? '').' days - '.e($option->price ?? '').' EGP</span>';
+                            })->implode(' <br /> ').
+                            '</div>'
+                    );
+                }),
             IconColumn::make('is_active')
                 ->label('Active')
                 ->boolean(),

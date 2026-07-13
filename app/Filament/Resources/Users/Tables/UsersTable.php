@@ -11,20 +11,19 @@ class UsersTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('first_name')
-                ->label('First Name')
-                ->searchable()
+            TextColumn::make('id')
+                ->label('#')
                 ->sortable(),
-            TextColumn::make('last_name')
-                ->label('Last Name')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('phone')
-                ->label('Phone')
+            TextColumn::make('name')
+                ->label('Name')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('dial_country_code')
                 ->label('Dial Country Code')
+                ->searchable()
+                ->sortable(),
+            TextColumn::make('phone')
+                ->label('Phone')
                 ->searchable()
                 ->sortable(),
             IconColumn::make('is_active')

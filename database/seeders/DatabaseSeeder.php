@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\AccountStatus;
 use App\Enums\AccountType;
 use App\Enums\ContentStatus;
 use App\Enums\EmployeeRole;
@@ -37,6 +36,7 @@ use App\Models\PackageCourse;
 use App\Models\Payment;
 use App\Models\Provider;
 use App\Models\ProviderPlan;
+use App\Models\ProviderPlanOption;
 use App\Models\ProviderSubscription;
 use App\Models\Role;
 use App\Models\StudentEnrollment;
@@ -55,7 +55,6 @@ class DatabaseSeeder extends Seeder
         ], [
             'name' => $this->translation('Egypt', 'مصر'),
             'phone_code' => '+20',
-            'currency_code' => 'EGP',
         ]);
 
         $cairo = City::query()->firstOrCreate([
@@ -250,55 +249,42 @@ class DatabaseSeeder extends Seeder
         );
 
         foreach (['support_manager', 'tenant_reviewer', 'finance_admin'] as $roleName) {
-            $this->role($saasAccount, $roleName, $saasOwner);
+            $this->role($saasAccount, $roleName, $saasAccount);
         }
 
-        $this->employee($saasAccount, $saasOwner, EmployeeRole::Owner, $saasOwner);
-
         $academyPlan = ProviderPlan::query()->firstOrCreate([
-            'code' => 'academy-growth',
+            'sort_order' => 1,
         ], [
             'name' => $this->translation('Academy Growth', 'نمو الأكاديمية'),
             'description' => $this->translation(
                 'Core plan for academies with multiple teachers and students.',
                 'باقة أساسية للأكاديميات التي تضم عدة معلمين وطلاب.'
             ),
-            'price' => 1500,
-            'currency_code' => 'EGP',
-            'billing_period_days' => 30,
             'max_students' => 1000,
             'max_courses' => 250,
             'max_teachers' => 50,
-            'features' => [
-                'academy_subdomain' => true,
-                'teacher_accounts' => true,
-                'payments' => true,
-            ],
+            'features' => '<ul><li>Academy subdomain</li><li>Teacher accounts</li><li>Payments</li></ul>',
             'is_active' => true,
-            'sort_order' => 1,
         ]);
 
+        $academyMonthlyOption = $this->providerPlanOption($academyPlan, billingPeriodDays: 30, price: 1500);
+
         $teacherPlan = ProviderPlan::query()->firstOrCreate([
-            'code' => 'teacher-starter',
+            'sort_order' => 2,
         ], [
             'name' => $this->translation('Teacher Starter', 'بداية المعلم'),
             'description' => $this->translation(
                 'Starter plan for standalone teachers.',
                 'باقة بداية للمعلمين المستقلين.'
             ),
-            'price' => 500,
-            'currency_code' => 'EGP',
-            'billing_period_days' => 30,
             'max_students' => 300,
             'max_courses' => 50,
             'max_teachers' => 1,
-            'features' => [
-                'teacher_subdomain' => true,
-                'payments' => true,
-            ],
+            'features' => '<ul><li>Teacher subdomain</li><li>Payments</li></ul>',
             'is_active' => true,
-            'sort_order' => 2,
         ]);
+
+        $teacherMonthlyOption = $this->providerPlanOption($teacherPlan, billingPeriodDays: 30, price: 500);
 
         $academyProvider = $this->provider(
             type: ProviderType::Academy,
@@ -310,7 +296,7 @@ class DatabaseSeeder extends Seeder
             subdomain: 'future-stars',
         );
 
-        $this->providerSubscription($academyProvider, $academyPlan, amount: 1500);
+        $this->providerSubscription($academyProvider, $academyMonthlyOption);
 
         $academyAccount = $this->account(
             type: AccountType::Academy,
@@ -324,10 +310,9 @@ class DatabaseSeeder extends Seeder
             'completion_watch_percentage' => 75,
         ]);
 
-        $academyAdminRole = $this->role($academyAccount, 'academy_admin', $academyOwner);
-        $this->role($academyAccount, 'content_manager', $academyOwner);
-        $this->role($academyAccount, 'payment_reviewer', $academyOwner);
-        $this->employee($academyAccount, $academyOwner, EmployeeRole::Owner, $saasOwner);
+        $academyAdminRole = $this->role($academyAccount, 'academy_admin', $academyAccount);
+        $this->role($academyAccount, 'content_manager', $academyAccount);
+        $this->role($academyAccount, 'payment_reviewer', $academyAccount);
         $this->employee($academyAccount, $saasOwner, EmployeeRole::Admin, $academyOwner, $academyAdminRole);
 
         $academyMathCoverage = AccountSubject::query()->firstOrCreate([
@@ -354,7 +339,7 @@ class DatabaseSeeder extends Seeder
             subdomain: 'science-gate',
         );
 
-        $this->providerSubscription($secondAcademyProvider, $academyPlan, amount: 1500);
+        $this->providerSubscription($secondAcademyProvider, $academyMonthlyOption);
 
         $secondAcademyAccount = $this->account(
             type: AccountType::Academy,
@@ -368,9 +353,8 @@ class DatabaseSeeder extends Seeder
             'completion_watch_percentage' => 70,
         ]);
 
-        $secondAcademyAdminRole = $this->role($secondAcademyAccount, 'academy_admin', $secondAcademyOwner);
-        $this->role($secondAcademyAccount, 'content_manager', $secondAcademyOwner);
-        $this->employee($secondAcademyAccount, $secondAcademyOwner, EmployeeRole::Owner, $saasOwner);
+        $secondAcademyAdminRole = $this->role($secondAcademyAccount, 'academy_admin', $secondAcademyAccount);
+        $this->role($secondAcademyAccount, 'content_manager', $secondAcademyAccount);
         $this->employee($secondAcademyAccount, $saasOwner, EmployeeRole::Admin, $secondAcademyOwner, $secondAcademyAdminRole);
 
         $secondAcademyPhysicsCoverage = AccountSubject::query()->firstOrCreate([
@@ -386,16 +370,14 @@ class DatabaseSeeder extends Seeder
             provider: $academyProvider,
         );
 
-        $assistantRole = $this->role($academyTeacherAccount, 'teaching_assistant', $academyTeacherUser);
-        $this->employee($academyTeacherAccount, $academyTeacherUser, EmployeeRole::Teacher, $academyOwner);
+        $assistantRole = $this->role($academyTeacherAccount, 'teaching_assistant', $academyTeacherAccount);
         $this->employee($academyTeacherAccount, $academyOwner, EmployeeRole::Staff, $academyTeacherUser, $assistantRole);
 
         $academyTeacherAssignment = AcademyTeacher::query()->firstOrCreate([
             'provider_id' => $academyProvider->id,
             'teacher_account_id' => $academyTeacherAccount->id,
         ], [
-            'status' => AccountStatus::Active,
-            'joined_at' => now(),
+            'is_active' => true,
         ]);
 
         AcademyTeacherGradeSubject::query()->firstOrCreate([
@@ -418,14 +400,11 @@ class DatabaseSeeder extends Seeder
             provider: $secondAcademyProvider,
         );
 
-        $this->employee($secondAcademyTeacherAccount, $academyTeacherUser, EmployeeRole::Teacher, $secondAcademyOwner);
-
         $secondAcademyTeacherAssignment = AcademyTeacher::query()->firstOrCreate([
             'provider_id' => $secondAcademyProvider->id,
             'teacher_account_id' => $secondAcademyTeacherAccount->id,
         ], [
-            'status' => AccountStatus::Active,
-            'joined_at' => now(),
+            'is_active' => true,
         ]);
 
         AcademyTeacherGradeSubject::query()->firstOrCreate([
@@ -445,7 +424,7 @@ class DatabaseSeeder extends Seeder
             subdomain: 'mona-physics',
         );
 
-        $this->providerSubscription($standaloneTeacherProvider, $teacherPlan, amount: 500);
+        $this->providerSubscription($standaloneTeacherProvider, $teacherMonthlyOption);
 
         $standaloneTeacherAccount = $this->account(
             type: AccountType::StandaloneTeacher,
@@ -459,9 +438,8 @@ class DatabaseSeeder extends Seeder
             'completion_watch_percentage' => 80,
         ]);
 
-        $this->role($standaloneTeacherAccount, 'content_assistant', $standaloneTeacherUser);
-        $this->role($standaloneTeacherAccount, 'student_support', $standaloneTeacherUser);
-        $this->employee($standaloneTeacherAccount, $standaloneTeacherUser, EmployeeRole::Owner, $saasOwner);
+        $this->role($standaloneTeacherAccount, 'content_assistant', $standaloneTeacherAccount);
+        $this->role($standaloneTeacherAccount, 'student_support', $standaloneTeacherAccount);
 
         $studentAccount = $this->account(
             type: AccountType::Student,
@@ -705,17 +683,31 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 
-    private function providerSubscription(Provider $provider, ProviderPlan $plan, int $amount): ProviderSubscription
+    private function providerPlanOption(
+        ProviderPlan $plan,
+        int $billingPeriodDays,
+        int $price,
+        int $sortOrder = 0,
+    ): ProviderPlanOption {
+        return ProviderPlanOption::query()->firstOrCreate([
+            'provider_plan_id' => $plan->id,
+            'billing_period_days' => $billingPeriodDays,
+        ], [
+            'price' => $price,
+            'sort_order' => $sortOrder,
+        ]);
+    }
+
+    private function providerSubscription(Provider $provider, ProviderPlanOption $option): ProviderSubscription
     {
         return ProviderSubscription::query()->firstOrCreate([
             'provider_id' => $provider->id,
-            'provider_plan_id' => $plan->id,
+            'provider_plan_option_id' => $option->id,
         ], [
             'status' => ProviderSubscriptionStatus::Active,
-            'amount' => $amount,
-            'currency_code' => 'EGP',
+            'amount' => $option->price,
             'starts_at' => now(),
-            'ends_at' => now()->addDays($plan->billing_period_days),
+            'ends_at' => now()->addDays($option->billing_period_days),
         ]);
     }
 
@@ -737,7 +729,7 @@ class DatabaseSeeder extends Seeder
     private function role(
         Account $account,
         string $name,
-        User $creator,
+        Account $creator,
         bool $isAssignable = true,
     ): Role {
         return Role::query()->firstOrCreate([
@@ -745,7 +737,7 @@ class DatabaseSeeder extends Seeder
             'name' => $name,
         ], [
             'guard_name' => 'web',
-            'created_by_user_id' => $creator->id,
+            'created_by_account_id' => $creator->id,
             'is_assignable' => $isAssignable,
         ]);
     }
@@ -761,11 +753,10 @@ class DatabaseSeeder extends Seeder
             'account_id' => $account->id,
             'user_id' => $user->id,
         ], [
-            'predefined_role' => $predefinedRole,
+            'predefined_role' => $customRole ? null : $predefinedRole,
             'role_id' => $customRole?->id,
             'created_by_user_id' => $creator->id,
-            'status' => 'active',
-            'joined_at' => now(),
+            'is_active' => true,
         ]);
     }
 

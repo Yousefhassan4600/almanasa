@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Employees\Tables;
 
 use App\Filament\Base\BaseTable;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 
 class EmployeesTable extends BaseTable
@@ -10,25 +11,25 @@ class EmployeesTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('account_id')
-                ->label('Account Id')
+            TextColumn::make('id')
+                ->label('#')
+                ->sortable(),
+            TextColumn::make('account.provider.name')
+                ->label('Provider')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('user.phone')
-                ->label('User Phone')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('predefined_role')
-                ->label('Predefined Role')
+            TextColumn::make('user.name')
+                ->label('User')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('role.name')
-                ->label('Custom Role')
+                ->label('Role')
+                ->formatStateUsing(fn ($state, $record): string => $state ?? $record->predefined_role)
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('status')
-                ->label('Status')
-                ->searchable()
+            IconColumn::make('is_active')
+                ->label('Active')
+                ->boolean()
                 ->sortable(),
         ];
     }

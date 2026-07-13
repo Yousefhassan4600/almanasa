@@ -30,7 +30,6 @@ return new class extends Migration
             $table->boolean('registration_enabled')->default(true);
             $table->boolean('chat_enabled')->default(true);
             $table->boolean('payment_enabled')->default(true);
-            $table->decimal('tax_percentage', 10, 2)->default(0);
             $table->integer('completion_watch_percentage')->default(70);
             $table->boolean('is_active')->default(true);
             $table->boolean('use_custom_domain')->default(false);
@@ -42,55 +41,48 @@ return new class extends Migration
         Schema::create('provider_plans', function (Blueprint $table): void {
             $table->id();
             $table->text('name');
-            $table->string('code')->unique();
             $table->text('description')->nullable();
-            $table->decimal('price', 10, 2)->default(0);
-            $table->string('currency_code', 3)->default('EGP');
-            $table->unsignedInteger('billing_period_days')->default(30);
             $table->unsignedInteger('max_students')->nullable();
             $table->unsignedInteger('max_courses')->nullable();
             $table->unsignedInteger('max_teachers')->nullable();
-            $table->json('features')->nullable();
+            $table->text('features')->nullable();
             $table->boolean('is_active')->default(true);
             $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
             $table->index(['is_active', 'sort_order']);
         });
 
+        Schema::create('provider_plan_options', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('provider_plan_id')->constrained('provider_plans')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->unsignedInteger('billing_period_days');
+            $table->decimal('price', 10, 2)->default(0);
+            $table->unsignedInteger('sort_order')->default(0);
+            $table->timestamps();
+            $table->unique(['provider_plan_id', 'billing_period_days'], 'ppo_plan_period_unique');
+            $table->index(['provider_plan_id', 'sort_order']);
+        });
+
         Schema::create('provider_subscriptions', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('provider_plan_id')->constrained('provider_plans')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('provider_plan_option_id')->constrained('provider_plan_options')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('status')->default('pending');
             $table->decimal('amount', 10, 2)->default(0);
-            $table->string('currency_code', 3)->default('EGP');
-            $table->timestamp('trial_ends_at')->nullable();
             $table->timestamp('starts_at')->nullable();
             $table->timestamp('ends_at')->nullable();
-            $table->timestamp('cancelled_at')->nullable();
             $table->json('metadata')->nullable();
             $table->timestamps();
             $table->index(['provider_id', 'status']);
             $table->index(['status', 'ends_at']);
         });
 
-        Schema::create('roles', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('provider_id')->nullable()->constrained('providers')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('created_by_user_id')->nullable()->constrained('users')->cascadeOnUpdate()->nullOnDelete();
-            $table->string('name');
-            $table->string('guard_name')->default('web');
-            $table->boolean('is_assignable')->default(true);
-            $table->timestamps();
-            $table->unique(['provider_id', 'name']);
-            $table->index('provider_id');
-        });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('roles');
         Schema::dropIfExists('provider_subscriptions');
+        Schema::dropIfExists('provider_plan_options');
         Schema::dropIfExists('provider_plans');
         Schema::dropIfExists('providers');
     }

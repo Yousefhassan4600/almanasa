@@ -12,10 +12,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('teacher_account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('status')->default('pending');
-            $table->timestamp('joined_at')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->unique(['provider_id', 'teacher_account_id']);
+            $table->index(['provider_id', 'is_active']);
         });
     }
 

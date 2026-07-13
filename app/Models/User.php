@@ -55,13 +55,13 @@ class User extends Authenticatable implements FilamentUser
 
     public function activeEmployees(): HasMany
     {
-        return $this->employees()->where('status', 'active');
+        return $this->employees()->where('is_active', true);
     }
 
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'employees')
-            ->withPivot(['account_id', 'predefined_role', 'status', 'created_by_user_id', 'joined_at'])
+            ->withPivot(['account_id', 'predefined_role', 'is_active', 'created_by_user_id'])
             ->withTimestamps();
     }
 
@@ -72,16 +72,22 @@ class User extends Authenticatable implements FilamentUser
 
     public function hasDashboardAccount(): bool
     {
-        return $this->activeEmployees()
-            ->whereHas('account', fn ($query) => $query
-                ->where('is_active', true)
-                ->whereIn('type', ['saas_owner', 'academy', 'academy_teacher', 'standalone_teacher'])
-                ->where(function ($query): void {
-                    $query
-                        ->where('type', 'saas_owner')
-                        ->orWhereHas('provider.activeSubscription');
-                }))
-            ->exists();
+        $dashboardAccountConstraint = fn ($query) => $query
+            ->where('is_active', true)
+            ->whereIn('type', ['saas_owner', 'academy', 'academy_teacher', 'standalone_teacher'])
+            ->where(function ($query): void {
+                $query
+                    ->where('type', 'saas_owner')
+                    ->orWhereHas('provider.activeSubscription');
+            });
+
+        return $this->ownedAccounts()
+            ->where($dashboardAccountConstraint)
+            ->exists()
+            || $this->activeEmployees()
+                ->whereHas('account', fn ($query) => $query
+                    ->where($dashboardAccountConstraint))
+                ->exists();
     }
 
     public function hasWebsiteAccount(): bool
@@ -106,11 +112,6 @@ class User extends Authenticatable implements FilamentUser
     public function studentProfile(): HasOne
     {
         return $this->hasOne(StudentProfile::class);
-    }
-
-    public function parentProfile(): HasOne
-    {
-        return $this->hasOne(ParentProfile::class);
     }
 
     protected function casts(): array

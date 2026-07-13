@@ -61,7 +61,7 @@ class EnsureCurrentAccount
             ->leftJoin('employees', function ($join) use ($request): void {
                 $join->on('employees.account_id', '=', 'accounts.id')
                     ->where('employees.user_id', $request->user()->id)
-                    ->where('employees.status', 'active');
+                    ->where('employees.is_active', true);
             })
             ->where(function ($query) use ($request): void {
                 $query

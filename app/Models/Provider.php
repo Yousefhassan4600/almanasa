@@ -32,7 +32,6 @@ class Provider extends Model
             'registration_enabled' => 'boolean',
             'chat_enabled' => 'boolean',
             'payment_enabled' => 'boolean',
-            'tax_percentage' => 'decimal:2',
             'is_active' => 'boolean',
             'use_custom_domain' => 'boolean',
         ];

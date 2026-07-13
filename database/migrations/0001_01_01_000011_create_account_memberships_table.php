@@ -12,14 +12,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('predefined_role');
+            $table->string('predefined_role')->nullable();
             $table->foreignId('role_id')->nullable()->constrained('roles')->cascadeOnUpdate()->nullOnDelete();
             $table->foreignId('created_by_user_id')->nullable()->constrained('users')->cascadeOnUpdate()->nullOnDelete();
-            $table->string('status')->default('active');
-            $table->timestamp('joined_at')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->unique(['account_id', 'user_id']);
-            $table->index(['account_id', 'status']);
+            $table->index(['account_id', 'is_active']);
             $table->index(['account_id', 'predefined_role']);
         });
     }

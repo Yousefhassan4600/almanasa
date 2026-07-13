@@ -27,7 +27,7 @@ class Role extends Model
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by_user_id');
+        return $this->belongsTo(Account::class, 'created_by_account_id');
     }
 
     public function employees(): HasMany

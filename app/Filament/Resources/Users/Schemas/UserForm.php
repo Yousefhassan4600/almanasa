@@ -17,11 +17,13 @@ class UserForm
                     ->required(),
                 TextInput::make('last_name')
                     ->label('Last Name'),
+                TextInput::make('dial_country_code')
+                    ->label('Dial Country Code')
+                    ->default('+20'),
                 TextInput::make('phone')
                     ->label('Phone')
+                    ->tel()
                     ->required(),
-                TextInput::make('dial_country_code')
-                    ->label('Dial Country Code'),
                 TextInput::make('password')
                     ->label('Password')
                     ->password()
@@ -30,7 +32,8 @@ class UserForm
                 Toggle::make('is_active')
                     ->label('Is Active')
                     ->default(true)
-                    ->required(),
+                    ->required()
+                    ->columnSpanFull(),
             ]);
     }
 }

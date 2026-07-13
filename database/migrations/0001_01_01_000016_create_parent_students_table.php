@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('student_user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('relation')->nullable();
             $table->boolean('is_primary')->default(false);
+            $table->string('occupation')->nullable();
             $table->timestamps();
             $table->unique([
                 0 => 'parent_user_id',

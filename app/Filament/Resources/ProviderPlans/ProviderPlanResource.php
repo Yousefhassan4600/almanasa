@@ -17,9 +17,9 @@ class ProviderPlanResource extends BaseResource
 {
     protected static ?string $model = ProviderPlan::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Identity & Accounts';
+    protected static string|UnitEnum|null $navigationGroup = 'Users & Subscriptions';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
     {

@@ -17,7 +17,7 @@ class Employee extends Model
     {
         return [
             'predefined_role' => EmployeeRole::class,
-            'joined_at' => 'datetime',
+            'is_active' => 'boolean',
         ];
     }
 

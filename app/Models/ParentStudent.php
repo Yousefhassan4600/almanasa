@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Enums\RelationEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -20,6 +21,7 @@ class ParentStudent extends Model
     protected function casts(): array
     {
         return [
+            'relation' => RelationEnum::class,
             'is_primary' => 'boolean',
         ];
     }

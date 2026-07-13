@@ -30,8 +30,8 @@ class Role extends Model
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
-    public function memberships(): HasMany
+    public function employees(): HasMany
     {
-        return $this->hasMany(AccountMembership::class);
+        return $this->hasMany(Employee::class);
     }
 }

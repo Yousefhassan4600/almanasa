@@ -28,6 +28,13 @@ class Provider extends Model
             'type' => ProviderType::class,
             'latitude' => 'decimal:2',
             'longitude' => 'decimal:2',
+            'website_enabled' => 'boolean',
+            'registration_enabled' => 'boolean',
+            'chat_enabled' => 'boolean',
+            'payment_enabled' => 'boolean',
+            'tax_percentage' => 'decimal:2',
+            'is_active' => 'boolean',
+            'use_custom_domain' => 'boolean',
         ];
     }
 
@@ -39,11 +46,6 @@ class Provider extends Model
     public function accounts(): HasMany
     {
         return $this->hasMany(Account::class);
-    }
-
-    public function settings(): HasOne
-    {
-        return $this->hasOne(AccountSetting::class);
     }
 
     public function roles(): HasMany

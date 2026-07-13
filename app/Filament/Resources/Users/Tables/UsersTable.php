@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Tables;
 
 use App\Filament\Base\BaseTable;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 
 class UsersTable extends BaseTable
@@ -18,10 +19,6 @@ class UsersTable extends BaseTable
                 ->label('Last Name')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('email')
-                ->label('Email')
-                ->searchable()
-                ->sortable(),
             TextColumn::make('phone')
                 ->label('Phone')
                 ->searchable()
@@ -30,14 +27,9 @@ class UsersTable extends BaseTable
                 ->label('Dial Country Code')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('gender')
-                ->label('Gender')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('status')
-                ->label('Status')
-                ->searchable()
-                ->sortable(),
+            IconColumn::make('is_active')
+                ->label('Is Active')
+                ->boolean(),
         ];
     }
 

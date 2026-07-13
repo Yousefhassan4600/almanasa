@@ -14,7 +14,9 @@ class ParentStudentResource extends BaseResource
 {
     protected static ?string $model = ParentStudent::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Students & Families';
+    protected static string|UnitEnum|null $navigationGroup = 'Identity & Accounts';
+
+    protected static ?int $navigationSort = 9;
 
     public static function form(Schema $schema): Schema
     {

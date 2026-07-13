@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
-use App\Enums\AccountMemberRole;
+use App\Enums\EmployeeRole;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AccountMembership extends Model
+class Employee extends Model
 {
     use FiltersByTenant;
 
@@ -16,7 +16,7 @@ class AccountMembership extends Model
     protected function casts(): array
     {
         return [
-            'predefined_role' => AccountMemberRole::class,
+            'predefined_role' => EmployeeRole::class,
             'joined_at' => 'datetime',
         ];
     }

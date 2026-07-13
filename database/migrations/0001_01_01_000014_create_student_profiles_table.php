@@ -11,6 +11,9 @@ return new class extends Migration
         Schema::create('student_profiles', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
+            $table->string('email')->nullable()->unique();
+            $table->string('avatar')->nullable();
+            $table->string('gender')->nullable();
             $table->foreignId('country_id')->nullable()->constrained('countries')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('city_id')->nullable()->constrained('cities')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('education_stage_id')->nullable()->constrained('education_stages')->cascadeOnUpdate()->restrictOnDelete();

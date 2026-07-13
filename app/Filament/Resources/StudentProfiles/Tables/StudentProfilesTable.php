@@ -10,24 +10,32 @@ class StudentProfilesTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('user_id')
-                ->label('User Id')
+            TextColumn::make('user.phone')
+                ->label('User Phone')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('country_id')
-                ->label('Country Id')
+            TextColumn::make('email')
+                ->label('Email')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('city_id')
-                ->label('City Id')
+            TextColumn::make('gender')
+                ->label('Gender')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('education_stage_id')
-                ->label('Education Stage Id')
+            TextColumn::make('country.name')
+                ->label('Country')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('grade_id')
-                ->label('Grade Id')
+            TextColumn::make('city.name')
+                ->label('City')
+                ->searchable()
+                ->sortable(),
+            TextColumn::make('education_stage.name')
+                ->label('Education Stage')
+                ->searchable()
+                ->sortable(),
+            TextColumn::make('grade.name')
+                ->label('Grade')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('school_name')

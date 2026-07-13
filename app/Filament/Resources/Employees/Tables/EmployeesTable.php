@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\AccountMemberships\Tables;
+namespace App\Filament\Resources\Employees\Tables;
 
 use App\Filament\Base\BaseTable;
 use Filament\Tables\Columns\TextColumn;
 
-class AccountMembershipsTable extends BaseTable
+class EmployeesTable extends BaseTable
 {
     protected function columns(): array
     {
@@ -14,16 +14,16 @@ class AccountMembershipsTable extends BaseTable
                 ->label('Account Id')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('user_id')
-                ->label('User Id')
+            TextColumn::make('user.phone')
+                ->label('User Phone')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('predefined_role')
                 ->label('Predefined Role')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('role_id')
-                ->label('Custom Role Id')
+            TextColumn::make('role.name')
+                ->label('Custom Role')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('status')

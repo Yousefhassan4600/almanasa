@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
-use App\Enums\AccountStatus;
 use App\Enums\AccountType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,7 +19,7 @@ class Account extends Model
     {
         return [
             'type' => AccountType::class,
-            'status' => AccountStatus::class,
+            'is_active' => 'boolean',
             'approved_at' => 'datetime',
         ];
     }
@@ -35,19 +34,9 @@ class Account extends Model
         return $this->belongsTo(User::class, 'owner_user_id');
     }
 
-    public function parent(): BelongsTo
+    public function employees(): HasMany
     {
-        return $this->belongsTo(Account::class, 'parent_account_id');
-    }
-
-    public function children(): HasMany
-    {
-        return $this->hasMany(Account::class, 'parent_account_id');
-    }
-
-    public function memberships(): HasMany
-    {
-        return $this->hasMany(AccountMembership::class);
+        return $this->hasMany(Employee::class);
     }
 
     public function roles(): HasMany
@@ -77,29 +66,19 @@ class Account extends Model
 
     public function canAccessDashboard(): bool
     {
-        return $this->status === AccountStatus::Active
+        return $this->is_active
             && $this->type->canAccessDashboard();
     }
 
     public function canAccessWebsite(): bool
     {
-        return $this->status === AccountStatus::Active
+        return $this->is_active
             && $this->type->canAccessWebsite();
     }
 
     public function canCreateSubAccounts(): bool
     {
-        return $this->status === AccountStatus::Active
+        return $this->is_active
             && $this->type->canCreateSubAccounts();
-    }
-
-    public function country(): BelongsTo
-    {
-        return $this->belongsTo(Country::class, 'country_id');
-    }
-
-    public function city(): BelongsTo
-    {
-        return $this->belongsTo(City::class, 'city_id');
     }
 }

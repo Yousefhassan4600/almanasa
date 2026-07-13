@@ -10,7 +10,6 @@ enum AccountType: string
     case StandaloneTeacher = 'standalone_teacher';
     case Student = 'student';
     case Parent = 'parent';
-    case Employee = 'employee';
 
     public static function options(): array
     {
@@ -21,7 +20,6 @@ enum AccountType: string
             self::StandaloneTeacher->value => 'Standalone Teacher',
             self::Student->value => 'Student',
             self::Parent->value => 'Parent',
-            self::Employee->value => 'Employee',
         ];
     }
 
@@ -34,7 +32,6 @@ enum AccountType: string
             self::StandaloneTeacher => true,
             self::Student => false,
             self::Parent => false,
-            self::Employee => true,
         };
     }
 
@@ -43,7 +40,6 @@ enum AccountType: string
         return match ($this) {
             self::Student => true,
             self::Parent => true,
-            self::Employee => false,
             self::SaasOwner => false,
             self::Academy => false,
             self::AcademyTeacher => false,
@@ -60,7 +56,6 @@ enum AccountType: string
             self::AcademyTeacher => false,
             self::Student => false,
             self::Parent => false,
-            self::Employee => false,
         };
     }
 }

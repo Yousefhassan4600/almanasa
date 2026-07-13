@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Base\BaseResource;
+use App\Filament\Pages\Auth\Login;
 use App\Http\Middleware\EnsureCurrentAccount;
 use App\Http\Middleware\SetPanelLocale;
 use CraftForge\FilamentLanguageSwitcher\FilamentLanguageSwitcherPlugin;
@@ -35,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(Login::class)
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -99,7 +100,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                EnsureCurrentAccount::class . ':dashboard',
+                EnsureCurrentAccount::class.':dashboard',
             ])
             ->sidebarWidth(69)
             ->maxContentWidth(Width::Full)

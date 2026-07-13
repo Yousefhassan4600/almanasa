@@ -57,14 +57,27 @@ class EnsureCurrentAccount
         $query = Account::query()
             ->select('accounts.*')
             ->with('provider')
-            ->join('account_memberships', 'account_memberships.account_id', '=', 'accounts.id')
-            ->where('account_memberships.user_id', $request->user()->id)
-            ->where('account_memberships.status', 'active')
-            ->where('accounts.status', 'active')
+            ->leftJoin('employees', function ($join) use ($request): void {
+                $join->on('employees.account_id', '=', 'accounts.id')
+                    ->where('employees.user_id', $request->user()->id)
+                    ->where('employees.status', 'active');
+            })
+            ->where(function ($query) use ($request): void {
+                $query
+                    ->where('accounts.owner_user_id', $request->user()->id)
+                    ->orWhereNotNull('employees.id');
+            })
+            ->where('accounts.is_active', true)
             ->orderBy('accounts.id');
 
         return match ($surface) {
-            'dashboard' => $query->whereIn('accounts.type', ['saas_owner', 'academy', 'academy_teacher', 'standalone_teacher']),
+            'dashboard' => $query
+                ->whereIn('accounts.type', ['saas_owner', 'academy', 'academy_teacher', 'standalone_teacher'])
+                ->where(function ($query): void {
+                    $query
+                        ->where('accounts.type', 'saas_owner')
+                        ->orWhereHas('provider.activeSubscription');
+                }),
             'website' => $query->whereIn('accounts.type', ['student', 'parent']),
             default => $query,
         };

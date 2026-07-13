@@ -12,23 +12,19 @@ return new class extends Migration
             $table->id();
             $table->string('first_name');
             $table->string('last_name')->nullable();
-            $table->string('email')->nullable()->unique();
             $table->string('phone')->unique();
             $table->string('dial_country_code')->nullable();
             $table->string('password')->nullable();
-            $table->string('gender')->nullable();
-            $table->string('avatar')->nullable();
             $table->date('date_of_birth')->nullable();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->timestamp('phone_verified_at')->nullable();
-            $table->string('status')->default('active');
+            $table->timestamp('verified_at')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->softDeletes();
             $table->timestamps();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table): void {
-            $table->string('email')->primary();
+            $table->string('phone')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });

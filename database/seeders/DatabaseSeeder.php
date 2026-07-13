@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Enums\AccountMemberRole;
 use App\Enums\AccountStatus;
 use App\Enums\AccountType;
 use App\Enums\ContentStatus;
+use App\Enums\EmployeeRole;
 use App\Enums\EnrollmentStatus;
 use App\Enums\LessonItemType;
 use App\Enums\PaymentMethod;
@@ -16,8 +16,6 @@ use App\Enums\SubscriptionStatus;
 use App\Models\AcademyTeacher;
 use App\Models\AcademyTeacherGradeSubject;
 use App\Models\Account;
-use App\Models\AccountMembership;
-use App\Models\AccountSetting;
 use App\Models\AccountSubject;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -27,6 +25,7 @@ use App\Models\Course;
 use App\Models\CourseOutcome;
 use App\Models\CourseUnit;
 use App\Models\EducationStage;
+use App\Models\Employee;
 use App\Models\Grade;
 use App\Models\GradeSubject;
 use App\Models\Lesson;
@@ -237,30 +236,24 @@ class DatabaseSeeder extends Seeder
             'track_id' => $literaryTrack->id,
         ]);
 
-        $saasOwner = $this->user('01000000000', 'Almanasa', 'Owner', 'admin@almanasa.test');
-        $academyOwner = $this->user('01000000001', 'Academy', 'Owner', 'academy.owner@almanasa.test');
-        $secondAcademyOwner = $this->user('01000000006', 'Science', 'Owner', 'science.owner@almanasa.test');
-        $academyTeacherUser = $this->user('01000000002', 'Ahmed', 'Teacher', 'ahmed.teacher@almanasa.test');
-        $standaloneTeacherUser = $this->user('01000000003', 'Mona', 'Teacher', 'mona.teacher@almanasa.test');
-        $studentUser = $this->user('01000000004', 'Omar', 'Student', 'omar.student@almanasa.test');
-        $parentUser = $this->user('01000000005', 'Sara', 'Parent', 'sara.parent@almanasa.test');
+        $saasOwner = $this->user('01000000000', 'Almanasa', 'Owner');
+        $academyOwner = $this->user('01000000001', 'Academy', 'Owner');
+        $secondAcademyOwner = $this->user('01000000006', 'Science', 'Owner');
+        $academyTeacherUser = $this->user('01000000002', 'Ahmed', 'Teacher');
+        $standaloneTeacherUser = $this->user('01000000003', 'Mona', 'Teacher');
+        $studentUser = $this->user('01000000004', 'Omar', 'Student');
+        $parentUser = $this->user('01000000005', 'Sara', 'Parent');
 
         $saasAccount = $this->account(
             type: AccountType::SaasOwner,
             owner: $saasOwner,
-            slug: 'almanasa-saas',
-            name: 'Almanasa SaaS',
-            phone: '01000000000',
-            email: 'admin@almanasa.test',
-            country: $egypt,
-            city: $cairo,
         );
 
         foreach (['support_manager', 'tenant_reviewer', 'finance_admin'] as $roleName) {
             $this->role($saasAccount, $roleName, $saasOwner);
         }
 
-        $this->membership($saasAccount, $saasOwner, AccountMemberRole::Owner, $saasOwner);
+        $this->employee($saasAccount, $saasOwner, EmployeeRole::Owner, $saasOwner);
 
         $academyPlan = ProviderPlan::query()->firstOrCreate([
             'code' => 'academy-growth',
@@ -322,19 +315,10 @@ class DatabaseSeeder extends Seeder
         $academyAccount = $this->account(
             type: AccountType::Academy,
             owner: $academyOwner,
-            slug: 'future-stars-academy',
-            name: 'Future Stars Academy',
-            phone: '01000001000',
-            email: 'academy@almanasa.test',
-            country: $egypt,
-            city: $cairo,
-            parent: $saasAccount,
             provider: $academyProvider,
         );
 
-        AccountSetting::query()->firstOrCreate([
-            'provider_id' => $academyProvider->id,
-        ], [
+        $academyProvider->update([
             'primary_color' => '#f59e0b',
             'secondary_color' => '#111827',
             'completion_watch_percentage' => 75,
@@ -343,8 +327,8 @@ class DatabaseSeeder extends Seeder
         $academyAdminRole = $this->role($academyAccount, 'academy_admin', $academyOwner);
         $this->role($academyAccount, 'content_manager', $academyOwner);
         $this->role($academyAccount, 'payment_reviewer', $academyOwner);
-        $this->membership($academyAccount, $academyOwner, AccountMemberRole::Owner, $saasOwner);
-        $this->membership($academyAccount, $saasOwner, AccountMemberRole::Admin, $academyOwner, $academyAdminRole);
+        $this->employee($academyAccount, $academyOwner, EmployeeRole::Owner, $saasOwner);
+        $this->employee($academyAccount, $saasOwner, EmployeeRole::Admin, $academyOwner, $academyAdminRole);
 
         $academyMathCoverage = AccountSubject::query()->firstOrCreate([
             'provider_id' => $academyProvider->id,
@@ -375,19 +359,10 @@ class DatabaseSeeder extends Seeder
         $secondAcademyAccount = $this->account(
             type: AccountType::Academy,
             owner: $secondAcademyOwner,
-            slug: 'science-gate-academy',
-            name: 'Science Gate Academy',
-            phone: '01000006000',
-            email: 'science.academy@almanasa.test',
-            country: $egypt,
-            city: $cairo,
-            parent: $saasAccount,
             provider: $secondAcademyProvider,
         );
 
-        AccountSetting::query()->firstOrCreate([
-            'provider_id' => $secondAcademyProvider->id,
-        ], [
+        $secondAcademyProvider->update([
             'primary_color' => '#16a34a',
             'secondary_color' => '#1f2937',
             'completion_watch_percentage' => 70,
@@ -395,8 +370,8 @@ class DatabaseSeeder extends Seeder
 
         $secondAcademyAdminRole = $this->role($secondAcademyAccount, 'academy_admin', $secondAcademyOwner);
         $this->role($secondAcademyAccount, 'content_manager', $secondAcademyOwner);
-        $this->membership($secondAcademyAccount, $secondAcademyOwner, AccountMemberRole::Owner, $saasOwner);
-        $this->membership($secondAcademyAccount, $saasOwner, AccountMemberRole::Admin, $secondAcademyOwner, $secondAcademyAdminRole);
+        $this->employee($secondAcademyAccount, $secondAcademyOwner, EmployeeRole::Owner, $saasOwner);
+        $this->employee($secondAcademyAccount, $saasOwner, EmployeeRole::Admin, $secondAcademyOwner, $secondAcademyAdminRole);
 
         $secondAcademyPhysicsCoverage = AccountSubject::query()->firstOrCreate([
             'provider_id' => $secondAcademyProvider->id,
@@ -408,19 +383,12 @@ class DatabaseSeeder extends Seeder
         $academyTeacherAccount = $this->account(
             type: AccountType::AcademyTeacher,
             owner: $academyTeacherUser,
-            slug: 'ahmed-math-teacher',
-            name: 'Ahmed Mathematics Teacher',
-            phone: '01000002000',
-            email: 'ahmed.teacher@almanasa.test',
-            country: $egypt,
-            city: $cairo,
-            parent: $academyAccount,
             provider: $academyProvider,
         );
 
         $assistantRole = $this->role($academyTeacherAccount, 'teaching_assistant', $academyTeacherUser);
-        $this->membership($academyTeacherAccount, $academyTeacherUser, AccountMemberRole::Teacher, $academyOwner);
-        $this->membership($academyTeacherAccount, $academyOwner, AccountMemberRole::Staff, $academyTeacherUser, $assistantRole);
+        $this->employee($academyTeacherAccount, $academyTeacherUser, EmployeeRole::Teacher, $academyOwner);
+        $this->employee($academyTeacherAccount, $academyOwner, EmployeeRole::Staff, $academyTeacherUser, $assistantRole);
 
         $academyTeacherAssignment = AcademyTeacher::query()->firstOrCreate([
             'provider_id' => $academyProvider->id,
@@ -447,17 +415,10 @@ class DatabaseSeeder extends Seeder
         $secondAcademyTeacherAccount = $this->account(
             type: AccountType::AcademyTeacher,
             owner: $academyTeacherUser,
-            slug: 'ahmed-math-teacher-science-gate',
-            name: 'Ahmed Mathematics Teacher - Science Gate',
-            phone: '01000002000',
-            email: 'ahmed.teacher@almanasa.test',
-            country: $egypt,
-            city: $cairo,
-            parent: $secondAcademyAccount,
             provider: $secondAcademyProvider,
         );
 
-        $this->membership($secondAcademyTeacherAccount, $academyTeacherUser, AccountMemberRole::Teacher, $secondAcademyOwner);
+        $this->employee($secondAcademyTeacherAccount, $academyTeacherUser, EmployeeRole::Teacher, $secondAcademyOwner);
 
         $secondAcademyTeacherAssignment = AcademyTeacher::query()->firstOrCreate([
             'provider_id' => $secondAcademyProvider->id,
@@ -489,19 +450,10 @@ class DatabaseSeeder extends Seeder
         $standaloneTeacherAccount = $this->account(
             type: AccountType::StandaloneTeacher,
             owner: $standaloneTeacherUser,
-            slug: 'mona-physics-platform',
-            name: 'Mona Physics Platform',
-            phone: '01000003000',
-            email: 'mona.teacher@almanasa.test',
-            country: $egypt,
-            city: $cairo,
-            parent: $saasAccount,
             provider: $standaloneTeacherProvider,
         );
 
-        AccountSetting::query()->firstOrCreate([
-            'provider_id' => $standaloneTeacherProvider->id,
-        ], [
+        $standaloneTeacherProvider->update([
             'primary_color' => '#2563eb',
             'secondary_color' => '#0f172a',
             'completion_watch_percentage' => 80,
@@ -509,37 +461,19 @@ class DatabaseSeeder extends Seeder
 
         $this->role($standaloneTeacherAccount, 'content_assistant', $standaloneTeacherUser);
         $this->role($standaloneTeacherAccount, 'student_support', $standaloneTeacherUser);
-        $this->membership($standaloneTeacherAccount, $standaloneTeacherUser, AccountMemberRole::Owner, $saasOwner);
+        $this->employee($standaloneTeacherAccount, $standaloneTeacherUser, EmployeeRole::Owner, $saasOwner);
 
         $studentAccount = $this->account(
             type: AccountType::Student,
             owner: $studentUser,
-            slug: 'omar-student-account',
-            name: 'Omar Student Account',
-            phone: '01000000004',
-            email: 'omar.student@almanasa.test',
-            country: $egypt,
-            city: $cairo,
-            parent: $academyAccount,
             provider: $academyProvider,
         );
-
-        $this->membership($studentAccount, $studentUser, AccountMemberRole::Student, $academyOwner);
 
         $parentAccount = $this->account(
             type: AccountType::Parent,
             owner: $parentUser,
-            slug: 'sara-parent-account',
-            name: 'Sara Parent Account',
-            phone: '01000000005',
-            email: 'sara.parent@almanasa.test',
-            country: $egypt,
-            city: $cairo,
-            parent: $studentAccount,
             provider: $academyProvider,
         );
-
-        $this->membership($parentAccount, $parentUser, AccountMemberRole::Parent, $studentUser);
 
         $academyCourse = Course::query()->firstOrCreate([
             'provider_id' => $academyProvider->id,
@@ -736,19 +670,17 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 
-    private function user(string $phone, string $firstName, string $lastName, string $email): User
+    private function user(string $phone, string $firstName, string $lastName): User
     {
         return User::query()->firstOrCreate([
             'phone' => $phone,
         ], [
             'first_name' => $firstName,
             'last_name' => $lastName,
-            'email' => $email,
             'dial_country_code' => '+20',
             'password' => bcrypt('123456'),
-            'status' => 'active',
-            'email_verified_at' => now(),
-            'phone_verified_at' => now(),
+            'verified_at' => now(),
+            'is_active' => true,
         ]);
     }
 
@@ -790,28 +722,14 @@ class DatabaseSeeder extends Seeder
     private function account(
         AccountType $type,
         User $owner,
-        string $slug,
-        string $name,
-        string $phone,
-        string $email,
-        Country $country,
-        City $city,
-        ?Account $parent = null,
         ?Provider $provider = null,
     ): Account {
         return Account::query()->firstOrCreate([
-            'slug' => $slug,
-        ], [
             'provider_id' => $provider?->id,
             'type' => $type,
             'owner_user_id' => $owner->id,
-            'parent_account_id' => $parent?->id,
-            'name' => $name,
-            'phone' => $phone,
-            'email' => $email,
-            'country_id' => $country->id,
-            'city_id' => $city->id,
-            'status' => AccountStatus::Active,
+        ], [
+            'is_active' => true,
             'approved_at' => now(),
         ]);
     }
@@ -832,14 +750,14 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 
-    private function membership(
+    private function employee(
         Account $account,
         User $user,
-        AccountMemberRole $predefinedRole,
+        EmployeeRole $predefinedRole,
         User $creator,
         ?Role $customRole = null,
-    ): AccountMembership {
-        return AccountMembership::query()->firstOrCreate([
+    ): Employee {
+        return Employee::query()->firstOrCreate([
             'account_id' => $account->id,
             'user_id' => $user->id,
         ], [

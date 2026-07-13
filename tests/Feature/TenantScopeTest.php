@@ -20,7 +20,7 @@ class TenantScopeTest extends TestCase
 
     public function test_saas_owner_can_see_all_tenant_records(): void
     {
-        $saasOwner = $this->account(AccountType::SaasOwner, 'saas-owner');
+        $saasOwner = $this->account(AccountType::SaasOwner);
         $academyProvider = $this->provider(ProviderType::Academy, 'academy');
         $teacherProvider = $this->provider(ProviderType::StandaloneTeacher, 'teacher');
 
@@ -36,7 +36,7 @@ class TenantScopeTest extends TestCase
     {
         $academyProvider = $this->provider(ProviderType::Academy, 'academy');
         $otherProvider = $this->provider(ProviderType::Academy, 'other-academy');
-        $academy = $this->account(AccountType::Academy, 'academy', provider: $academyProvider);
+        $academy = $this->account(AccountType::Academy, provider: $academyProvider);
 
         Role::query()->create(['provider_id' => $academyProvider->id, 'name' => 'academy-role']);
         Role::query()->create(['provider_id' => $academyProvider->id, 'name' => 'student-support-role']);
@@ -55,10 +55,9 @@ class TenantScopeTest extends TestCase
         $teacherUser = User::factory()->create();
         $provider = $this->provider(ProviderType::Academy, 'academy');
         $otherProvider = $this->provider(ProviderType::Academy, 'other-academy');
-        $teacher = $this->account(AccountType::AcademyTeacher, 'teacher', owner: $teacherUser, provider: $provider);
+        $teacher = $this->account(AccountType::AcademyTeacher, owner: $teacherUser, provider: $provider);
         $sameUserOtherTeacherAccount = $this->account(
             AccountType::AcademyTeacher,
-            'same-user-other-teacher',
             owner: $teacherUser,
             provider: $otherProvider,
         );
@@ -86,7 +85,7 @@ class TenantScopeTest extends TestCase
 
     public function test_global_catalog_records_are_not_tenant_filtered(): void
     {
-        $academy = $this->account(AccountType::Academy, 'academy', provider: $this->provider(ProviderType::Academy, 'academy'));
+        $academy = $this->account(AccountType::Academy, provider: $this->provider(ProviderType::Academy, 'academy'));
 
         Subject::query()->create([
             'name' => ['en' => 'Mathematics', 'ar' => 'الرياضيات'],
@@ -121,8 +120,6 @@ class TenantScopeTest extends TestCase
 
     private function account(
         AccountType $type,
-        string $slug,
-        ?Account $parent = null,
         ?User $owner = null,
         ?Provider $provider = null,
     ): Account {
@@ -130,10 +127,7 @@ class TenantScopeTest extends TestCase
             'provider_id' => $provider?->id,
             'type' => $type,
             'owner_user_id' => ($owner ?? User::factory()->create())->id,
-            'parent_account_id' => $parent?->id,
-            'name' => str($slug)->headline()->toString(),
-            'slug' => $slug,
-            'status' => AccountStatus::Active,
+            'is_active' => true,
             'approved_at' => now(),
         ]);
     }

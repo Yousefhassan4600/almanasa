@@ -14,7 +14,9 @@ class StudentProfileResource extends BaseResource
 {
     protected static ?string $model = StudentProfile::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Students & Families';
+    protected static string|UnitEnum|null $navigationGroup = 'Identity & Accounts';
+
+    protected static ?int $navigationSort = 8;
 
     public static function form(Schema $schema): Schema
     {

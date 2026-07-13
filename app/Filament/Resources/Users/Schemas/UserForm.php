@@ -2,10 +2,8 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
-use App\Enums\Gender;
-use App\Enums\UserStatus;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class UserForm
@@ -19,19 +17,14 @@ class UserForm
                     ->required(),
                 TextInput::make('last_name')
                     ->label('Last Name'),
-                TextInput::make('email')
-                    ->label('Email'),
                 TextInput::make('phone')
                     ->label('Phone')
                     ->required(),
                 TextInput::make('dial_country_code')
                     ->label('Dial Country Code'),
-                Select::make('gender')
-                    ->label('Gender')
-                    ->options(Gender::options()),
-                Select::make('status')
-                    ->label('Status')
-                    ->options(UserStatus::options())
+                Toggle::make('is_active')
+                    ->label('Is Active')
+                    ->default(true)
                     ->required(),
             ]);
     }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Enums\Gender;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -39,5 +40,12 @@ class StudentProfile extends Model
     public function grade(): BelongsTo
     {
         return $this->belongsTo(Grade::class, 'grade_id');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'gender' => Gender::class,
+        ];
     }
 }

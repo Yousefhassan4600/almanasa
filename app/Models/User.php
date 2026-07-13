@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
-use App\Enums\Gender;
-use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -26,7 +24,7 @@ class User extends Authenticatable implements FilamentUser
     protected $guarded = [];
 
     protected array $tenantRelations = [
-        'memberships',
+        'employees',
         'ownedAccounts',
     ];
 
@@ -41,7 +39,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->status === UserStatus::Active
+        return $this->is_active
             && $this->hasDashboardAccount();
     }
 
@@ -50,19 +48,19 @@ class User extends Authenticatable implements FilamentUser
         return trim($this->first_name.' '.($this->last_name ?? ''));
     }
 
-    public function memberships(): HasMany
+    public function employees(): HasMany
     {
-        return $this->hasMany(AccountMembership::class);
+        return $this->hasMany(Employee::class);
     }
 
-    public function activeMemberships(): HasMany
+    public function activeEmployees(): HasMany
     {
-        return $this->memberships()->where('status', 'active');
+        return $this->employees()->where('status', 'active');
     }
 
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, 'account_memberships')
+        return $this->belongsToMany(Role::class, 'employees')
             ->withPivot(['account_id', 'predefined_role', 'status', 'created_by_user_id', 'joined_at'])
             ->withTimestamps();
     }
@@ -74,25 +72,33 @@ class User extends Authenticatable implements FilamentUser
 
     public function hasDashboardAccount(): bool
     {
-        return $this->activeMemberships()
+        return $this->activeEmployees()
             ->whereHas('account', fn ($query) => $query
-                ->where('status', 'active')
-                ->whereIn('type', ['saas_owner', 'academy', 'academy_teacher', 'standalone_teacher']))
+                ->where('is_active', true)
+                ->whereIn('type', ['saas_owner', 'academy', 'academy_teacher', 'standalone_teacher'])
+                ->where(function ($query): void {
+                    $query
+                        ->where('type', 'saas_owner')
+                        ->orWhereHas('provider.activeSubscription');
+                }))
             ->exists();
     }
 
     public function hasWebsiteAccount(): bool
     {
-        return $this->activeMemberships()
-            ->whereHas('account', fn ($query) => $query
-                ->where('status', 'active')
-                ->whereIn('type', ['student', 'parent']))
+        return $this->ownedAccounts()
+            ->where('is_active', true)
+            ->whereIn('type', ['student', 'parent'])
             ->exists();
     }
 
     public function canUseAccount(Account $account): bool
     {
-        return $this->activeMemberships()
+        if ($account->owner_user_id === $this->id) {
+            return true;
+        }
+
+        return $this->activeEmployees()
             ->where('account_id', $account->id)
             ->exists();
     }
@@ -110,12 +116,10 @@ class User extends Authenticatable implements FilamentUser
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'phone_verified_at' => 'datetime',
+            'verified_at' => 'datetime',
             'date_of_birth' => 'date',
             'password' => 'hashed',
-            'gender' => Gender::class,
-            'status' => UserStatus::class,
+            'is_active' => 'boolean',
         ];
     }
 }

@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('account_memberships', function (Blueprint $table): void {
+        Schema::create('employees', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
@@ -26,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('account_memberships');
+        Schema::dropIfExists('employees');
     }
 };

@@ -13,19 +13,12 @@ return new class extends Migration
             $table->foreignId('provider_id')->nullable()->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('type');
             $table->foreignId('owner_user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('parent_account_id')->nullable()->constrained('accounts')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->string('phone')->nullable();
-            $table->string('email')->nullable();
-            $table->foreignId('country_id')->nullable()->constrained('countries')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('city_id')->nullable()->constrained('cities')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('status')->default('pending');
+            $table->boolean('is_active')->default(true);
             $table->timestamp('approved_at')->nullable();
             $table->softDeletes();
             $table->timestamps();
             $table->index('provider_id');
-            $table->index(['type', 'status']);
+            $table->index(['type']);
         });
     }
 

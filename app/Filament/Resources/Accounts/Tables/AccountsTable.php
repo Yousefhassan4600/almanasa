@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Accounts\Tables;
 
 use App\Filament\Base\BaseTable;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 
 class AccountsTable extends BaseTable
@@ -10,8 +11,8 @@ class AccountsTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('provider_id')
-                ->label('Provider Id')
+            TextColumn::make('provider.name')
+                ->label('Provider')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('type')
@@ -19,16 +20,11 @@ class AccountsTable extends BaseTable
                 ->searchable()
                 ->sortable(),
             TextColumn::make('owner_user_id')
-                ->label('Owner User Id')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('name')
-                ->label('Name')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('slug')
-                ->label('Slug')
-                ->searchable()
+                ->label('Owner')
+                ->state(fn ($record): string => $record->owner?->name ?? '-'),
+            IconColumn::make('is_active')
+                ->label('Active')
+                ->boolean()
                 ->sortable(),
         ];
     }

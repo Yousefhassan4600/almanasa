@@ -309,7 +309,7 @@
                 // عند الكتابة
                 field.addEventListener('input', (e) => {
                     // منع كتابة غير الأرقام
-                    field.value = field.value.replace(/[^0-2026]/g, '');
+                    field.value = field.value.replace(/[^0-9]/g, '');
 
                     if (field.value.length > 0 && index < fields.length - 1) {
                         fields[index + 1].focus();

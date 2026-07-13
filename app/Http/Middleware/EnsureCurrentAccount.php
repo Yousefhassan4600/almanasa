@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Account;
+use App\Models\Provider;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -69,6 +70,18 @@ class EnsureCurrentAccount
             })
             ->where('accounts.is_active', true)
             ->orderBy('accounts.id');
+
+        if ($surface === 'website') {
+            $accountSubdomain = $request->route('accountSubdomain');
+
+            if (is_string($accountSubdomain) && $accountSubdomain !== '') {
+                $providerId = Provider::query()
+                    ->where('subdomain', $accountSubdomain)
+                    ->value('id');
+
+                $query->where('accounts.provider_id', $providerId);
+            }
+        }
 
         return match ($surface) {
             'dashboard' => $query

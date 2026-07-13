@@ -323,6 +323,10 @@
                         <input type="file" id="avatar-upload" name="avatar_file" accept="image/*"
                             onchange="handleFileChange(this)" class="hidden">
                     </label>
+                    <div id="avatar-preview" class="hidden mt-3 rounded-2xl border border-gray-100 bg-white p-3">
+                        <img id="avatar-preview-image" src="" alt="Avatar preview"
+                            class="mx-auto h-28 w-28 rounded-full object-cover ring-4 ring-gray-50">
+                    </div>
                 </div>
 
                 <p id="global-error-msg" class="hidden text-xs font-bold text-red-500 text-center pt-2 animate-fadeIn">
@@ -363,13 +367,27 @@
 
         function handleFileChange(input) {
             const statusText = document.getElementById('file-status-text');
+            const preview = document.getElementById('avatar-preview');
+            const previewImage = document.getElementById('avatar-preview-image');
+
             if (input.files && input.files[0]) {
                 statusText.innerText = `تم اختيار: ${input.files[0].name}`;
                 statusText.classList.remove('text-gray-400');
                 statusText.classList.add('text-emerald-600');
+
+                if (preview && previewImage) {
+                    previewImage.src = URL.createObjectURL(input.files[0]);
+                    previewImage.onload = () => URL.revokeObjectURL(previewImage.src);
+                    preview.classList.remove('hidden');
+                }
             } else {
                 statusText.innerText = "رفع صورة";
                 statusText.className = "text-gray-400 text-xs font-black";
+
+                if (preview && previewImage) {
+                    previewImage.removeAttribute('src');
+                    preview.classList.add('hidden');
+                }
             }
         }
 

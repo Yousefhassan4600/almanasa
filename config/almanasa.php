@@ -8,4 +8,5 @@ return [
     'academy_template_asset_path' => '/academy/assets/',
     'teacher_template_path' => public_path('teacher'),
     'teacher_template_asset_path' => '/teacher/assets/',
+    'website_otp_code' => env('WEBSITE_OTP_CODE', '1234'),
 ];

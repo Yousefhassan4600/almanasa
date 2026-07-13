@@ -46,10 +46,10 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->navigationGroups([
-                NavigationGroup::make(BaseResource::PROJECT_DATA_NAVIGATION_GROUP)
-                    ->icon(Heroicon::OutlinedAdjustmentsHorizontal),
                 NavigationGroup::make('Identity & Accounts')
                     ->icon(Heroicon::OutlinedUsers),
+                NavigationGroup::make(BaseResource::PROJECT_DATA_NAVIGATION_GROUP)
+                    ->icon(Heroicon::OutlinedAdjustmentsHorizontal),
                 NavigationGroup::make('Education Setup')
                     ->icon(Heroicon::OutlinedBookOpen),
                 NavigationGroup::make('Learning Content')

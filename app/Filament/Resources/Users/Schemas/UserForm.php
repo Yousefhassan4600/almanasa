@@ -22,6 +22,11 @@ class UserForm
                     ->required(),
                 TextInput::make('dial_country_code')
                     ->label('Dial Country Code'),
+                TextInput::make('password')
+                    ->label('Password')
+                    ->password()
+                    ->revealable()
+                    ->saved(fn (?string $state): bool => filled($state)),
                 Toggle::make('is_active')
                     ->label('Is Active')
                     ->default(true)

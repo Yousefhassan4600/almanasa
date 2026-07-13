@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('phone')->unique();
             $table->string('dial_country_code')->nullable();
             $table->string('password')->nullable();
+            $table->string('otp')->nullable();
             $table->date('date_of_birth')->nullable();
             $table->timestamp('verified_at')->nullable();
             $table->boolean('is_active')->default(true);

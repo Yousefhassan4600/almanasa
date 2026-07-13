@@ -29,7 +29,7 @@ class ParentStudentsRelationManager extends BaseRelationManager
         return [
             CreateAction::make()
                 ->color('primary')
-                ->after(fn (ParentStudent $record): Account => $this->createParentAccount($record)),
+                ->after(fn(ParentStudent $record): Account => $this->createParentAccount($record)),
         ];
     }
 
@@ -40,9 +40,9 @@ class ParentStudentsRelationManager extends BaseRelationManager
                 Select::make('parent_user_id')
                     ->label('Parent')
                     ->relationship('parent', 'phone')
-                    ->getOptionLabelFromRecordUsing(fn (User $record): string => trim("{$record->name} {$record->phone}"))
+                    ->getOptionLabelFromRecordUsing(fn(User $record): string => trim("{$record->name} {$record->phone}"))
                     ->rules([
-                        fn (?ParentStudent $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record): void {
+                        fn(?ParentStudent $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record): void {
                             $studentUserId = $this->getOwnerRecord()->user_id;
 
                             if (blank($value) || blank($studentUserId)) {
@@ -58,7 +58,7 @@ class ParentStudentsRelationManager extends BaseRelationManager
                             $parentStudentExists = ParentStudent::query()
                                 ->where('parent_user_id', $value)
                                 ->where('student_user_id', $studentUserId)
-                                ->when($record?->exists, fn ($query) => $query->whereKeyNot($record->getKey()))
+                                ->when($record?->exists, fn($query) => $query->whereKeyNot($record->getKey()))
                                 ->exists();
 
                             if ($parentStudentExists) {

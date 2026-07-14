@@ -23,7 +23,7 @@ class EmployeeForm
                     ->relationship(
                         name: 'account',
                         titleAttribute: 'id',
-                        modifyQueryUsing: fn ($query) => $query
+                        modifyQueryUsing: fn($query) => $query
                             ->whereNotNull('provider_id')
                             ->whereIn('type', [
                                 AccountType::Academy->value,
@@ -31,7 +31,7 @@ class EmployeeForm
                             ])
                             ->with('provider')
                     )
-                    ->getOptionLabelFromRecordUsing(fn (Account $record): string => $record->provider?->name ?? "Account #{$record->getKey()}")
+                    ->getOptionLabelFromRecordUsing(fn(Account $record): string => $record->provider?->name ?? "Account #{$record->getKey()}")
                     ->live()
                     ->preload()
                     ->searchable()
@@ -39,10 +39,10 @@ class EmployeeForm
                 Select::make('user_id')
                     ->label('User')
                     ->relationship('user', 'first_name')
-                    ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name)
+                    ->getOptionLabelFromRecordUsing(fn($record): string => $record->name)
                     ->live()
                     ->rules([
-                        fn (Get $get, ?Employee $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
+                        fn(Get $get, ?Employee $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
                             $accountId = $get('account_id');
 
                             if (blank($accountId) || blank($value)) {
@@ -58,7 +58,7 @@ class EmployeeForm
                             $existingEmployee = Employee::query()
                                 ->where('account_id', $account->id)
                                 ->where('user_id', $value)
-                                ->when($record?->exists, fn ($query) => $query->whereKeyNot($record->getKey()))
+                                ->when($record?->exists, fn($query) => $query->whereKeyNot($record->getKey()))
                                 ->exists();
 
                             if ($existingEmployee) {
@@ -96,7 +96,7 @@ class EmployeeForm
                     ->preload()
                     ->searchable(),
                 Toggle::make('is_active')
-                    ->label('Active')
+                    ->label('Is Active')
                     ->default(true),
             ]);
     }

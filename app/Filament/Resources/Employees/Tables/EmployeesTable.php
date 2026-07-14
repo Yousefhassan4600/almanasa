@@ -24,11 +24,11 @@ class EmployeesTable extends BaseTable
                 ->sortable(),
             TextColumn::make('role.name')
                 ->label('Role')
-                ->formatStateUsing(fn ($state, $record): string => $state ?? $record->predefined_role)
+                ->formatStateUsing(fn($state, $record): string => $state ?? $record->predefined_role)
                 ->searchable()
                 ->sortable(),
             IconColumn::make('is_active')
-                ->label('Active')
+                ->label('Is Active')
                 ->boolean()
                 ->sortable(),
         ];

@@ -17,8 +17,8 @@ class Track extends Model
         'name',
     ];
 
-    public function gradeSubjects(): HasMany
+    public function subjects(): HasMany
     {
-        return $this->hasMany(GradeSubject::class);
+        return $this->hasMany(Subject::class);
     }
 }

@@ -10,14 +10,12 @@ class CitiesTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('country_id')
-                ->label('Country Id')
-                ->searchable()
-                ->sortable(),
+            TextColumn::make('id')
+                ->label('#'),
             TextColumn::make('name')
-                ->label('Name')
-                ->searchable()
-                ->sortable(),
+                ->label('Name'),
+            TextColumn::make('country.name')
+                ->label('Country'),
         ];
     }
 

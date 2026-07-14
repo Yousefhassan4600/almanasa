@@ -8,4 +8,9 @@ use App\Filament\Resources\Tracks\TrackResource;
 class ListTracks extends BaseListRecords
 {
     protected static string $resource = TrackResource::class;
+
+    protected function hasCreateAction(): bool
+    {
+        return false;
+    }
 }

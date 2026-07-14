@@ -12,7 +12,6 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
-use Filament\Navigation\NavigationItem;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -44,6 +43,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
             ->pages([
                 Dashboard::class,
             ])
@@ -66,16 +67,6 @@ class AdminPanelProvider extends PanelProvider
                     ->icon(Heroicon::OutlinedCreditCard),
                 NavigationGroup::make('Students & Families')
                     ->icon(Heroicon::OutlinedUserGroup),
-            ])
-            ->navigationItems([
-                NavigationItem::make(BaseResource::EDUCATION_CATALOG_NAVIGATION_PARENT)
-                    ->group(BaseResource::PROJECT_DATA_NAVIGATION_GROUP)
-                    ->icon(Heroicon::OutlinedAcademicCap)
-                    ->sort(1),
-                NavigationItem::make(BaseResource::LOCATIONS_NAVIGATION_PARENT)
-                    ->group(BaseResource::PROJECT_DATA_NAVIGATION_GROUP)
-                    ->icon(Heroicon::OutlinedMap)
-                    ->sort(2),
             ])
             ->renderHook(
                 PanelsRenderHook::GLOBAL_SEARCH_AFTER,

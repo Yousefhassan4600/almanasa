@@ -11,13 +11,13 @@ class AccountSubjectsTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('provider_id')
-                ->label('Provider Id')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('gradeSubject.name')
-                ->label('Grade Subject')
+            TextColumn::make('id')
+                ->label('#'),
+            TextColumn::make('provider.name')
+                ->label('Provider')
                 ->searchable(),
+            TextColumn::make('gradeSubject.full_name')
+                ->label('Grade Subject'),
             IconColumn::make('is_active')
                 ->label('Is Active')
                 ->boolean(),
@@ -29,5 +29,10 @@ class AccountSubjectsTable extends BaseTable
         return [
             //
         ];
+    }
+
+    protected function hasViewAction(): bool
+    {
+        return false;
     }
 }

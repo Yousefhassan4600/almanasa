@@ -39,7 +39,7 @@ class ProvidersTable extends BaseTable
                 ->badge()
                 ->searchable(),
             IconColumn::make('is_active')
-                ->label('Active')
+                ->label('Is Active')
                 ->boolean(),
         ];
     }
@@ -49,7 +49,7 @@ class ProvidersTable extends BaseTable
         return [
             Action::make('open_website')
                 ->label('')
-                ->url(fn ($record): string => $record->custom_domain ?? "http://{$record->subdomain}.lvh.me:8000/index.html")
+                ->url(fn($record): string => $record->custom_domain ?? "http://{$record->subdomain}.lvh.me:8000/index.html")
                 ->openUrlInNewTab()
                 ->icon('heroicon-o-link'),
         ];

@@ -30,7 +30,7 @@ class OwnedAccountsRelationManager extends BaseRelationManager
                     ->label('Type')
                     ->options(AccountType::options())
                     ->rules([
-                        fn (Get $get, ?Account $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
+                        fn(Get $get, ?Account $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
                             $providerId = $get('provider_id');
 
                             $accountExists = Account::query()
@@ -38,10 +38,10 @@ class OwnedAccountsRelationManager extends BaseRelationManager
                                 ->where('type', $value)
                                 ->when(
                                     filled($providerId),
-                                    fn ($query) => $query->where('provider_id', $providerId),
-                                    fn ($query) => $query->whereNull('provider_id'),
+                                    fn($query) => $query->where('provider_id', $providerId),
+                                    fn($query) => $query->whereNull('provider_id'),
                                 )
-                                ->when($record?->exists, fn ($query) => $query->whereKeyNot($record->getKey()))
+                                ->when($record?->exists, fn($query) => $query->whereKeyNot($record->getKey()))
                                 ->exists();
 
                             if ($accountExists) {
@@ -83,7 +83,7 @@ class OwnedAccountsRelationManager extends BaseRelationManager
                     ->searchable()
                     ->sortable(),
                 IconColumn::make('is_active')
-                    ->label('Active')
+                    ->label('Is Active')
                     ->boolean()
                     ->sortable(),
                 TextColumn::make('approved_at')

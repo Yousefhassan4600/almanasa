@@ -14,6 +14,7 @@ class GradeSubject extends Model
     protected $guarded = [];
 
     protected $appends = [
+        'full_name',
         'name',
     ];
 
@@ -27,11 +28,6 @@ class GradeSubject extends Model
         return $this->belongsTo(Subject::class, 'subject_id');
     }
 
-    public function track(): BelongsTo
-    {
-        return $this->belongsTo(Track::class, 'track_id');
-    }
-
     public function accountSubjects(): HasMany
     {
         return $this->hasMany(AccountSubject::class);
@@ -39,10 +35,17 @@ class GradeSubject extends Model
 
     public function getNameAttribute(): string
     {
-        $grade = $this->relationLoaded('grade') ? $this->grade?->name : $this->grade()->value('name');
-        $subject = $this->relationLoaded('subject') ? $this->subject?->name : $this->subject()->value('name');
-        $track = $this->relationLoaded('track') ? $this->track?->name : $this->track()->value('name');
+        return $this->full_name;
+    }
 
-        return collect([$grade, $subject, $track])->filter()->join(' - ');
+    public function getFullNameAttribute(): string
+    {
+        $grade = $this->relationLoaded('grade') ? $this->grade : $this->grade()->with('educationStage')->first();
+        $grade?->loadMissing('educationStage');
+
+        $subject = $this->relationLoaded('subject') ? $this->subject : $this->subject()->with('track')->first();
+        $subject?->loadMissing('track');
+
+        return collect([$grade?->full_name, $subject?->full_name])->filter()->join(' / ');
     }
 }

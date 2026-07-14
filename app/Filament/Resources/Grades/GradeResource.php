@@ -3,22 +3,20 @@
 namespace App\Filament\Resources\Grades;
 
 use App\Filament\Base\BaseResource;
+use App\Filament\Clusters\EducationCatalog;
 use App\Filament\Resources\Grades\Schemas\GradeForm;
 use App\Filament\Resources\Grades\Tables\GradesTable;
 use App\Models\Grade;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class GradeResource extends BaseResource
 {
     protected static ?string $model = Grade::class;
 
-    protected static string|UnitEnum|null $navigationGroup = BaseResource::PROJECT_DATA_NAVIGATION_GROUP;
+    protected static ?string $cluster = EducationCatalog::class;
 
-    protected static ?string $navigationParentItem = BaseResource::EDUCATION_CATALOG_NAVIGATION_PARENT;
-
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
     {
@@ -39,8 +37,6 @@ class GradeResource extends BaseResource
     {
         return [
             'index' => Pages\ListGrades::route('/'),
-            'create' => Pages\CreateGrade::route('/create'),
-            'edit' => Pages\EditGrade::route('/{record}/edit'),
         ];
     }
 }

@@ -165,25 +165,13 @@ class DatabaseSeeder extends Seeder
             'name' => $this->translation('Three', 'الصف الثالث'),
         ]);
 
-        $math = Subject::query()
-            ->where('name->en', 'Mathematics')
-            ->firstOrCreate([], [
-                'name' => $this->translation('Mathematics', 'الرياضيات'),
-                'description' => $this->translation(
-                    'Core secondary mathematics subject.',
-                    'مادة الرياضيات الأساسية للمرحلة الثانوية.'
-                ),
-            ]);
-
-        $physics = Subject::query()
-            ->where('name->en', 'Physics')
-            ->firstOrCreate([], [
-                'name' => $this->translation('Physics', 'الفيزياء'),
-                'description' => $this->translation(
-                    'Secondary physics subject.',
-                    'مادة الفيزياء للمرحلة الثانوية.'
-                ),
-            ]);
+        $generalTrack = Track::query()->firstOrCreate([
+            'code' => 'general',
+        ], [
+            'name' => $this->translation('General', 'عام'),
+            'code' => 'general',
+            'sort_order' => 0,
+        ]);
 
         $scientificTrack = Track::query()->firstOrCreate([
             'code' => 'scientific',
@@ -217,22 +205,43 @@ class DatabaseSeeder extends Seeder
             'sort_order' => 4,
         ]);
 
+        $math = Subject::query()
+            ->where('track_id', $scientificMathTrack->id)
+            ->where('name->en', 'Mathematics')
+            ->firstOrCreate([], [
+                'track_id' => $scientificMathTrack->id,
+                'name' => $this->translation('Mathematics', 'الرياضيات'),
+                'description' => $this->translation(
+                    'Core secondary mathematics subject.',
+                    'مادة الرياضيات الأساسية للمرحلة الثانوية.'
+                ),
+            ]);
+
+        $physics = Subject::query()
+            ->where('track_id', $scientificTrack->id)
+            ->where('name->en', 'Physics')
+            ->firstOrCreate([], [
+                'track_id' => $scientificTrack->id,
+                'name' => $this->translation('Physics', 'الفيزياء'),
+                'description' => $this->translation(
+                    'Secondary physics subject.',
+                    'مادة الفيزياء للمرحلة الثانوية.'
+                ),
+            ]);
+
         $secondaryOneMath = GradeSubject::query()->firstOrCreate([
             'grade_id' => $secondaryOne->id,
             'subject_id' => $math->id,
-            'track_id' => $scientificTrack->id,
         ]);
 
         $secondaryOnePhysics = GradeSubject::query()->firstOrCreate([
             'grade_id' => $secondaryOne->id,
             'subject_id' => $physics->id,
-            'track_id' => $literaryTrack->id,
         ]);
 
         $secondaryTwoMath = GradeSubject::query()->firstOrCreate([
             'grade_id' => $secondaryTwo->id,
             'subject_id' => $math->id,
-            'track_id' => $literaryTrack->id,
         ]);
 
         $saasOwner = $this->user('01000000000', 'Almanasa', 'Owner');

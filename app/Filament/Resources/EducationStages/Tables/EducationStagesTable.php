@@ -10,10 +10,12 @@ class EducationStagesTable extends BaseTable
     protected function columns(): array
     {
         return [
+
+            TextColumn::make('id')
+                ->label('#'),
+
             TextColumn::make('name')
-                ->label('Name')
-                ->searchable()
-                ->sortable(),
+                ->label('Name'),
         ];
     }
 
@@ -27,10 +29,13 @@ class EducationStagesTable extends BaseTable
         return 'asc';
     }
 
-    protected function extraFilters(): array
+    protected function hasViewAction(): bool
     {
-        return [
-            //
-        ];
+        return false;
+    }
+
+    protected function hasEditAction(): bool
+    {
+        return false;
     }
 }

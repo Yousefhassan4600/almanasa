@@ -16,13 +16,12 @@ class StudentProfilesTable extends BaseTable
                 ->sortable(),
             ImageColumn::make('avatar')
                 ->label('Avatar')
-                ->circular()
-                ->size(50),
+                ->circular(),
             TextColumn::make('user.name')
                 ->label('User')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('education_stage.name')
+            TextColumn::make('educationStage.name')
                 ->label('Education Stage')
                 ->searchable()
                 ->sortable(),

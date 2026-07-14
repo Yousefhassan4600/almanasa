@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Cities\Schemas;
 
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -11,12 +12,18 @@ class CityForm
     {
         return $schema
             ->components([
-                TextInput::make('country_id')
-                    ->label('Country Id')
-                    ->numeric()
+                Select::make('country_id')
+                    ->label('Country')
+                    ->relationship('country', 'name')
+                    ->preload()
+                    ->searchable()
+                    ->required()
+                    ->columnSpanFull(),
+                TextInput::make('name.ar')
+                    ->label('Name (Arabic)')
                     ->required(),
-                TextInput::make('name')
-                    ->label('Name')
+                TextInput::make('name.en')
+                    ->label('Name (English)')
                     ->required(),
             ]);
     }

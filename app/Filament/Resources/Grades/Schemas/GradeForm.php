@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Grades\Schemas;
 
-use Filament\Forms\Components\TextInput;
+use App\Models\Subject;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 
 class GradeForm
@@ -11,13 +13,24 @@ class GradeForm
     {
         return $schema
             ->components([
-                TextInput::make('education_stage_id')
-                    ->label('Education Stage Id')
-                    ->numeric()
-                    ->required(),
-                TextInput::make('name')
-                    ->label('Name')
-                    ->required(),
+                Hidden::make('education_stage_id')
+                    ->dehydrated(true),
+                Hidden::make('name.ar')
+                    ->dehydrated(true),
+                Hidden::make('name.en')
+                    ->dehydrated(true),
+                Select::make('subject_ids')
+                    ->label('Subjects')
+                    ->multiple()
+                    ->options(fn () => Subject::query()
+                        ->with('track')
+                        ->get()
+                        ->mapWithKeys(fn (Subject $subject): array => [
+                            $subject->id => collect([$subject->name, $subject->track?->name])->filter()->join(' - '),
+                        ]))
+                    ->preload()
+                    ->searchable()
+                    ->columnSpanFull(),
             ]);
     }
 }

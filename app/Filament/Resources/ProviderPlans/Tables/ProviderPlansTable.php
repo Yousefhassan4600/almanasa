@@ -34,15 +34,15 @@ class ProviderPlansTable extends BaseTable
                     }
 
                     return new HtmlString(
-                        "<div class='flex flex-wrap gap-1'>".
+                        "<div class='flex flex-wrap gap-1'>" .
                             $record->options->map(function ($option) {
-                                return "<span class='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200'>".e($option->billing_period_days ?? '').' days - '.e($option->price ?? '').' EGP</span>';
-                            })->implode(' <br /> ').
+                                return "<span class='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200'>" . e($option->billing_period_days ?? '') . ' days - ' . e($option->price ?? '') . ' EGP</span>';
+                            })->implode(' <br /> ') .
                             '</div>'
                     );
                 }),
             IconColumn::make('is_active')
-                ->label('Active')
+                ->label('Is Active')
                 ->boolean(),
         ];
     }

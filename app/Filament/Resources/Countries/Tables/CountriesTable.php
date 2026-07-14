@@ -10,18 +10,14 @@ class CountriesTable extends BaseTable
     protected function columns(): array
     {
         return [
+            TextColumn::make('id')
+                ->label('#'),
             TextColumn::make('name')
-                ->label('Name')
-                ->searchable()
-                ->sortable(),
+                ->label('Name'),
             TextColumn::make('code')
-                ->label('Code')
-                ->searchable()
-                ->sortable(),
+                ->label('Code'),
             TextColumn::make('phone_code')
-                ->label('Phone Code')
-                ->searchable()
-                ->sortable(),
+                ->label('Phone Code'),
         ];
     }
 

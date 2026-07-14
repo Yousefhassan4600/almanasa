@@ -16,7 +16,7 @@ class AccountSubjectResource extends BaseResource
 
     protected static string|UnitEnum|null $navigationGroup = 'Education Setup';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
@@ -37,8 +37,6 @@ class AccountSubjectResource extends BaseResource
     {
         return [
             'index' => Pages\ListAccountSubjects::route('/'),
-            'create' => Pages\CreateAccountSubject::route('/create'),
-            'edit' => Pages\EditAccountSubject::route('/{record}/edit'),
         ];
     }
 }

@@ -29,7 +29,7 @@ class ProviderPlanForm
                         Textarea::make('description.en')
                             ->label('Description (English)'),
                         Toggle::make('is_active')
-                            ->label('Active')
+                            ->label('Is Active')
                             ->default(true),
                     ]),
                 Section::make('Features & Options')

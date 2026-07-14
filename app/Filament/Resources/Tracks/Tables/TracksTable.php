@@ -10,12 +10,14 @@ class TracksTable extends BaseTable
     protected function columns(): array
     {
         return [
+            TextColumn::make('id')
+                ->label('#'),
+
             TextColumn::make('name')
-                ->searchable()
-                ->sortable(),
+                ->label('Name'),
+
             TextColumn::make('code')
-                ->searchable()
-                ->sortable(),
+                ->label('Code'),
         ];
     }
 
@@ -29,10 +31,13 @@ class TracksTable extends BaseTable
         return 'asc';
     }
 
-    protected function extraFilters(): array
+    protected function hasViewAction(): bool
     {
-        return [
-            //
-        ];
+        return false;
+    }
+
+    protected function hasEditAction(): bool
+    {
+        return false;
     }
 }

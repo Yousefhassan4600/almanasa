@@ -37,8 +37,6 @@ class AcademyTeacherResource extends BaseResource
     {
         return [
             'index' => Pages\ListAcademyTeachers::route('/'),
-            'create' => Pages\CreateAcademyTeacher::route('/create'),
-            'edit' => Pages\EditAcademyTeacher::route('/{record}/edit'),
         ];
     }
 }

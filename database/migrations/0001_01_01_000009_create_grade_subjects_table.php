@@ -12,12 +12,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('grade_id')->constrained('grades')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('subject_id')->constrained('subjects')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('track_id')->constrained('tracks')->cascadeOnUpdate()->restrictOnDelete();
             $table->timestamps();
             $table->unique([
                 0 => 'grade_id',
                 1 => 'subject_id',
-                2 => 'track_id',
             ]);
         });
     }

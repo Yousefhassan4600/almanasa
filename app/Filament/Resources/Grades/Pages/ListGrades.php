@@ -8,4 +8,9 @@ use App\Filament\Resources\Grades\GradeResource;
 class ListGrades extends BaseListRecords
 {
     protected static string $resource = GradeResource::class;
+
+    protected function hasCreateAction(): bool
+    {
+        return false;
+    }
 }

@@ -44,8 +44,8 @@ class AccountSubject extends Model
         $provider = $this->relationLoaded('provider') ? $this->provider?->name : $this->provider()->value('name');
         $gradeSubject = $this->relationLoaded('gradeSubject')
             ? $this->gradeSubject?->name
-            : $this->gradeSubject()->with(['grade', 'subject', 'track'])->first()?->name;
+            : $this->gradeSubject()->with(['grade', 'subject.track'])->first()?->name;
 
-        return collect([$provider, $gradeSubject])->filter()->join(' - ');
+        return $gradeSubject;
     }
 }

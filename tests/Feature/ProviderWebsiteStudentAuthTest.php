@@ -5,17 +5,26 @@ namespace Tests\Feature;
 use App\Enums\AccountType;
 use App\Enums\ProviderSubscriptionStatus;
 use App\Enums\ProviderType;
+use App\Livewire\Website\AuthControls;
+use App\Livewire\Website\HomeCta;
+use App\Livewire\Website\HomeSubjects;
 use App\Livewire\Website\LoginForm;
 use App\Livewire\Website\RegisterForm;
+use App\Livewire\Website\SubjectsPage;
 use App\Models\Account;
+use App\Models\AccountSubject;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\EducationStage;
 use App\Models\Grade;
+use App\Models\GradeSubject;
 use App\Models\Provider;
 use App\Models\ProviderPlan;
+use App\Models\ProviderPlanOption;
 use App\Models\ProviderSubscription;
 use App\Models\StudentProfile;
+use App\Models\Subject;
+use App\Models\Track;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -32,7 +41,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->withSession([]);
     }
 
-    public function test_login_page_uses_public_template_with_plain_post_form(): void
+    public function test_login_page_uses_public_template_with_livewire_form(): void
     {
         $provider = $this->provider();
 
@@ -40,15 +49,16 @@ class ProviderWebsiteStudentAuthTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertSeeLivewire(LoginForm::class)
+            ->assertSeeLivewire(AuthControls::class)
             ->assertSee('phone-verification-form', false)
-            ->assertSee('method="POST"', false)
-            ->assertSee('action="/login/send-otp"', false)
-            ->assertDontSee('src="/livewire', false)
-            ->assertDontSee('wire:submit', false)
+            ->assertSee('wire:submit', false)
+            ->assertDontSee('action="/login/send-otp"', false)
             ->assertDontSee('http://127.0.0.1:8000/livewire', false)
             ->assertSee('href="/login"', false)
             ->assertSee('href="/subjects"', false)
-            ->assertDontSee('.html"', false);
+            ->assertDontSee('href="login.html"', false)
+            ->assertDontSee('href="subjects.html"', false);
     }
 
     public function test_legacy_page_urls_redirect_permanently_to_canonical_urls(): void
@@ -102,26 +112,48 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->assertSame($provider->id, session('current_provider_id'));
     }
 
-    public function test_plain_html_post_fallback_sends_and_verifies_otp(): void
+    public function test_otp_and_register_pages_render_livewire_components(): void
     {
         $provider = $this->provider();
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
 
-        $this->post('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/login/send-otp', [
-            'dial_country_code' => '+20',
-            'phone' => '01012345678',
-        ])->assertRedirect('/otp');
+        $this->withSession([
+            LoginForm::challengeKeyFor($provider->id) => [
+                'provider_id' => $provider->id,
+                'dial_country_code' => '+20',
+                'phone' => '01012345678',
+                'code_hash' => bcrypt('1234'),
+                'expires_at' => now()->addMinutes(5)->timestamp,
+            ],
+        ])->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/otp')
+            ->assertOk()
+            ->assertSeeLivewire(LoginForm::class)
+            ->assertSee('otp-verification-form', false)
+            ->assertSee('wire:submit', false)
+            ->assertSee('submitIfComplete', false)
+            ->assertDontSee('action="/otp/verify"', false);
 
-        $this->assertTrue(session()->has(LoginForm::challengeKeyFor($provider->id)));
+        $this->actingAs($user)->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/register')
+            ->assertOk()
+            ->assertSeeLivewire(RegisterForm::class)
+            ->assertSeeLivewire(AuthControls::class)
+            ->assertSee('profile-completion-form', false)
+            ->assertSee('wire:submit', false)
+            ->assertDontSee('action="/register"', false);
+    }
 
-        $this->post('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/otp/verify', [
-            'otp1' => '1',
-            'otp2' => '2',
-            'otp3' => '3',
-            'otp4' => '4',
-        ])->assertRedirect('/register');
+    public function test_removed_plain_html_auth_post_routes_do_not_handle_auth(): void
+    {
+        $provider = $this->provider();
+        $providerUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
 
-        $this->assertAuthenticated();
-        $this->assertDatabaseHas(Account::class, [
+        $this->post($providerUrl.'/login/send-otp')->assertStatus(405);
+        $this->post($providerUrl.'/otp/verify')->assertStatus(405);
+        $this->post($providerUrl.'/register')->assertStatus(405);
+
+        $this->assertGuest();
+        $this->assertDatabaseMissing(Account::class, [
             'provider_id' => $provider->id,
             'type' => AccountType::Student->value,
         ]);
@@ -137,11 +169,13 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/register')
             ->assertOk()
             ->assertSee('تسجيل الخروج', false)
-            ->assertSee('action="/logout"', false)
+            ->assertSeeLivewire(AuthControls::class)
+            ->assertSee('wire:click="logout"', false)
+            ->assertDontSee('action="/logout"', false)
             ->assertDontSee('href="/profile"', false)
             ->assertDontSee('href="/cart"', false)
-            ->assertDontSee('id="openSidebarBtn"', false)
-            ->assertDontSee('id="mobileSidebar"', false);
+            ->assertSee('id="openSidebarBtn"', false)
+            ->assertSee('id="mobileSidebar"', false);
     }
 
     public function test_incomplete_profile_student_sees_home_as_guest(): void
@@ -157,6 +191,160 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('تسجيل الخروج', false)
             ->assertDontSee('href="/profile"', false)
             ->assertDontSee('href="/cart"', false);
+    }
+
+    public function test_completed_profile_student_sees_profile_and_cart_icons(): void
+    {
+        $provider = $this->provider();
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+        $this->studentProfile($user);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->assertOk()
+            ->assertSee('تسجيل الخروج', false)
+            ->assertSee('href="/profile"', false)
+            ->assertSee('href="/cart"', false)
+            ->assertDontSee('>الملف الشخصي<', false);
+    }
+
+    public function test_home_subjects_are_filtered_by_student_grade_and_provider(): void
+    {
+        $provider = $this->provider();
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+
+        $stage = EducationStage::query()->create(['name' => 'Secondary', 'sort_order' => 1]);
+        $studentGrade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
+        $otherGrade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 2', 'sort_order' => 2]);
+        $this->studentProfile($user, $studentGrade);
+
+        $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
+        $math = Subject::query()->create(['track_id' => $track->id, 'name' => ['en' => 'Mathematics', 'ar' => 'الرياضيات']]);
+        $physics = Subject::query()->create(['track_id' => $track->id, 'name' => ['en' => 'Physics', 'ar' => 'الفيزياء']]);
+        $chemistry = Subject::query()->create(['track_id' => $track->id, 'name' => ['en' => 'Chemistry', 'ar' => 'الكيمياء']]);
+
+        foreach ([$math, $physics] as $subject) {
+            AccountSubject::query()->create([
+                'provider_id' => $provider->id,
+                'grade_subject_id' => GradeSubject::query()->create([
+                    'grade_id' => $studentGrade->id,
+                    'subject_id' => $subject->id,
+                ])->id,
+                'is_active' => true,
+            ]);
+        }
+
+        AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $otherGrade->id,
+                'subject_id' => $chemistry->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->assertOk()
+            ->assertSeeLivewire(HomeSubjects::class)
+            ->assertSee('الرياضيات', false)
+            ->assertSee('الفيزياء', false)
+            ->assertDontSee('fa-flask-vial', false);
+    }
+
+    public function test_subjects_page_searches_subjects_in_student_grade(): void
+    {
+        $provider = $this->provider();
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+
+        $stage = EducationStage::query()->create(['name' => 'Secondary', 'sort_order' => 1]);
+        $studentGrade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
+        $otherGrade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 2', 'sort_order' => 2]);
+        $this->studentProfile($user, $studentGrade);
+
+        $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
+        $math = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Mathematics', 'ar' => 'الرياضيات'],
+            'description' => ['en' => 'Math description', 'ar' => 'شرح الرياضيات'],
+        ]);
+        $physics = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Physics', 'ar' => 'الفيزياء'],
+            'description' => ['en' => 'Physics description', 'ar' => 'شرح الفيزياء'],
+        ]);
+        $chemistry = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Chemistry', 'ar' => 'الكيمياء'],
+            'description' => ['en' => 'Chemistry description', 'ar' => 'شرح الكيمياء'],
+        ]);
+
+        foreach ([$math, $physics] as $subject) {
+            AccountSubject::query()->create([
+                'provider_id' => $provider->id,
+                'grade_subject_id' => GradeSubject::query()->create([
+                    'grade_id' => $studentGrade->id,
+                    'subject_id' => $subject->id,
+                ])->id,
+                'is_active' => true,
+            ]);
+        }
+
+        AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $otherGrade->id,
+                'subject_id' => $chemistry->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/subjects')
+            ->assertOk()
+            ->assertSeeLivewire(SubjectsPage::class)
+            ->assertSee('wire:model.live.debounce.300ms="search"', false)
+            ->assertSee('Grade 1', false)
+            ->assertSee('الرياضيات', false)
+            ->assertSee('الفيزياء', false)
+            ->assertDontSee('الكيمياء', false)
+            ->assertDontSee('فلترة', false);
+
+        Livewire::actingAs($user)
+            ->test(SubjectsPage::class, ['providerId' => $provider->id])
+            ->assertSee('الرياضيات', false)
+            ->assertSee('الفيزياء', false)
+            ->set('search', 'رياض')
+            ->assertSee('الرياضيات', false)
+            ->assertDontSee('الفيزياء', false)
+            ->assertDontSee('الكيمياء', false);
+    }
+
+    public function test_home_cta_links_guests_to_login(): void
+    {
+        $provider = $this->provider();
+
+        $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->assertOk()
+            ->assertSeeLivewire(HomeCta::class)
+            ->assertSee('جاهز للانطلاق نحو التفوق ؟', false)
+            ->assertSee('href="/login"', false)
+            ->assertSee('ابدأ رحلتك الآن', false);
+    }
+
+    public function test_home_cta_is_hidden_for_authenticated_users(): void
+    {
+        $provider = $this->provider();
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->assertOk()
+            ->assertDontSee('جاهز للانطلاق نحو التفوق ؟', false);
     }
 
     public function test_existing_provider_student_with_profile_redirects_home(): void
@@ -246,7 +434,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $provider = $this->provider();
         $user = User::factory()->create(['first_name' => '']);
         $this->studentAccount($provider, $user);
-        $country = Country::query()->create(['name' => 'Egypt', 'code' => 'EG', 'phone_code' => '+20', 'currency_code' => 'EGP']);
+        $country = Country::query()->create(['name' => 'Egypt', 'code' => 'EG', 'phone_code' => '+20']);
         $city = City::query()->create(['country_id' => $country->id, 'name' => 'Cairo']);
         $stage = EducationStage::query()->create(['name' => 'Primary', 'sort_order' => 1]);
         $grade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
@@ -299,10 +487,12 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $owner = User::factory()->create();
         $plan = ProviderPlan::query()->create([
             'name' => ['en' => 'Basic'],
-            'code' => $slug.'-basic',
-            'price' => 0,
-            'billing_period_days' => 30,
             'is_active' => true,
+        ]);
+        $planOption = ProviderPlanOption::query()->create([
+            'provider_plan_id' => $plan->id,
+            'billing_period_days' => 30,
+            'price' => 0,
         ]);
 
         $provider = Provider::query()->create([
@@ -318,12 +508,11 @@ class ProviderWebsiteStudentAuthTest extends TestCase
 
         ProviderSubscription::query()->create([
             'provider_id' => $provider->id,
-            'provider_plan_id' => $plan->id,
+            'provider_plan_option_id' => $planOption->id,
             'status' => ProviderSubscriptionStatus::Active,
             'starts_at' => now()->subDay(),
             'ends_at' => now()->addMonth(),
             'amount' => 0,
-            'currency_code' => 'EGP',
         ]);
 
         return $provider;
@@ -340,11 +529,13 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
     }
 
-    private function studentProfile(User $user): StudentProfile
+    private function studentProfile(User $user, ?Grade $grade = null): StudentProfile
     {
         return StudentProfile::query()->create([
             'user_id' => $user->id,
             'email' => 'student'.$user->id.'@example.com',
+            'education_stage_id' => $grade?->education_stage_id,
+            'grade_id' => $grade?->id,
         ]);
     }
 }

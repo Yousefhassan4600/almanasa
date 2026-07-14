@@ -2,17 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Gender;
 use App\Enums\ProviderType;
 use App\Livewire\Website\LoginForm;
-use App\Models\City;
-use App\Models\Country;
-use App\Models\EducationStage;
-use App\Models\Grade;
 use App\Models\Provider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;
 
 class AcademySiteController extends Controller
@@ -131,11 +127,10 @@ class AcademySiteController extends Controller
             $html,
         );
 
-        $html = $this->injectWebsiteAuthControls($html, $provider);
-
-        if ($page === 'register.html' && Auth::check() && ! Auth::user()?->studentProfile()->exists()) {
-            $html = $this->injectIncompleteProfileHeader($html);
-        }
+        $html = $this->injectWebsiteHeader($html, $provider, $page);
+        $html = $this->injectHomeSubjects($html, $provider);
+        $html = $this->injectHomeCta($html, $provider);
+        $html = $this->injectSubjectsPage($html, $provider, $page);
 
         $html = $this->injectAuthForm($html, $provider, $page);
 
@@ -143,7 +138,12 @@ class AcademySiteController extends Controller
             $html = $this->injectProfileData($html, $provider);
         }
 
-        return $this->canonicalizePageUrls($html);
+        $html = $this->canonicalizePageUrls($html);
+        $html = $this->injectLivewireAssets($html);
+
+        return Blade::render($html, [
+            'provider' => $provider,
+        ]);
     }
 
     private function injectAuthForm(string $html, Provider $provider, string $page): string
@@ -158,39 +158,36 @@ class AcademySiteController extends Controller
             default => 'phone-verification-form',
         };
 
-        $formHtml = $page === 'register.html'
-            ? $this->registerFormHtml($provider)
-            : $this->loginFormHtml($provider, $page === 'otp.html');
+        $component = $page === 'register.html'
+            ? $this->livewireComponent('website.register-form', $provider, $page)
+            : $this->livewireComponent('website.login-form', $provider, $page);
 
-        return preg_replace(
-            '/<form id="'.preg_quote($formId, '/').'".*?<\\/form>/s',
-            $formHtml,
+        $html = preg_replace(
+            '/<form\b(?=[^>]*\bid="'.preg_quote($formId, '/').'")[^>]*>.*?<\/form>/s',
+            $component,
             $html,
             1,
         ) ?? $html;
+
+        return $this->removeLegacyAuthPageScripts($html, $page);
     }
 
-    private function loginFormHtml(Provider $provider, bool $otpSent): string
+    private function livewireComponent(string $name, Provider $provider, string $key): string
     {
-        return view('livewire.website.login-form', [
-            'provider' => $provider,
-            'themeColor' => $this->themeColor($provider),
-            'developmentOtp' => config('almanasa.website_otp_code'),
-            'otpSent' => $otpSent,
-        ])->render();
+        return "@livewire('{$name}', ['providerId' => {$provider->id}], key('{$name}-{$provider->id}-{$key}'))";
     }
 
-    private function registerFormHtml(Provider $provider): string
+    private function removeLegacyAuthPageScripts(string $html, string $page): string
     {
-        return view('livewire.website.register-form', [
-            'provider' => $provider,
-            'themeColor' => $this->themeColor($provider),
-            'countries' => Country::query()->orderBy('name')->get(),
-            'cities' => City::query()->orderBy('name')->get(),
-            'educationStages' => EducationStage::query()->orderBy('sort_order')->get(),
-            'grades' => Grade::query()->orderBy('sort_order')->get(),
-            'genders' => Gender::options(),
-        ])->render();
+        if (! in_array($page, ['login.html', 'otp.html', 'register.html'], true)) {
+            return $html;
+        }
+
+        return preg_replace(
+            '/<script\b(?![^>]*\bsrc=)[^>]*>.*?(handleFormSubmit|handleOtpSubmit|handleProfileSubmit).*?<\/script>/s',
+            '',
+            $html,
+        ) ?? $html;
     }
 
     private function themeColor(Provider $provider): string
@@ -198,40 +195,95 @@ class AcademySiteController extends Controller
         return $provider->type === ProviderType::StandaloneTeacher ? '#FEB008' : '#5D3FD3';
     }
 
+    private function injectWebsiteHeader(string $html, Provider $provider, string $page): string
+    {
+        $logoutOnly = $page === 'register.html' && Auth::check() && ! Auth::user()?->studentProfile()->exists();
+        $activePage = Str::beforeLast($page, '.html');
+
+        return preg_replace(
+            '/<header\b.*?<\/header>/s',
+            '<x-website.header :provider="$provider" page="'.e($activePage).'" :logout-only="'.($logoutOnly ? 'true' : 'false').'" />',
+            $html,
+            1,
+        ) ?? $html;
+    }
+
     private function injectWebsiteAuthControls(string $html, Provider $provider): string
     {
-        $themeColor = $this->themeColor($provider);
         $hasCompletedProfile = Auth::check() && Auth::user()?->studentProfile()->exists();
 
-        if ($hasCompletedProfile) {
-            $desktop = '<a href="/profile" class="hidden lg:flex bg-transparent text-gray-700 border-2 border-gray-200 py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-gray-50 active:scale-95 items-center justify-center whitespace-nowrap">الملف الشخصي</a>'
-                .'<form method="POST" action="/logout" class="hidden lg:flex">'.csrf_field().'<button type="submit" class="bg-transparent text-red-600 border-2 border-red-100 py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-red-50 active:scale-95 whitespace-nowrap">تسجيل الخروج</button></form>';
-            $mobile = '<a href="/profile" class="w-full text-center bg-transparent text-gray-700 border-2 border-gray-200 py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-gray-50">الملف الشخصي</a>'
-                .'<form method="POST" action="/logout" class="w-full">'.csrf_field().'<button type="submit" class="w-full text-center bg-transparent text-red-600 border-2 border-red-100 py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-red-50">تسجيل الخروج</button></form>';
-        } else {
-            $desktop = '<a href="/login" class="hidden lg:flex bg-transparent text-['.$themeColor.'] border-2 border-['.$themeColor.'] py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-gray-50 active:scale-95 items-center justify-center whitespace-nowrap">تسجيل الدخول</a>';
-            $mobile = '<a href="/login" class="w-full text-center bg-transparent text-['.$themeColor.'] border-2 border-['.$themeColor.'] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-gray-50">تسجيل الدخول</a>';
-        }
+        $desktop = "@livewire('website.auth-controls', ['providerId' => {$provider->id}, 'placement' => 'desktop'], key('website-auth-controls-desktop-{$provider->id}'))";
+        $mobile = "@livewire('website.auth-controls', ['providerId' => {$provider->id}, 'placement' => 'mobile'], key('website-auth-controls-mobile-{$provider->id}'))";
 
-        $html = preg_replace('/<a href="register\.html".*?<\\/a>\\s*<a href="login\.html".*?<\\/a>/s', $desktop, $html, 1) ?? $html;
+        $html = preg_replace(
+            '/<a\s+href="login\.html"\s+class="hidden lg:flex[^"]*"[^>]*>.*?<\/a>/s',
+            $desktop,
+            $html,
+            1,
+        ) ?? $html;
 
-        $html = preg_replace('/<a href="register\.html".*?<\\/a>\\s*<a href="login\.html".*?<\\/a>/s', $mobile, $html, 1) ?? $html;
+        $html = preg_replace(
+            '/<div class="space-y-3 mt-8 border-t pt-4 flex flex-col">.*?<\/div>/s',
+            $mobile,
+            $html,
+            1,
+        ) ?? $html;
 
         return $hasCompletedProfile ? $html : $this->removeAuthenticatedHeaderShortcuts($html);
     }
 
-    private function removeAuthenticatedHeaderShortcuts(string $html): string
+    private function injectHomeCta(string $html, Provider $provider): string
     {
-        $html = preg_replace('/<a href="cart\.html" class="text-gray-700.*?<\\/a>/s', '', $html) ?? $html;
-        $html = preg_replace('/<button class="text-gray-700.*?<\\/button>/s', '', $html, 1) ?? $html;
-        $html = preg_replace('/<a href="profile\.html" class="text-gray-700.*?<\\/a>/s', '', $html) ?? $html;
-
-        return preg_replace('/<a href="profile\.html"\\s+class="w-full.*?<\\/a>/s', '', $html) ?? $html;
+        return preg_replace(
+            '/\s*<!-- cta -->\s*<section class="py-16 bg-white" dir="rtl">.*?جاهز للانطلاق نحو التفوق ؟.*?<\/section>/s',
+            "\n@livewire('website.home-cta', ['providerId' => {$provider->id}], key('website-home-cta-{$provider->id}'))",
+            $html,
+            1,
+        ) ?? $html;
     }
 
-    private function injectIncompleteProfileHeader(string $html): string
+    private function injectHomeSubjects(string $html, Provider $provider): string
     {
-        $logoutForm = '<form method="POST" action="/logout" class="flex">'.csrf_field().'<button type="submit" class="bg-transparent text-red-600 border-2 border-red-100 py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-red-50 active:scale-95 whitespace-nowrap">تسجيل الخروج</button></form>';
+        return preg_replace(
+            '/\s*<!-- subjects section -->\s*<section class="bg-white" dir="rtl">.*?<\/section>\s*(?=<!-- best teachers -->)/s',
+            "\n@livewire('website.home-subjects', ['providerId' => {$provider->id}], key('website-home-subjects-{$provider->id}'))\n",
+            $html,
+            1,
+        ) ?? $html;
+    }
+
+    private function injectSubjectsPage(string $html, Provider $provider, string $page): string
+    {
+        if ($page !== 'subjects.html') {
+            return $html;
+        }
+
+        return preg_replace(
+            '/<section class="relative bg-white pb-20" dir="rtl">.*?<\/section>\s*<!-- subjects grid -->\s*<section class="py-12 bg-white" dir="rtl">.*?<\/section>/s',
+            "\n@livewire('website.subjects-page', ['providerId' => {$provider->id}], key('website-subjects-page-{$provider->id}'))\n",
+            $html,
+            1,
+        ) ?? $html;
+    }
+
+    private function injectLivewireAssets(string $html): string
+    {
+        $html = str_replace('</head>', "    @livewireStyles\n    </head>", $html);
+
+        return str_replace('</body>', "        @livewireScripts\n    </body>", $html);
+    }
+
+    private function removeAuthenticatedHeaderShortcuts(string $html): string
+    {
+        $html = preg_replace('/<a\s+href="cart\.html"\s+class="text-gray-700[^"]*"[^>]*>\s*<svg.*?<\/svg>\s*<\/a>/s', '', $html) ?? $html;
+        $html = preg_replace('/<button\s+class="text-gray-700[^"]*"[^>]*>\s*<svg.*?<\/svg>\s*<\/button>/s', '', $html, 1) ?? $html;
+
+        return preg_replace('/<a\s+href="profile\.html"\s+class="text-gray-700[^"]*"[^>]*>\s*<svg.*?<\/svg>\s*<\/a>/s', '', $html) ?? $html;
+    }
+
+    private function injectIncompleteProfileHeader(string $html, Provider $provider): string
+    {
+        $logoutControls = "@livewire('website.auth-controls', ['providerId' => {$provider->id}, 'placement' => 'desktop', 'logoutOnly' => true], key('website-register-logout-controls-{$provider->id}'))";
 
         $html = preg_replace(
             '/<button id="openSidebarBtn".*?<\\/button>/s',
@@ -249,7 +301,7 @@ class AcademySiteController extends Controller
 
         $html = preg_replace(
             '/<div class="flex items-center gap-2 lg:gap-4" dir="rtl">.*?<\\/div>\\s*<\\/nav>/s',
-            '<div class="flex items-center gap-2 lg:gap-4" dir="rtl">'.$logoutForm.'</div></nav>',
+            '<div class="flex items-center gap-2 lg:gap-4" dir="rtl">'.$logoutControls.'</div></nav>',
             $html,
             1,
         ) ?? $html;

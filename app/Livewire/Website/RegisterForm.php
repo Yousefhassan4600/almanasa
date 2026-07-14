@@ -50,11 +50,11 @@ class RegisterForm extends Component
         $this->providerId = $providerId;
 
         if (! Auth::check()) {
-            return $this->redirect('/login.html', navigate: false);
+            return $this->redirect('/login', navigate: false);
         }
 
         if (Auth::user()?->studentProfile()->exists()) {
-            return $this->redirect('/index.html', navigate: false);
+            return $this->redirect('/', navigate: false);
         }
     }
 
@@ -89,7 +89,7 @@ class RegisterForm extends Component
             ]);
         });
 
-        return $this->redirect('/index.html', navigate: false);
+        return $this->redirect('/', navigate: false);
     }
 
     public function render(): mixed
@@ -99,12 +99,12 @@ class RegisterForm extends Component
             'themeColor' => $this->themeColor(),
             'countries' => Country::query()->orderBy('name')->get(),
             'cities' => City::query()
-                ->when($this->countryId, fn($query) => $query->where('country_id', $this->countryId))
+                ->when($this->countryId, fn ($query) => $query->where('country_id', $this->countryId))
                 ->orderBy('name')
                 ->get(),
             'educationStages' => EducationStage::query()->orderBy('sort_order')->get(),
             'grades' => Grade::query()
-                ->when($this->educationStageId, fn($query) => $query->where('education_stage_id', $this->educationStageId))
+                ->when($this->educationStageId, fn ($query) => $query->where('education_stage_id', $this->educationStageId))
                 ->orderBy('sort_order')
                 ->get(),
             'genders' => Gender::options(),
@@ -122,12 +122,12 @@ class RegisterForm extends Component
             'countryId' => ['required', Rule::exists(Country::class, 'id')],
             'cityId' => [
                 'required',
-                Rule::exists(City::class, 'id')->where(fn($query) => $query->where('country_id', $this->countryId)),
+                Rule::exists(City::class, 'id')->where(fn ($query) => $query->where('country_id', $this->countryId)),
             ],
             'educationStageId' => ['required', Rule::exists(EducationStage::class, 'id')],
             'gradeId' => [
                 'required',
-                Rule::exists(Grade::class, 'id')->where(fn($query) => $query->where('education_stage_id', $this->educationStageId)),
+                Rule::exists(Grade::class, 'id')->where(fn ($query) => $query->where('education_stage_id', $this->educationStageId)),
             ],
             'schoolName' => ['required', 'string', 'max:255'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],

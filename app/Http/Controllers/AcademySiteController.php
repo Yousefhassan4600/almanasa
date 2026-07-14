@@ -30,23 +30,29 @@ class AcademySiteController extends Controller
             ])
             ->firstOrFail();
 
+        $requestedPage = trim($page ?? '', '/');
+
+        if (preg_match('/^[A-Za-z0-9_\-\/]+\.html$/', $requestedPage) === 1) {
+            return redirect($this->canonicalPageUrl($requestedPage), 301);
+        }
+
         $page = $this->normalizePage($page);
 
         if (in_array($page, ['login.html', 'otp.html'], true) && Auth::check() && Auth::user()?->studentProfile()->exists()) {
-            return redirect('/index.html');
+            return redirect('/');
         }
 
         if ($page === 'otp.html' && ! session()->has(LoginForm::challengeKeyFor($provider->id))) {
-            return redirect('/login.html');
+            return redirect('/login');
         }
 
         if ($page === 'register.html') {
             if (! Auth::check()) {
-                return redirect('/login.html');
+                return redirect('/login');
             }
 
             if (Auth::user()?->studentProfile()->exists()) {
-                return redirect('/index.html');
+                return redirect('/');
             }
         }
 
@@ -134,10 +140,10 @@ class AcademySiteController extends Controller
         $html = $this->injectAuthForm($html, $provider, $page);
 
         if ($page === 'profile.html') {
-            return $this->injectProfileData($html, $provider);
+            $html = $this->injectProfileData($html, $provider);
         }
 
-        return $html;
+        return $this->canonicalizePageUrls($html);
     }
 
     private function injectAuthForm(string $html, Provider $provider, string $page): string
@@ -198,13 +204,13 @@ class AcademySiteController extends Controller
         $hasCompletedProfile = Auth::check() && Auth::user()?->studentProfile()->exists();
 
         if ($hasCompletedProfile) {
-            $desktop = '<a href="profile.html" class="hidden lg:flex bg-transparent text-gray-700 border-2 border-gray-200 py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-gray-50 active:scale-95 items-center justify-center whitespace-nowrap">الملف الشخصي</a>'
+            $desktop = '<a href="/profile" class="hidden lg:flex bg-transparent text-gray-700 border-2 border-gray-200 py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-gray-50 active:scale-95 items-center justify-center whitespace-nowrap">الملف الشخصي</a>'
                 .'<form method="POST" action="/logout" class="hidden lg:flex">'.csrf_field().'<button type="submit" class="bg-transparent text-red-600 border-2 border-red-100 py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-red-50 active:scale-95 whitespace-nowrap">تسجيل الخروج</button></form>';
-            $mobile = '<a href="profile.html" class="w-full text-center bg-transparent text-gray-700 border-2 border-gray-200 py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-gray-50">الملف الشخصي</a>'
+            $mobile = '<a href="/profile" class="w-full text-center bg-transparent text-gray-700 border-2 border-gray-200 py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-gray-50">الملف الشخصي</a>'
                 .'<form method="POST" action="/logout" class="w-full">'.csrf_field().'<button type="submit" class="w-full text-center bg-transparent text-red-600 border-2 border-red-100 py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-red-50">تسجيل الخروج</button></form>';
         } else {
-            $desktop = '<a href="login.html" class="hidden lg:flex bg-transparent text-['.$themeColor.'] border-2 border-['.$themeColor.'] py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-gray-50 active:scale-95 items-center justify-center whitespace-nowrap">تسجيل الدخول</a>';
-            $mobile = '<a href="login.html" class="w-full text-center bg-transparent text-['.$themeColor.'] border-2 border-['.$themeColor.'] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-gray-50">تسجيل الدخول</a>';
+            $desktop = '<a href="/login" class="hidden lg:flex bg-transparent text-['.$themeColor.'] border-2 border-['.$themeColor.'] py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-gray-50 active:scale-95 items-center justify-center whitespace-nowrap">تسجيل الدخول</a>';
+            $mobile = '<a href="/login" class="w-full text-center bg-transparent text-['.$themeColor.'] border-2 border-['.$themeColor.'] py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-gray-50">تسجيل الدخول</a>';
         }
 
         $html = preg_replace('/<a href="register\.html".*?<\\/a>\\s*<a href="login\.html".*?<\\/a>/s', $desktop, $html, 1) ?? $html;
@@ -292,5 +298,21 @@ class AcademySiteController extends Controller
         ];
 
         return str_replace(array_keys($replacements), array_values($replacements), $html);
+    }
+
+    private function canonicalizePageUrls(string $html): string
+    {
+        return preg_replace_callback(
+            '/(?<quote>["\'])(?:\.?\/)?(?<page>[A-Za-z0-9_\-][A-Za-z0-9_\-\/]*)\.html(?<suffix>[?#][^"\']*)?\k<quote>/',
+            fn (array $matches): string => $matches['quote'].$this->canonicalPageUrl($matches['page'].'.html').($matches['suffix'] ?? '').$matches['quote'],
+            $html,
+        ) ?? $html;
+    }
+
+    private function canonicalPageUrl(string $page): string
+    {
+        $page = Str::beforeLast($page, '.html');
+
+        return $page === 'index' ? '/' : '/'.$page;
     }
 }

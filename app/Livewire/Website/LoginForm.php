@@ -69,7 +69,7 @@ class LoginForm extends Component
         $this->otpSent = true;
         $this->resetOtpFields();
 
-        return $this->redirect('/otp.html', navigate: false);
+        return $this->redirect('/otp', navigate: false);
     }
 
     public function verify(ResolveProviderStudentAccount $resolveProviderStudentAccount): mixed
@@ -116,10 +116,10 @@ class LoginForm extends Component
         $account->owner->loadMissing('studentProfile');
 
         if (! $account->owner->studentProfile) {
-            return $this->redirect('/register.html', navigate: false);
+            return $this->redirect('/register', navigate: false);
         }
 
-        return $this->redirect('/index.html', navigate: false);
+        return $this->redirect('/', navigate: false);
     }
 
     public function resetChallenge(): void

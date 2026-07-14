@@ -40,7 +40,7 @@ class ProviderWebsiteAuthController extends Controller
             'expires_at' => now()->addMinutes(5)->timestamp,
         ]);
 
-        return redirect('/otp.html');
+        return redirect('/otp');
     }
 
     public function verifyOtp(
@@ -90,7 +90,7 @@ class ProviderWebsiteAuthController extends Controller
 
         $account->owner->loadMissing('studentProfile');
 
-        return redirect($account->owner->studentProfile ? '/index.html' : '/register.html');
+        return redirect($account->owner->studentProfile ? '/' : '/register');
     }
 
     public function completeProfile(Request $request, string $accountSubdomain): RedirectResponse
@@ -101,7 +101,7 @@ class ProviderWebsiteAuthController extends Controller
         abort_unless($user, 403);
 
         if ($user->studentProfile()->exists()) {
-            return redirect('/index.html');
+            return redirect('/');
         }
 
         $data = $request->validate([
@@ -148,7 +148,7 @@ class ProviderWebsiteAuthController extends Controller
             ]);
         });
 
-        return redirect('/index.html');
+        return redirect('/');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -158,7 +158,7 @@ class ProviderWebsiteAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login.html');
+        return redirect('/login');
     }
 
     private function provider(string $accountSubdomain): Provider

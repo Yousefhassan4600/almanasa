@@ -36,7 +36,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
     {
         $provider = $this->provider();
 
-        $response = $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/login.html');
+        $response = $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/login');
 
         $response
             ->assertOk()
@@ -45,7 +45,36 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('action="/login/send-otp"', false)
             ->assertDontSee('src="/livewire', false)
             ->assertDontSee('wire:submit', false)
-            ->assertDontSee('http://127.0.0.1:8000/livewire', false);
+            ->assertDontSee('http://127.0.0.1:8000/livewire', false)
+            ->assertSee('href="/login"', false)
+            ->assertSee('href="/subjects"', false)
+            ->assertDontSee('.html"', false);
+    }
+
+    public function test_legacy_page_urls_redirect_permanently_to_canonical_urls(): void
+    {
+        $provider = $this->provider();
+        $providerUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
+
+        foreach ([
+            '/index.html' => '/',
+            '/login.html' => '/login',
+            '/subjects.html' => '/subjects',
+            '/home_work_done.html' => '/home_work_done',
+        ] as $legacyUrl => $canonicalUrl) {
+            $this->get($providerUrl.$legacyUrl)
+                ->assertRedirect($canonicalUrl)
+                ->assertMovedPermanently();
+        }
+    }
+
+    public function test_protected_auth_pages_redirect_guests_to_canonical_login_url(): void
+    {
+        $provider = $this->provider();
+        $providerUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
+
+        $this->get($providerUrl.'/otp')->assertRedirect('/login');
+        $this->get($providerUrl.'/register')->assertRedirect('/login');
     }
 
     public function test_new_phone_creates_user_and_provider_student_account_after_valid_otp(): void
@@ -58,7 +87,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->call('sendOtp')
             ->set('otp', '1234')
             ->call('verify')
-            ->assertRedirect('/register.html');
+            ->assertRedirect('/register');
 
         $user = User::query()->where('phone', '01012345678')->firstOrFail();
 
@@ -80,7 +109,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->post('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/login/send-otp', [
             'dial_country_code' => '+20',
             'phone' => '01012345678',
-        ])->assertRedirect('/otp.html');
+        ])->assertRedirect('/otp');
 
         $this->assertTrue(session()->has(LoginForm::challengeKeyFor($provider->id)));
 
@@ -89,7 +118,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'otp2' => '2',
             'otp3' => '3',
             'otp4' => '4',
-        ])->assertRedirect('/register.html');
+        ])->assertRedirect('/register');
 
         $this->assertAuthenticated();
         $this->assertDatabaseHas(Account::class, [
@@ -105,12 +134,12 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->studentAccount($provider, $user);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/register.html')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/register')
             ->assertOk()
             ->assertSee('تسجيل الخروج', false)
             ->assertSee('action="/logout"', false)
-            ->assertDontSee('href="profile.html"', false)
-            ->assertDontSee('href="cart.html"', false)
+            ->assertDontSee('href="/profile"', false)
+            ->assertDontSee('href="/cart"', false)
             ->assertDontSee('id="openSidebarBtn"', false)
             ->assertDontSee('id="mobileSidebar"', false);
     }
@@ -122,12 +151,12 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->studentAccount($provider, $user);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/index.html')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
             ->assertOk()
             ->assertSee('تسجيل الدخول', false)
             ->assertDontSee('تسجيل الخروج', false)
-            ->assertDontSee('href="profile.html"', false)
-            ->assertDontSee('href="cart.html"', false);
+            ->assertDontSee('href="/profile"', false)
+            ->assertDontSee('href="/cart"', false);
     }
 
     public function test_existing_provider_student_with_profile_redirects_home(): void
@@ -143,7 +172,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->call('sendOtp')
             ->set('otp', '1234')
             ->call('verify')
-            ->assertRedirect('/index.html');
+            ->assertRedirect('/');
 
         $this->assertAuthenticatedAs($user);
         $this->assertSame(1, Account::query()->where('owner_user_id', $user->id)->count());
@@ -163,7 +192,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->call('sendOtp')
             ->set('otp', '1234')
             ->call('verify')
-            ->assertRedirect('/index.html');
+            ->assertRedirect('/');
 
         $this->assertSame(2, Account::query()->where('owner_user_id', $user->id)->count());
         $this->assertSame(1, StudentProfile::query()->where('user_id', $user->id)->count());
@@ -207,7 +236,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->call('sendOtp')
             ->set('otp', '1234')
             ->call('verify')
-            ->assertRedirect('/register.html');
+            ->assertRedirect('/register');
 
         $this->assertAuthenticatedAs($user);
     }
@@ -236,7 +265,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->set('gradeId', $grade->id)
             ->set('schoolName', 'Almanasa School')
             ->call('save')
-            ->assertRedirect('/index.html');
+            ->assertRedirect('/');
 
         $this->assertDatabaseHas(StudentProfile::class, [
             'user_id' => $user->id,
@@ -257,7 +286,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
                 'current_provider_id' => $provider->id,
             ])
             ->post('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/logout')
-            ->assertRedirect('/login.html');
+            ->assertRedirect('/login');
 
         $this->assertGuest();
     }

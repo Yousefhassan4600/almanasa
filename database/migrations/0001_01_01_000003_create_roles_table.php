@@ -18,19 +18,25 @@ return new class extends Migration
             $table->string('custom_domain')->nullable()->unique();
             $table->string('logo')->nullable();
             $table->string('cover_image')->nullable();
-            $table->string('bio')->nullable();
+            $table->text('bio')->nullable();
             $table->unsignedBigInteger('country_id')->nullable();
             $table->unsignedBigInteger('city_id')->nullable();
             $table->string('address')->nullable();
+            $table->string('contact_phone')->nullable();
+            $table->string('contact_whatsapp')->nullable();
+            $table->string('contact_email')->nullable();
+            $table->string('facebook_link')->nullable();
+            $table->string('instagram_link')->nullable();
+            $table->string('linkedin_link')->nullable();
+            $table->string('x_link')->nullable();
+            $table->string('snapchat_link')->nullable();
+            $table->text('terms_conditions')->nullable();
             $table->decimal('latitude', 10, 2)->nullable();
             $table->decimal('longitude', 10, 2)->nullable();
             $table->string('primary_color')->nullable();
             $table->string('secondary_color')->nullable();
-            $table->boolean('website_enabled')->default(true);
-            $table->boolean('registration_enabled')->default(true);
-            $table->boolean('chat_enabled')->default(true);
-            $table->boolean('payment_enabled')->default(true);
-            $table->integer('completion_watch_percentage')->default(70);
+            $table->boolean('pause_website')->default(false);
+            $table->integer('completion_watch_percentage')->default(70)->min(1)->max(100);
             $table->boolean('is_active')->default(true);
             $table->boolean('use_custom_domain')->default(false);
             $table->softDeletes();
@@ -76,7 +82,6 @@ return new class extends Migration
             $table->index(['provider_id', 'status']);
             $table->index(['status', 'ends_at']);
         });
-
     }
 
     public function down(): void

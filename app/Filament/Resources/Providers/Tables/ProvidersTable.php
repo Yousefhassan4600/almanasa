@@ -41,6 +41,9 @@ class ProvidersTable extends BaseTable
             IconColumn::make('is_active')
                 ->label('Is Active')
                 ->boolean(),
+            IconColumn::make('pause_website')
+                ->label('Website Paused')
+                ->boolean(),
         ];
     }
 

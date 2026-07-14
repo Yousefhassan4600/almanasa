@@ -8,6 +8,7 @@ use App\Enums\EmployeeRole;
 use App\Enums\EnrollmentStatus;
 use App\Enums\LessonItemType;
 use App\Enums\PaymentMethod;
+use App\Enums\PaymentMethodSlugs;
 use App\Enums\PaymentStatus;
 use App\Enums\ProviderSubscriptionStatus;
 use App\Enums\ProviderType;
@@ -34,6 +35,7 @@ use App\Models\OrderItem;
 use App\Models\Package;
 use App\Models\PackageCourse;
 use App\Models\Payment;
+use App\Models\PaymentMethod as PaymentMethodModel;
 use App\Models\Provider;
 use App\Models\ProviderPlan;
 use App\Models\ProviderPlanOption;
@@ -50,6 +52,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->seedPaymentMethods();
+
         $egypt = Country::query()->firstOrCreate([
             'code' => 'EG',
         ], [
@@ -317,6 +321,12 @@ class DatabaseSeeder extends Seeder
             'primary_color' => '#f59e0b',
             'secondary_color' => '#111827',
             'completion_watch_percentage' => 75,
+            'contact_phone' => '01000001000',
+            'contact_whatsapp' => '01000001000',
+            'contact_email' => 'info@future-stars.test',
+            'facebook_link' => 'https://facebook.com/future-stars-academy',
+            'instagram_link' => 'https://instagram.com/future-stars-academy',
+            'terms_conditions' => '<p>Students must follow academy learning and payment policies.</p>',
         ]);
 
         $this->role($academyAccount, 'academy_admin', $academyAccount);
@@ -359,6 +369,11 @@ class DatabaseSeeder extends Seeder
             'primary_color' => '#16a34a',
             'secondary_color' => '#1f2937',
             'completion_watch_percentage' => 70,
+            'contact_phone' => '01000002000',
+            'contact_whatsapp' => '01000002000',
+            'contact_email' => 'info@science-gate.test',
+            'facebook_link' => 'https://facebook.com/science-gate-academy',
+            'terms_conditions' => '<p>Enrollment is subject to academy approval and active subscription.</p>',
         ]);
 
         $this->role($secondAcademyAccount, 'academy_admin', $secondAcademyAccount);
@@ -440,6 +455,12 @@ class DatabaseSeeder extends Seeder
             'primary_color' => '#2563eb',
             'secondary_color' => '#0f172a',
             'completion_watch_percentage' => 80,
+            'contact_phone' => '01000003000',
+            'contact_whatsapp' => '01000003000',
+            'contact_email' => 'mona@mona-physics.test',
+            'facebook_link' => 'https://facebook.com/mona-physics',
+            'instagram_link' => 'https://instagram.com/mona-physics',
+            'terms_conditions' => '<p>Course access follows the teacher subscription and attendance policies.</p>',
         ]);
 
         $this->role($standaloneTeacherAccount, 'content_assistant', $standaloneTeacherAccount);
@@ -762,6 +783,56 @@ class DatabaseSeeder extends Seeder
             'created_by_user_id' => $creator->id,
             'is_active' => true,
         ]);
+    }
+
+    private function seedPaymentMethods(): void
+    {
+        $paymentMethods = [
+            [
+                'slug' => PaymentMethodSlugs::Bank,
+                'name' => $this->translation('Bank Transfer', 'تحويل بنكي'),
+                'is_bank' => true,
+                'require_proof' => true,
+            ],
+            [
+                'slug' => PaymentMethodSlugs::InstaPay,
+                'name' => $this->translation('InstaPay', 'إنستا باي'),
+                'require_proof' => true,
+            ],
+            [
+                'slug' => PaymentMethodSlugs::VodafoneCash,
+                'name' => $this->translation('Vodafone Cash', 'فودافون كاش'),
+                'require_proof' => true,
+            ],
+            [
+                'slug' => PaymentMethodSlugs::OrangeCash,
+                'name' => $this->translation('Orange Cash', 'أورنج كاش'),
+                'require_proof' => true,
+            ],
+            [
+                'slug' => PaymentMethodSlugs::ECash,
+                'name' => $this->translation('e& Cash', 'إي آند كاش'),
+                'require_proof' => true,
+            ],
+            [
+                'slug' => PaymentMethodSlugs::Code,
+                'name' => $this->translation('Code', 'كود'),
+                'is_code' => true,
+            ],
+        ];
+
+        foreach ($paymentMethods as $sort => $paymentMethod) {
+            PaymentMethodModel::query()->updateOrCreate([
+                'slug' => $paymentMethod['slug']->value,
+            ], [
+                'sort_order' => $sort + 1,
+                'name' => $paymentMethod['name'],
+                'is_active' => true,
+                'is_bank' => $paymentMethod['is_bank'] ?? false,
+                'require_proof' => $paymentMethod['require_proof'] ?? false,
+                'is_code' => $paymentMethod['is_code'] ?? false,
+            ]);
+        }
     }
 
     private function translation(string $en, string $ar): array

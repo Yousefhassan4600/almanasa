@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\AccountSubjects\Tables;
 
 use App\Filament\Base\BaseTable;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 
 class AccountSubjectsTable extends BaseTable
 {
@@ -18,16 +18,8 @@ class AccountSubjectsTable extends BaseTable
                 ->searchable(),
             TextColumn::make('gradeSubject.full_name')
                 ->label('Grade Subject'),
-            IconColumn::make('is_active')
-                ->label('Is Active')
-                ->boolean(),
-        ];
-    }
-
-    protected function extraFilters(): array
-    {
-        return [
-            //
+            ToggleColumn::make('is_active')
+                ->label('Is Active'),
         ];
     }
 

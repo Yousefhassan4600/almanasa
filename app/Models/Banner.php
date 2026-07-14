@@ -15,6 +15,7 @@ class Banner extends Model
 
     public array $translatable = [
         'title',
+        'subtitle',
     ];
 
     protected function casts(): array

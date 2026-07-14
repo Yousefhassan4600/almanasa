@@ -3,7 +3,11 @@
 namespace App\Filament\Resources\Providers\Schemas;
 
 use App\Enums\ProviderType;
+use App\Models\GradeSubject;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -30,6 +34,11 @@ class ProviderForm
                             ->preload()
                             ->searchable()
                             ->required(),
+                        FileUpload::make('logo')
+                            ->label('Logo')
+                            ->image()
+                            ->directory('providers/logos')
+                            ->required(),
                         TextInput::make('name')
                             ->label('Name')
                             ->required(),
@@ -37,35 +46,43 @@ class ProviderForm
                             ->label('Slug')
                             ->required(),
                         Select::make('country_id')
-                            ->label('Country Id')
+                            ->label('Country')
                             ->relationship('country', 'name')
                             ->preload()
                             ->searchable()
                             ->required(),
                         Select::make('city_id')
-                            ->label('City Id')
+                            ->label('City')
                             ->relationship('city', 'name')
                             ->preload()
                             ->searchable()
                             ->required(),
-                        TextInput::make('subdomain')
-                            ->label('Subdomain'),
                         Toggle::make('use_custom_domain')
                             ->label('Use Custom Domain')
                             ->reactive(),
+                        TextInput::make('subdomain')
+                            ->label('Subdomain')
+                            ->visible(fn ($get): bool => ! $get('use_custom_domain'))
+                            ->required(fn ($get): bool => ! $get('use_custom_domain'))
+                            ->dehydrated(fn ($get): bool => ! $get('use_custom_domain')),
                         TextInput::make('custom_domain')
                             ->label('Custom Domain')
-                            ->visible(fn ($get): bool => $get('use_custom_domain')),
+                            ->visible(fn ($get): bool => $get('use_custom_domain'))
+                            ->required(fn ($get): bool => $get('use_custom_domain'))
+                            ->dehydrated(fn ($get): bool => $get('use_custom_domain')),
                     ]),
                 Section::make('Additional Information')
                     ->schema([
-                        Textarea::make('bio')
-                            ->label('Bio')
+                        FileUpload::make('cover_image')
+                            ->label('Cover Image')
+                            ->image()
+                            ->directory('providers/cover_images'),
+                        Textarea::make('bio.ar')
+                            ->label('Bio (Arabic)')
                             ->columnSpanFull(),
-                        TextInput::make('logo')
-                            ->label('Logo'),
-                        TextInput::make('cover_image')
-                            ->label('Cover Image'),
+                        Textarea::make('bio.en')
+                            ->label('Bio (English)')
+                            ->columnSpanFull(),
                         Textarea::make('address')
                             ->label('Address')
                             ->columnSpanFull(),
@@ -77,7 +94,38 @@ class ProviderForm
                             ->numeric(),
                         Toggle::make('is_active')
                             ->label('Is Active'),
+                        Toggle::make('pause_website')
+                            ->label('Pause Website')
+                            ->default(false),
                     ]),
+                Section::make('Contact Information')
+                    ->schema([
+                        TextInput::make('contact_phone')
+                            ->label('Contact Phone')
+                            ->tel(),
+                        TextInput::make('contact_whatsapp')
+                            ->label('Contact Whatsapp')
+                            ->tel(),
+                        TextInput::make('contact_email')
+                            ->label('Contact Email')
+                            ->email(),
+                        TextInput::make('facebook_link')
+                            ->label('Facebook Link')
+                            ->url(),
+                        TextInput::make('instagram_link')
+                            ->label('Instagram Link')
+                            ->url(),
+                        TextInput::make('linkedin_link')
+                            ->label('Linkedin Link')
+                            ->url(),
+                        TextInput::make('x_link')
+                            ->label('X Link')
+                            ->url(),
+                        TextInput::make('snapchat_link')
+                            ->label('Snapchat Link')
+                            ->url(),
+                    ])
+                    ->columns(1),
                 Section::make('Settings')
                     ->schema([
                         ColorPicker::make('primary_color')
@@ -87,27 +135,46 @@ class ProviderForm
                         TextInput::make('completion_watch_percentage')
                             ->label('Completion Watch Percentage')
                             ->numeric()
-                            ->default(70),
-                        Section::make('Features')
-                            ->schema([
-                                Toggle::make('website_enabled')
-                                    ->label('Website Enabled')
-                                    ->default(true),
-                                Toggle::make('registration_enabled')
-                                    ->label('Registration Enabled')
-                                    ->default(true),
-                                Toggle::make('chat_enabled')
-                                    ->label('Chat Enabled')
-                                    ->default(true),
-                                Toggle::make('payment_enabled')
-                                    ->label('Payment Enabled')
-                                    ->default(true),
-                            ])
-                            ->columns(4)
+                            ->default(70)
+                            ->suffix('%')
+                            ->minValue(1)
+                            ->maxValue(100),
+                        RichEditor::make('terms_conditions')
+                            ->label('Terms Conditions')
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull()
                     ->columns(2),
-            ]);
+                Section::make('Subjects')
+                    ->schema([
+                        Repeater::make('accountSubjects')
+                            ->label('Subjects')
+                            ->relationship()
+                            ->schema([
+                                Select::make('grade_subject_id')
+                                    ->label('Grade Subject')
+                                    ->options(fn (): array => GradeSubject::query()
+                                        ->with(['grade.educationStage', 'subject.track'])
+                                        ->get()
+                                        ->mapWithKeys(fn (GradeSubject $gradeSubject): array => [
+                                            $gradeSubject->id => $gradeSubject->full_name,
+                                        ])
+                                        ->all())
+                                    ->searchable()
+                                    ->preload()
+                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                    ->required(),
+                                Toggle::make('is_active')
+                                    ->label('Is Active')
+                                    ->default(true),
+                            ])
+                            ->columns(1)
+                            ->defaultItems(0)
+                            ->addActionLabel('Add Subject')
+                            ->grid(3)
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpanFull(),
+            ])->columns(3);
     }
 }

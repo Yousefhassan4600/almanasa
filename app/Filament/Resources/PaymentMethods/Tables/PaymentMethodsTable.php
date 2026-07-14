@@ -1,35 +1,38 @@
 <?php
 
-namespace App\Filament\Resources\Banners\Tables;
+namespace App\Filament\Resources\PaymentMethods\Tables;
 
 use App\Filament\Base\BaseTable;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 
-class BannersTable extends BaseTable
+class PaymentMethodsTable extends BaseTable
 {
     protected function columns(): array
     {
         return [
             TextColumn::make('id')
                 ->label('#')
+                ->sortable(),
+            ImageColumn::make('image')
+                ->label('Image'),
+            TextColumn::make('name')
+                ->label('Name')
+                ->searchable()
+                ->wrap(),
+            TextColumn::make('slug')
+                ->label('Slug')
                 ->searchable()
                 ->sortable(),
-            ImageColumn::make('cover')
-                ->label('Cover'),
-            TextColumn::make('provider.name')
-                ->label('Provider')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('title')
-                ->label('Title')
-                ->wrap(),
-            TextColumn::make('subtitle')
-                ->label('Subtitle')
-                ->wrap(),
             ToggleColumn::make('is_active')
                 ->label('Is Active'),
+            ToggleColumn::make('is_bank')
+                ->label('Is Bank'),
+            ToggleColumn::make('require_proof')
+                ->label('Require Proof'),
+            ToggleColumn::make('is_code')
+                ->label('Is Code'),
         ];
     }
 

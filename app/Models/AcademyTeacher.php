@@ -18,6 +18,7 @@ class AcademyTeacher extends Model
     {
         return [
             'is_active' => 'boolean',
+            'experience_years' => 'integer',
         ];
     }
 
@@ -39,7 +40,7 @@ class AcademyTeacher extends Model
     public function accountSubjects(): BelongsToMany
     {
         return $this->belongsToMany(AccountSubject::class, 'academy_teacher_grade_subjects')
-            ->withPivot(['is_active'])
+            ->withPivot(['is_active', 'number_of_weekly_sessions'])
             ->withTimestamps();
     }
 }

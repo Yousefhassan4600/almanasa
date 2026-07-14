@@ -166,7 +166,7 @@ class ProviderWebsiteAuthController extends Controller
         return Provider::query()
             ->where('subdomain', $accountSubdomain)
             ->where('is_active', true)
-            ->where('website_enabled', true)
+            ->where('pause_website', false)
             ->whereHas('activeSubscription')
             ->whereIn('type', [
                 ProviderType::Academy,

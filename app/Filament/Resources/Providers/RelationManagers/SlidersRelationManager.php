@@ -1,32 +1,29 @@
 <?php
 
-namespace App\Filament\Resources\Banners\Schemas;
+namespace App\Filament\Resources\Providers\RelationManagers;
 
+use App\Filament\Base\RelationManagers\BaseRelationManager;
+use App\Filament\Resources\Providers\RelationManagers\Tables\SlidersTable;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Filament\Tables\Table;
 
-class BannerForm
+class SlidersRelationManager extends BaseRelationManager
 {
-    public static function configure(Schema $schema): Schema
+    protected static string $relationship = 'banners';
+
+    public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Select::make('provider_id')
-                    ->label('Provider')
-                    ->relationship('provider', 'name')
-                    ->preload()
-                    ->searchable()
-                    ->required()
-                    ->columnSpanFull(),
                 FileUpload::make('cover')
                     ->label('Cover')
                     ->image()
                     ->directory('banners')
-                    ->required()
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->required(),
                 TextInput::make('title.ar')
                     ->label('Title (Arabic)')
                     ->required(),
@@ -44,5 +41,20 @@ class BannerForm
                     ->label('Is Active')
                     ->default(true),
             ]);
+    }
+
+    public function table(Table $table): Table
+    {
+        return SlidersTable::configure($table)
+            ->heading('Sliders')
+            ->recordTitleAttribute('title')
+            ->headerActions($this->getTableHeaderActions())
+            ->filters($this->getTableFilters())
+            ->recordActions($this->getTableActions());
+    }
+
+    public function getTableFilters(): array
+    {
+        return [];
     }
 }

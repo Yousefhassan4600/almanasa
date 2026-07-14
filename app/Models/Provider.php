@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
 use App\Enums\ProviderType;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,7 +20,6 @@ class Provider extends Model
 
     public array $translatable = [
         'bio',
-        'address',
     ];
 
     protected function casts(): array
@@ -28,13 +28,29 @@ class Provider extends Model
             'type' => ProviderType::class,
             'latitude' => 'decimal:2',
             'longitude' => 'decimal:2',
-            'website_enabled' => 'boolean',
-            'registration_enabled' => 'boolean',
-            'chat_enabled' => 'boolean',
-            'payment_enabled' => 'boolean',
+            'pause_website' => 'boolean',
             'is_active' => 'boolean',
             'use_custom_domain' => 'boolean',
         ];
+    }
+
+    protected function termsConditions(): Attribute
+    {
+        return Attribute::get(function (?string $value): ?string {
+            if (blank($value)) {
+                return $value;
+            }
+
+            $decodedValue = json_decode($value, true);
+
+            if (! is_array($decodedValue)) {
+                return $value;
+            }
+
+            return $decodedValue[app()->getLocale()]
+                ?? $decodedValue[config('app.fallback_locale')]
+                ?? collect($decodedValue)->first();
+        });
     }
 
     public function owner(): BelongsTo
@@ -57,6 +73,11 @@ class Provider extends Model
         return $this->hasMany(AccountSubject::class);
     }
 
+    public function banners(): HasMany
+    {
+        return $this->hasMany(Banner::class);
+    }
+
     public function courses(): HasMany
     {
         return $this->hasMany(Course::class);
@@ -72,6 +93,11 @@ class Provider extends Model
         return $this->hasMany(ProviderSubscription::class);
     }
 
+    public function providerPaymentMethods(): HasMany
+    {
+        return $this->hasMany(ProviderPaymentMethod::class);
+    }
+
     public function currentSubscription(): HasOne
     {
         return $this->hasOne(ProviderSubscription::class)->latestOfMany();
@@ -84,7 +110,7 @@ class Provider extends Model
 
     public function canAccessWebsite(): bool
     {
-        return $this->activeSubscription()->exists();
+        return ! $this->pause_website && $this->activeSubscription()->exists();
     }
 
     public function country(): BelongsTo

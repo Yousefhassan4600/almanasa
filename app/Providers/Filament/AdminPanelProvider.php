@@ -21,13 +21,13 @@ use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
-use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Livewire\Livewire;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -49,13 +49,13 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->navigationGroups([
+                NavigationGroup::make(BaseResource::PROJECT_DATA_NAVIGATION_GROUP)
+                    ->icon(Heroicon::OutlinedAdjustmentsHorizontal),
                 NavigationGroup::make('Users & Subscriptions')
                     ->icon(Heroicon::OutlinedUsers),
                 NavigationGroup::make('Users & Accounts')
                     ->icon(Heroicon::OutlinedUsers),
-                NavigationGroup::make(BaseResource::PROJECT_DATA_NAVIGATION_GROUP)
-                    ->icon(Heroicon::OutlinedAdjustmentsHorizontal),
-                NavigationGroup::make('Education Setup')
+                NavigationGroup::make('Provider Setup')
                     ->icon(Heroicon::OutlinedBookOpen),
                 NavigationGroup::make('Learning Content')
                     ->icon(Heroicon::OutlinedBookOpen),
@@ -70,7 +70,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 PanelsRenderHook::GLOBAL_SEARCH_AFTER,
-                fn (): View => view('filament.admin.account-picker-render-hook'),
+                fn (): string => Livewire::mount('admin.account-picker'),
             )
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([

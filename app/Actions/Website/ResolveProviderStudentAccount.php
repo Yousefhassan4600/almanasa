@@ -27,8 +27,6 @@ class ResolveProviderStudentAccount
             }
 
             if (! $user) {
-                $this->ensureRegistrationIsOpen($provider);
-
                 $user = User::query()->create([
                     'first_name' => null,
                     'last_name' => null,
@@ -59,8 +57,6 @@ class ResolveProviderStudentAccount
                 return $account;
             }
 
-            $this->ensureRegistrationIsOpen($provider);
-
             return Account::query()->create([
                 'provider_id' => $provider->id,
                 'owner_user_id' => $user->id,
@@ -69,16 +65,5 @@ class ResolveProviderStudentAccount
                 'approved_at' => now(),
             ]);
         });
-    }
-
-    private function ensureRegistrationIsOpen(Provider $provider): void
-    {
-        if ($provider->registration_enabled) {
-            return;
-        }
-
-        throw ValidationException::withMessages([
-            'phone' => __('Registration is currently closed for this provider.'),
-        ]);
     }
 }

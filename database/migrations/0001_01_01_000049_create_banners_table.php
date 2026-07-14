@@ -12,10 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('provider_id')->nullable()->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('title');
-            $table->string('subtitle')->nullable();
-            $table->string('image')->nullable();
-            $table->string('button_text')->nullable();
-            $table->string('button_url')->nullable();
+            $table->text('subtitle')->nullable();
+            $table->string('cover')->nullable();
+            $table->string('url')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();

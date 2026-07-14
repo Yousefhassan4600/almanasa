@@ -1,27 +1,22 @@
 <?php
 
-namespace App\Filament\Resources\Banners\Tables;
+namespace App\Filament\Resources\Providers\RelationManagers\Tables;
 
 use App\Filament\Base\BaseTable;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 
-class BannersTable extends BaseTable
+class SlidersTable extends BaseTable
 {
     protected function columns(): array
     {
         return [
             TextColumn::make('id')
                 ->label('#')
-                ->searchable()
                 ->sortable(),
             ImageColumn::make('cover')
                 ->label('Cover'),
-            TextColumn::make('provider.name')
-                ->label('Provider')
-                ->searchable()
-                ->sortable(),
             TextColumn::make('title')
                 ->label('Title')
                 ->wrap(),

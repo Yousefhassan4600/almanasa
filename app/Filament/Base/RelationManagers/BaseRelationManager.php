@@ -3,9 +3,7 @@
 namespace App\Filament\Base\RelationManagers;
 
 use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\RestoreAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Icons\Heroicon;
@@ -61,20 +59,6 @@ abstract class BaseRelationManager extends RelationManager
                     ->tooltip(__('admin.Edit'))
                     ->icon(Heroicon::PencilSquare)
                     ->hidden(fn ($record) => method_exists($record, 'trashed') && $record->trashed()),
-                DeleteAction::make()
-                    ->hiddenLabel()
-                    ->tooltip(__('admin.Delete'))
-                    ->size('lg')
-                    ->icon(Heroicon::Trash)
-                    ->hidden(fn ($record) => method_exists($record, 'trashed') && $record->trashed()),
-                RestoreAction::make()
-                    ->hiddenLabel()
-                    ->tooltip(__('admin.Restore'))
-                    ->size('lg')
-                    ->color('danger')
-                    ->icon(Heroicon::ArrowPath)
-                    ->visible(fn ($record) => method_exists($record, 'trashed') && $record->trashed()),
-
             ],
             $this->extraTableActions()
         );

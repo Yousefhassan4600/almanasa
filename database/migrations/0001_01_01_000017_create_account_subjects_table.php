@@ -21,6 +21,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('academy_teacher_id')->constrained('academy_teachers')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('account_subject_id')->constrained('account_subjects')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->integer('number_of_weekly_sessions')->default(1);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->unique(['academy_teacher_id', 'account_subject_id'], 'academy_teacher_subject_unique');

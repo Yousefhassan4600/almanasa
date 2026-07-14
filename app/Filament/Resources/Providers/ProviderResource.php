@@ -6,6 +6,8 @@ use App\Filament\Base\BaseResource;
 use App\Filament\Resources\Providers\Pages\CreateProvider;
 use App\Filament\Resources\Providers\Pages\EditProvider;
 use App\Filament\Resources\Providers\Pages\ListProviders;
+use App\Filament\Resources\Providers\RelationManagers\ProviderPaymentMethodsRelationManager;
+use App\Filament\Resources\Providers\RelationManagers\SlidersRelationManager;
 use App\Filament\Resources\Providers\Schemas\ProviderForm;
 use App\Filament\Resources\Providers\Tables\ProvidersTable;
 use App\Models\Provider;
@@ -34,7 +36,8 @@ class ProviderResource extends BaseResource
     public static function getRelations(): array
     {
         return [
-            //
+            ProviderPaymentMethodsRelationManager::class,
+            SlidersRelationManager::class,
         ];
     }
 

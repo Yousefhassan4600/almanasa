@@ -8,13 +8,10 @@ use App\Filament\Resources\AccountSubjects\Tables\AccountSubjectsTable;
 use App\Models\AccountSubject;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class AccountSubjectResource extends BaseResource
 {
     protected static ?string $model = AccountSubject::class;
-
-    protected static string|UnitEnum|null $navigationGroup = 'Education Setup';
 
     protected static ?int $navigationSort = 1;
 

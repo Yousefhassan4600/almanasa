@@ -7,8 +7,9 @@ use App\Filament\Base\BaseTable;
 use App\Models\AcademyTeacher;
 use App\Models\Account;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 
 class AcademyTeachersTable extends BaseTable
 {
@@ -18,6 +19,8 @@ class AcademyTeachersTable extends BaseTable
             TextColumn::make('id')
                 ->label('#')
                 ->sortable(),
+            ImageColumn::make('image')
+                ->label('Image'),
             TextColumn::make('provider.name')
                 ->label('Provider')
                 ->searchable()
@@ -26,10 +29,12 @@ class AcademyTeachersTable extends BaseTable
                 ->label('User')
                 ->searchable()
                 ->sortable(),
-            IconColumn::make('is_active')
-                ->label('Is Active')
-                ->boolean()
+            TextColumn::make('experience_years')
+                ->label('Experience Years')
+                ->badge()
                 ->sortable(),
+            ToggleColumn::make('is_active')
+                ->label('Is Active'),
         ];
     }
 
@@ -54,6 +59,7 @@ class AcademyTeachersTable extends BaseTable
     {
         return [
             EditAction::make()
+                ->label('')
                 ->mutateRecordDataUsing(function (array $data, AcademyTeacher $record): array {
                     $data['teacher_user_id'] = $record->teacher?->owner_user_id;
 

@@ -8,13 +8,12 @@ use App\Filament\Resources\Banners\Tables\BannersTable;
 use App\Models\Banner;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class BannerResource extends BaseResource
 {
     protected static ?string $model = Banner::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Communication & Website';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {
@@ -35,8 +34,6 @@ class BannerResource extends BaseResource
     {
         return [
             'index' => Pages\ListBanners::route('/'),
-            'create' => Pages\CreateBanner::route('/create'),
-            'edit' => Pages\EditBanner::route('/{record}/edit'),
         ];
     }
 }

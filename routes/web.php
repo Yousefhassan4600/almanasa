@@ -11,13 +11,6 @@ Route::domain('{accountSubdomain}.'.config('almanasa.root_domain'))->group(funct
     Route::get('/register', [AcademySiteController::class, '__invoke'])
         ->defaults('page', 'register')
         ->name('provider.website.register');
-    Route::post('/login/send-otp', [ProviderWebsiteAuthController::class, 'sendOtp'])
-        ->name('provider.website.send-otp');
-    Route::post('/otp/verify', [ProviderWebsiteAuthController::class, 'verifyOtp'])
-        ->name('provider.website.verify-otp');
-    Route::post('/register', [ProviderWebsiteAuthController::class, 'completeProfile'])
-        ->middleware('auth')
-        ->name('provider.website.complete-profile');
     Route::get('/profile', [AcademySiteController::class, '__invoke'])
         ->defaults('page', 'profile')
         ->middleware(['auth', 'current.account:website'])

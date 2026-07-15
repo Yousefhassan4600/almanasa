@@ -43,7 +43,7 @@
                     @endphp
 
                     <a
-                        href="/subjects"
+                        href="/teachers?subject={{ $accountSubject->id }}"
                         class="group flex flex-col items-center shrink-0 w-24 sm:w-auto snap-start"
                     >
                         <div

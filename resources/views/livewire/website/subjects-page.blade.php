@@ -133,7 +133,7 @@
                             </div>
 
                             <a
-                                href="/teachers"
+                                href="/teachers?subject={{ $accountSubject->id }}"
                                 class="w-full border text-center border-gray-200 text-gray-600 hover:text-[#5D3FD3] hover:border-[#5D3FD3] font-bold text-xs py-3 rounded-xl transition-colors bg-transparent"
                             >
                                 عرض المدرسين <i class="fa-solid fa-chevron-left text-[9px] mr-1"></i>

@@ -59,10 +59,10 @@ class AdminPanelProvider extends PanelProvider
                     ->icon(Heroicon::OutlinedBookOpen),
                 NavigationGroup::make('Learning Content')
                     ->icon(Heroicon::OutlinedBookOpen),
-                NavigationGroup::make('Students & Families')
-                    ->icon(Heroicon::OutlinedUserGroup),
                 NavigationGroup::make('Sales & Payments')
                     ->icon(Heroicon::OutlinedCreditCard),
+                NavigationGroup::make('Students & Families')
+                    ->icon(Heroicon::OutlinedUserGroup),
                 NavigationGroup::make('Communication & Website')
                     ->icon(Heroicon::OutlinedChatBubbleLeftRight),
             ])

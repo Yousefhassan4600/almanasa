@@ -130,6 +130,7 @@ class AcademySiteController extends Controller
         $html = $this->injectSingleTeacherPage($html, $provider, $page);
         $html = $this->injectLessonPage($html, $provider, $page);
         $html = $this->injectWebsiteHeader($html, $provider, $page);
+        $html = $this->injectHomeHero($html, $page);
         $html = $this->injectHomeHeroActions($html, $page);
         $html = $this->injectHomeSubjects($html, $provider);
         $html = $this->injectHomeCta($html, $provider);
@@ -142,11 +143,21 @@ class AcademySiteController extends Controller
             $html = $this->injectProfileData($html, $provider);
         }
 
+        $html = $this->injectWebsiteFooter($html);
         $html = $this->canonicalizePageUrls($html);
         $html = $this->injectLivewireAssets($html);
 
+        $homeBanner = $page === 'index.html'
+            ? $provider->banners()
+                ->where('is_active', true)
+                ->oldest('sort_order')
+                ->oldest('id')
+                ->first()
+            : null;
+
         return Blade::render($html, [
             'provider' => $provider,
+            'homeBanner' => $homeBanner,
         ]);
     }
 
@@ -246,6 +257,20 @@ class AcademySiteController extends Controller
         ) ?? $html;
     }
 
+    private function injectHomeHero(string $html, string $page): string
+    {
+        if ($page !== 'index.html') {
+            return $html;
+        }
+
+        return preg_replace(
+            '/\s*<!-- hero section -->\s*<section\s+class="relative bg-gradient-to-b from-\[#F3F0FF\] to-white pt-12 pb-6 px-4 md:px-8 overflow-hidden"\s+dir="rtl"\s*>.*?<\/section>/s',
+            "\n<x-website.home-hero :provider=\"\$provider\" :banner=\"\$homeBanner\" />\n",
+            $html,
+            1,
+        ) ?? $html;
+    }
+
     private function injectHomeHeroActions(string $html, string $page): string
     {
         if ($page !== 'index.html') {
@@ -265,6 +290,16 @@ class AcademySiteController extends Controller
         return preg_replace(
             '/<div\s+class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4"\s*>\s*<button\b[^>]*>\s*ابدأ رحلتك الآن\s*<\/button>\s*<button\b[^>]*>\s*استكشف المواد\s*<\/button>\s*<\/div>/s',
             $actions,
+            $html,
+            1,
+        ) ?? $html;
+    }
+
+    private function injectWebsiteFooter(string $html): string
+    {
+        return preg_replace(
+            '/<footer\b.*?<\/footer>/s',
+            '<x-website.footer :provider="$provider" />',
             $html,
             1,
         ) ?? $html;

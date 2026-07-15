@@ -8,6 +8,7 @@
     $isTeacher = $provider->type === \App\Enums\ProviderType::StandaloneTeacher;
     $themeColor = $isTeacher ? '#FEB008' : '#5D3FD3';
     $activePage = \Illuminate\Support\Str::beforeLast($page, '.html');
+    $providerLogo = filled($provider->logo) ? (filter_var($provider->logo, FILTER_VALIDATE_URL) ? $provider->logo : asset('storage/'.$provider->logo)) : null;
 
     $navLinkClass = function (string $pageName) use ($activePage, $themeColor): string {
         return 'font-medium '.($activePage === $pageName ? '' : 'text-gray-700');
@@ -29,7 +30,10 @@
                 </svg>
             </button>
 
-            <a href="/" class="font-bold text-xl lg:text-2xl whitespace-nowrap" style="color: {{ $themeColor }}">
+            <a href="/" class="font-bold text-xl lg:text-2xl whitespace-nowrap flex items-center gap-2" style="color: {{ $themeColor }}">
+                @if ($providerLogo)
+                    <img src="{{ $providerLogo }}" alt="{{ $provider->name }}" class="w-9 h-9 rounded-xl object-cover border border-gray-100 bg-white" />
+                @endif
                 {{ $provider->name }}
             </a>
         </div>
@@ -70,7 +74,12 @@
     >
         <div>
             <div class="flex items-center justify-between border-b pb-4 mb-6">
-                <p class="font-bold text-xl" style="color: {{ $themeColor }}">{{ $provider->name }}</p>
+                <div class="flex items-center gap-2">
+                    @if ($providerLogo)
+                        <img src="{{ $providerLogo }}" alt="{{ $provider->name }}" class="w-9 h-9 rounded-xl object-cover border border-gray-100 bg-white" />
+                    @endif
+                    <p class="font-bold text-xl" style="color: {{ $themeColor }}">{{ $provider->name }}</p>
+                </div>
                 <button id="closeSidebarBtn" class="text-gray-500 hover:text-red-500 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>

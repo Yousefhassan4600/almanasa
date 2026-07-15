@@ -20,6 +20,7 @@ use App\Models\AcademyTeacher;
 use App\Models\AcademyTeacherGradeSubject;
 use App\Models\Account;
 use App\Models\AccountSubject;
+use App\Models\Banner;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Course;
@@ -102,6 +103,37 @@ class ProviderWebsiteStudentAuthTest extends TestCase
 
         $this->get($providerUrl.'/otp')->assertRedirect('/login');
         $this->get($providerUrl.'/register')->assertRedirect('/login');
+    }
+
+    public function test_provider_branding_banner_and_footer_data_render_on_website(): void
+    {
+        $provider = $this->provider();
+        $provider->update([
+            'name' => 'Future Stars Academy',
+            'logo' => 'providers/logos/future-stars.png',
+            'bio' => ['en' => 'Provider English bio', 'ar' => 'نبذة الأكاديمية من قاعدة البيانات'],
+            'facebook_link' => 'https://facebook.example/future-stars',
+            'instagram_link' => 'https://instagram.example/future-stars',
+        ]);
+        Banner::query()->create([
+            'provider_id' => $provider->id,
+            'title' => ['en' => 'Banner English title', 'ar' => 'عنوان البانر من قاعدة البيانات'],
+            'subtitle' => ['en' => 'Banner English subtitle', 'ar' => 'وصف البانر من قاعدة البيانات'],
+            'cover' => 'banners/home-hero.png',
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+
+        $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->assertOk()
+            ->assertSee('Future Stars Academy', false)
+            ->assertSee('storage/providers/logos/future-stars.png', false)
+            ->assertSee('عنوان البانر من قاعدة البيانات', false)
+            ->assertSee('وصف البانر من قاعدة البيانات', false)
+            ->assertSee('storage/banners/home-hero.png', false)
+            ->assertSee('نبذة الأكاديمية من قاعدة البيانات', false)
+            ->assertSee('https://facebook.example/future-stars', false)
+            ->assertSee('href="/my_lessons"', false);
     }
 
     public function test_new_phone_creates_user_and_provider_student_account_after_valid_otp(): void

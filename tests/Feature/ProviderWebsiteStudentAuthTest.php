@@ -3,13 +3,16 @@
 namespace Tests\Feature;
 
 use App\Enums\AccountType;
+use App\Enums\CoursePeriodType;
 use App\Enums\ProviderSubscriptionStatus;
 use App\Enums\ProviderType;
+use App\Enums\PurchaseUnitType;
 use App\Livewire\Website\AuthControls;
 use App\Livewire\Website\HomeCta;
 use App\Livewire\Website\HomeSubjects;
 use App\Livewire\Website\LoginForm;
 use App\Livewire\Website\RegisterForm;
+use App\Livewire\Website\SingleTeacherPage;
 use App\Livewire\Website\SubjectsPage;
 use App\Livewire\Website\TeachersPage;
 use App\Models\AcademyTeacher;
@@ -19,13 +22,19 @@ use App\Models\AccountSubject;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Course;
+use App\Models\CourseOutcome;
+use App\Models\CoursePeriod;
+use App\Models\CoursePrice;
 use App\Models\EducationStage;
 use App\Models\Grade;
 use App\Models\GradeSubject;
+use App\Models\Lesson;
+use App\Models\LessonItem;
 use App\Models\Provider;
 use App\Models\ProviderPlan;
 use App\Models\ProviderPlanOption;
 use App\Models\ProviderSubscription;
+use App\Models\PurchaseUnit;
 use App\Models\StudentProfile;
 use App\Models\Subject;
 use App\Models\Track;
@@ -421,16 +430,26 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'is_active' => true,
         ]);
 
-        Course::query()->create([
+        $monthPurchaseUnit = PurchaseUnit::query()->create([
+            'type' => PurchaseUnitType::Month->value,
+            'name' => ['en' => 'Month', 'ar' => 'شهر'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+
+        $mathCourse = Course::query()->create([
             'provider_id' => $provider->id,
             'account_subject_id' => $mathAccountSubject->id,
-            'teacher_account_id' => $mathTeacherAccount->id,
+            'academy_teacher_id' => $mathTeacher->id,
             'title' => ['en' => 'Math Course', 'ar' => 'كورس الرياضيات'],
-            'slug' => 'math-course',
-            'price' => 500,
-            'monthly_price' => 180,
             'weekly_lectures_count' => 2,
-            'status' => 'published',
+        ]);
+
+        CoursePrice::query()->create([
+            'course_id' => $mathCourse->id,
+            'purchase_unit_id' => $monthPurchaseUnit->id,
+            'price' => 200,
+            'offer_price' => 180,
         ]);
 
         $this->actingAs($user)
@@ -442,6 +461,104 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('180 EGP', false)
             ->assertDontSee('Physics Teacher', false)
             ->assertDontSee('الفيزياء', false);
+    }
+
+    public function test_single_teacher_page_uses_course_lessons_and_hides_final_reviews_tab(): void
+    {
+        $provider = $this->provider();
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+
+        $stage = EducationStage::query()->create(['name' => 'Secondary', 'sort_order' => 1]);
+        $grade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
+        $this->studentProfile($user, $grade);
+        $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
+        $subject = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Mathematics', 'ar' => 'الرياضيات'],
+            'description' => ['en' => 'Math description', 'ar' => 'شرح الرياضيات'],
+        ]);
+        $accountSubject = AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $grade->id,
+                'subject_id' => $subject->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+
+        $teacherUser = User::factory()->create(['first_name' => 'Ahmed', 'last_name' => 'Teacher']);
+        $teacherAccount = $this->teacherAccount($provider, $teacherUser);
+        $teacher = AcademyTeacher::query()->create([
+            'provider_id' => $provider->id,
+            'teacher_account_id' => $teacherAccount->id,
+            'experience_years' => 7,
+            'is_active' => true,
+        ]);
+        AcademyTeacherGradeSubject::query()->create([
+            'academy_teacher_id' => $teacher->id,
+            'account_subject_id' => $accountSubject->id,
+            'is_active' => true,
+        ]);
+
+        $monthPurchaseUnit = PurchaseUnit::query()->create([
+            'type' => PurchaseUnitType::Month->value,
+            'name' => ['en' => 'Month', 'ar' => 'شهر'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $termOnePeriod = CoursePeriod::query()->create([
+            'type' => CoursePeriodType::Term1->value,
+            'name' => ['en' => 'Term 1', 'ar' => 'الترم الأول'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $course = Course::query()->create([
+            'provider_id' => $provider->id,
+            'account_subject_id' => $accountSubject->id,
+            'academy_teacher_id' => $teacher->id,
+            'title' => ['en' => 'Math Course', 'ar' => 'كورس الرياضيات'],
+            'description' => ['en' => 'Course description', 'ar' => 'وصف الكورس'],
+            'weekly_lectures_count' => 2,
+            'num_of_lessons' => 10,
+            'num_of_hours' => 12,
+        ]);
+        CoursePrice::query()->create([
+            'course_id' => $course->id,
+            'purchase_unit_id' => $monthPurchaseUnit->id,
+            'price' => 200,
+            'offer_price' => 180,
+        ]);
+        CourseOutcome::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Understand equations', 'ar' => 'فهم المعادلات'],
+            'sort_order' => 1,
+        ]);
+        $lesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $termOnePeriod->id,
+            'title' => ['en' => 'Real Numbers', 'ar' => 'الأعداد الحقيقية'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'title' => ['en' => 'Introduction', 'ar' => 'مقدمة في الأعداد الحقيقية'],
+            'video_url' => 'https://videos.example.test/introduction',
+            'sort_order' => 1,
+            'is_active' => true,
+            'is_free' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/single_teacher?teacher='.$teacher->id.'&subject='.$accountSubject->id)
+            ->assertOk()
+            ->assertSeeLivewire(SingleTeacherPage::class)
+            ->assertSee('كورس الرياضيات', false)
+            ->assertSee('الأعداد الحقيقية', false)
+            ->assertSee('مقدمة في الأعداد الحقيقية', false)
+            ->assertSee('180', false)
+            ->assertDontSee('المراجعات النهائية', false);
     }
 
     public function test_home_cta_links_guests_to_login(): void

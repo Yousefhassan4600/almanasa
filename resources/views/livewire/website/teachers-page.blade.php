@@ -1,4 +1,6 @@
 @php
+    use App\Enums\PurchaseUnitType;
+
     $subject = $accountSubject?->gradeSubject?->subject;
     $grade = $accountSubject?->gradeSubject?->grade;
     $stage = $grade?->educationStage;
@@ -74,8 +76,15 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     @foreach ($teachers as $teacher)
                         @php
-                            $teacherCourses = $coursesByTeacher->get($teacher->teacher_account_id, collect());
-                            $monthlyPrice = $teacherCourses->pluck('monthly_price')->filter()->min();
+                            $teacherCourses = $coursesByTeacher->get($teacher->id, collect());
+                            $monthlyPrices = $teacherCourses
+                                ->flatMap->prices
+                                ->filter(fn ($price) => $price->purchaseUnit?->type === PurchaseUnitType::Month)
+                                ->map(fn ($price) => $price->offer_price ?? $price->price)
+                                ->filter();
+                            $monthlyPrice = $monthlyPrices->isNotEmpty()
+                                ? $monthlyPrices->min()
+                                : $teacherCourses->flatMap->prices->map(fn ($price) => $price->offer_price ?? $price->price)->filter()->min();
                             $weeklyLectures = $teacherCourses->pluck('weekly_lectures_count')->filter()->max();
                             $teacherName = $teacher->teacher?->owner?->name ?: 'معلم';
                             $teacherImage = $teacher->image

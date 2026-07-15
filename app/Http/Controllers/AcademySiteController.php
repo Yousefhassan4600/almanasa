@@ -127,6 +127,7 @@ class AcademySiteController extends Controller
             $html,
         );
 
+        $html = $this->injectSingleTeacherPage($html, $provider, $page);
         $html = $this->injectWebsiteHeader($html, $provider, $page);
         $html = $this->injectHomeHeroActions($html, $page);
         $html = $this->injectHomeSubjects($html, $provider);
@@ -301,6 +302,20 @@ class AcademySiteController extends Controller
         return preg_replace(
             '/\s*<!-- hero -->\s*<section\s+class="bg-gradient-to-br from-purple-50\/60 to-indigo-50\/40 py-12 md:py-20 overflow-hidden"\s+dir="rtl"\s*>.*?<\/section>\s*<!-- teachers grid -->\s*<section class="py-16 bg-white" dir="rtl">.*?<\/section>/s',
             "\n@livewire('website.teachers-page', ['providerId' => {$provider->id}], key('website-teachers-page-{$provider->id}'))\n",
+            $html,
+            1,
+        ) ?? $html;
+    }
+
+    private function injectSingleTeacherPage(string $html, Provider $provider, string $page): string
+    {
+        if ($page !== 'single_teacher.html') {
+            return $html;
+        }
+
+        return preg_replace(
+            '/(<\/header>)\s*.*?(?=<footer\b)/s',
+            "$1\n@livewire('website.single-teacher-page', ['providerId' => {$provider->id}], key('website-single-teacher-page-{$provider->id}'))\n",
             $html,
             1,
         ) ?? $html;

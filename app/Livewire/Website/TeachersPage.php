@@ -96,10 +96,11 @@ class TeachersPage extends Component
     private function coursesByTeacher(Provider $provider, AccountSubject $accountSubject, Collection $teachers): SupportCollection
     {
         return Course::query()
+            ->with(['prices.purchaseUnit'])
             ->whereBelongsTo($provider)
             ->where('account_subject_id', $accountSubject->id)
-            ->whereIn('teacher_account_id', $teachers->pluck('teacher_account_id'))
+            ->whereIn('academy_teacher_id', $teachers->modelKeys())
             ->get()
-            ->groupBy('teacher_account_id');
+            ->groupBy('academy_teacher_id');
     }
 }

@@ -40,7 +40,7 @@ class AcademyTeacher extends Model
     public function accountSubjects(): BelongsToMany
     {
         return $this->belongsToMany(AccountSubject::class, 'academy_teacher_grade_subjects')
-            ->withPivot(['is_active', 'number_of_weekly_sessions'])
+            ->withPivot(['is_active'])
             ->withTimestamps();
     }
 }

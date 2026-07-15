@@ -22,7 +22,6 @@ class AcademyTeacherGradeSubject extends Model
     {
         return [
             'is_active' => 'boolean',
-            'number_of_weekly_sessions' => 'integer',
         ];
     }
 

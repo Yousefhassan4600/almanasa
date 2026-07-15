@@ -10,13 +10,13 @@ use App\Models\AccountSubject;
 use App\Models\User;
 use Closure;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 
 class AcademyTeacherForm
 {
@@ -32,7 +32,7 @@ class AcademyTeacherForm
                         modifyQueryUsing: fn ($query) => $query->where('type', ProviderType::Academy->value)
                     )
                     ->live()
-                    ->afterStateUpdated(fn (Set $set) => $set('gradeSubjectAssignments', []))
+                    ->afterStateUpdated(fn (Set $set) => $set('accountSubjects', []))
                     ->preload()
                     ->searchable()
                     ->required(),
@@ -92,43 +92,27 @@ class AcademyTeacherForm
                     ->default(1)
                     ->required()
                     ->columnSpanFull(),
-                Repeater::make('gradeSubjectAssignments')
+                Select::make('accountSubjects')
                     ->label('Grade Subjects')
-                    ->relationship()
-                    ->schema([
-                        Select::make('account_subject_id')
-                            ->label('Grade Subject')
-                            ->options(fn (Get $get): array => AccountSubject::query()
-                                ->where('provider_id', $get('../../provider_id'))
-                                ->where('is_active', true)
-                                ->with([
-                                    'provider',
-                                    'gradeSubject.grade.educationStage',
-                                    'gradeSubject.subject.track',
-                                ])
-                                ->get()
-                                ->mapWithKeys(fn (AccountSubject $accountSubject): array => [
-                                    $accountSubject->id => $accountSubject->name,
-                                ])
-                                ->all())
-                            ->searchable()
-                            ->preload()
-                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                            ->required(),
-                        TextInput::make('number_of_weekly_sessions')
-                            ->label('Weekly Sessions')
-                            ->numeric()
-                            ->minValue(1)
-                            ->default(1)
-                            ->required(),
-                        Toggle::make('is_active')
-                            ->label('Is Active')
-                            ->default(true),
+                    ->relationship(
+                        name: 'accountSubjects',
+                        titleAttribute: 'id',
+                        modifyQueryUsing: fn (Builder $query, Get $get): Builder => $query
+                            ->where($query->qualifyColumn('provider_id'), $get('provider_id'))
+                            ->where($query->qualifyColumn('is_active'), true)
+                            ->with([
+                                'provider',
+                                'gradeSubject.grade.educationStage',
+                                'gradeSubject.subject.track',
+                            ])
+                    )
+                    ->getOptionLabelFromRecordUsing(fn (AccountSubject $record): string => $record->name)
+                    ->multiple()
+                    ->pivotData([
+                        'is_active' => true,
                     ])
-                    ->columns(1)
-                    ->defaultItems(0)
-                    ->grid(2)
-                    ->addActionLabel('Add Grade Subject')
+                    ->preload()
+                    ->searchable()
                     ->disabled(fn (Get $get): bool => blank($get('provider_id')))
                     ->columnSpanFull(),
                 Toggle::make('is_active')

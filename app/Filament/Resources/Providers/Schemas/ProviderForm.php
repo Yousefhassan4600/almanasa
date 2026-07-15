@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Providers\Schemas;
 use App\Enums\CoursePeriodType;
 use App\Enums\ProviderType;
 use App\Models\GradeSubject;
+use App\Models\Subject;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -14,6 +15,8 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class ProviderForm
@@ -27,6 +30,11 @@ class ProviderForm
                         Select::make('type')
                             ->label('Type')
                             ->options(ProviderType::options())
+                            ->live()
+                            ->afterStateUpdated(function (Set $set): void {
+                                $set('subject_id', null);
+                                $set('accountSubjects', []);
+                            })
                             ->required(),
                         Select::make('owner_user_id')
                             ->label('Owner User Id')
@@ -156,19 +164,32 @@ class ProviderForm
                     ->columns(2),
                 Section::make('Subjects')
                     ->schema([
+                        Select::make('subject_id')
+                            ->label('Subject')
+                            ->options(fn (): array => Subject::query()
+                                ->with('track')
+                                ->get()
+                                ->mapWithKeys(fn (Subject $subject): array => [
+                                    $subject->id => $subject->full_name,
+                                ])
+                                ->all())
+                            ->searchable()
+                            ->preload()
+                            ->live()
+                            ->required(fn (Get $get): bool => $get('type') === ProviderType::StandaloneTeacher->value)
+                            ->visible(fn (Get $get): bool => $get('type') === ProviderType::StandaloneTeacher->value)
+                            ->afterStateUpdated(function (Set $set): void {
+                                $set('accountSubjects', []);
+                            })
+                            ->columnSpanFull(),
                         Repeater::make('accountSubjects')
                             ->label('Subjects')
                             ->relationship()
+                            ->disabled(fn (Get $get): bool => $get('type') === ProviderType::StandaloneTeacher->value && blank($get('subject_id')))
                             ->schema([
                                 Select::make('grade_subject_id')
                                     ->label('Grade Subject')
-                                    ->options(fn (): array => GradeSubject::query()
-                                        ->with(['grade.educationStage', 'subject.track'])
-                                        ->get()
-                                        ->mapWithKeys(fn (GradeSubject $gradeSubject): array => [
-                                            $gradeSubject->id => $gradeSubject->full_name,
-                                        ])
-                                        ->all())
+                                    ->options(fn (Get $get): array => self::gradeSubjectOptions($get))
                                     ->searchable()
                                     ->preload()
                                     ->disableOptionsWhenSelectedInSiblingRepeaterItems()
@@ -185,5 +206,27 @@ class ProviderForm
                     ])
                     ->columnSpanFull(),
             ])->columns(3);
+    }
+
+    private static function gradeSubjectOptions(Get $get): array
+    {
+        $type = $get('../../type') ?? $get('type');
+        $subjectId = $get('../../subject_id') ?? $get('subject_id');
+
+        if ($type === ProviderType::StandaloneTeacher->value && blank($subjectId)) {
+            return [];
+        }
+
+        return GradeSubject::query()
+            ->when(
+                $type === ProviderType::StandaloneTeacher->value,
+                fn ($query) => $query->where('subject_id', $subjectId),
+            )
+            ->with(['grade.educationStage', 'subject.track'])
+            ->get()
+            ->mapWithKeys(fn (GradeSubject $gradeSubject): array => [
+                $gradeSubject->id => $gradeSubject->full_name,
+            ])
+            ->all();
     }
 }

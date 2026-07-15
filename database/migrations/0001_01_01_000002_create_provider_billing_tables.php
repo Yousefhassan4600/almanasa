@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('type');
             $table->foreignId('owner_user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
+            $table->unsignedBigInteger('subject_id')->nullable()->index();
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('subdomain')->nullable()->unique();

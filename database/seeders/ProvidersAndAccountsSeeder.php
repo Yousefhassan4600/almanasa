@@ -171,6 +171,7 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
         );
 
         $standaloneTeacherProvider->update([
+            'subject_id' => $secondaryOnePhysics->subject_id,
             'primary_color' => '#2563eb',
             'secondary_color' => '#0f172a',
             'completion_watch_percentage' => 80,
@@ -185,6 +186,8 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
         foreach (['content_assistant', 'student_support'] as $roleName) {
             $this->role($standaloneTeacherAccount, $roleName, $standaloneTeacherAccount);
         }
+
+        $this->accountSubject($standaloneTeacherProvider->id, $secondaryOnePhysics->id);
 
         $this->account(
             type: AccountType::Student,

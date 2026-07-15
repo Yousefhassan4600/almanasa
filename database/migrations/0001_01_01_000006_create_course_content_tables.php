@@ -68,6 +68,9 @@ return new class extends Migration
             $table->foreignId('course_period_id')->nullable()->constrained('course_periods')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('title');
             $table->text('description')->nullable();
+            $table->timestamp('starts_at')->nullable();
+            $table->timestamp('ends_at')->nullable();
+            $table->unsignedInteger('num_of_video_views')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();

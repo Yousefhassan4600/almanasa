@@ -60,6 +60,11 @@ class Provider extends Model
         return $this->belongsTo(User::class, 'owner_user_id');
     }
 
+    public function subject(): BelongsTo
+    {
+        return $this->belongsTo(Subject::class, 'subject_id');
+    }
+
     public function accounts(): HasMany
     {
         return $this->hasMany(Account::class);

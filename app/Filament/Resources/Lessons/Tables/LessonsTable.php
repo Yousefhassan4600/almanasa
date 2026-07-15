@@ -26,6 +26,18 @@ class LessonsTable extends BaseTable
                 ->label('Teacher'),
             TextColumn::make('coursePeriod.name')
                 ->label('Period'),
+            TextColumn::make('starts_at')
+                ->label('Starts At')
+                ->dateTime()
+                ->sortable(),
+            TextColumn::make('ends_at')
+                ->label('Ends At')
+                ->dateTime()
+                ->sortable(),
+            TextColumn::make('num_of_video_views')
+                ->label('Video Views')
+                ->numeric()
+                ->sortable(),
             ToggleColumn::make('is_active')
                 ->label('Active'),
         ];

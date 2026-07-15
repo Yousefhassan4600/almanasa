@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Lessons\Schemas;
 
 use App\Models\Course;
 use App\Models\CoursePeriod;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -18,11 +19,11 @@ class LessonForm
             ->components([
                 Select::make('course_id')
                     ->label('Course')
-                    ->options(fn (): array => Course::query()
+                    ->options(fn(): array => Course::query()
                         ->with(['provider', 'academyTeacher.teacher.owner'])
                         ->get()
-                        ->mapWithKeys(fn (Course $course): array => [
-                            $course->id => $course->title.' - '.$course->provider?->name.' - '.$course->academyTeacher?->teacher?->owner?->name,
+                        ->mapWithKeys(fn(Course $course): array => [
+                            $course->id => $course->title . ' - ' . $course->provider?->name . ' - ' . $course->academyTeacher?->teacher?->owner?->name,
                         ])
                         ->all())
                     ->searchable()
@@ -30,11 +31,11 @@ class LessonForm
                     ->required(),
                 Select::make('course_period_id')
                     ->label('Course Period')
-                    ->options(fn (): array => CoursePeriod::query()
+                    ->options(fn(): array => CoursePeriod::query()
                         ->where('is_active', true)
                         ->orderBy('sort_order')
                         ->get()
-                        ->mapWithKeys(fn (CoursePeriod $coursePeriod): array => [
+                        ->mapWithKeys(fn(CoursePeriod $coursePeriod): array => [
                             $coursePeriod->id => $coursePeriod->name,
                         ])
                         ->all())
@@ -51,6 +52,17 @@ class LessonForm
                     ->label('Description (Arabic)'),
                 Textarea::make('description.en')
                     ->label('Description (English)'),
+                DateTimePicker::make('starts_at')
+                    ->label('Starts At'),
+                DateTimePicker::make('ends_at')
+                    ->label('Ends At'),
+                TextInput::make('num_of_video_views')
+                    ->label('Number Of Video Views')
+                    ->numeric()
+                    ->integer()
+                    ->default(1)
+                    ->minValue(0)
+                    ->columnSpanFull(),
                 Toggle::make('is_active')
                     ->label('Is Active')
                     ->default(true),

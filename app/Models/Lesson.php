@@ -28,6 +28,9 @@ class Lesson extends Model
     protected function casts(): array
     {
         return [
+            'starts_at' => 'datetime',
+            'ends_at' => 'datetime',
+            'num_of_video_views' => 'integer',
             'is_active' => 'boolean',
         ];
     }

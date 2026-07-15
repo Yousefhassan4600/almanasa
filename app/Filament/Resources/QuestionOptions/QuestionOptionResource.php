@@ -14,7 +14,7 @@ class QuestionOptionResource extends BaseResource
 {
     protected static ?string $model = QuestionOption::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Learning Content';
+    // protected static string|UnitEnum|null $navigationGroup = 'Learning Content';
 
     public static function form(Schema $schema): Schema
     {

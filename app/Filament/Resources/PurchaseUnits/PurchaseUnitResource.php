@@ -3,29 +3,18 @@
 namespace App\Filament\Resources\PurchaseUnits;
 
 use App\Filament\Base\BaseResource;
-use App\Filament\Resources\PurchaseUnits\Schemas\PurchaseUnitForm;
+use App\Filament\Clusters\EducationCatalog;
 use App\Filament\Resources\PurchaseUnits\Tables\PurchaseUnitsTable;
 use App\Models\PurchaseUnit;
-use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class PurchaseUnitResource extends BaseResource
 {
     protected static ?string $model = PurchaseUnit::class;
 
-    protected static ?string $modelLabel = 'Purchase Unit';
+    protected static ?string $cluster = EducationCatalog::class;
 
-    protected static ?string $pluralModelLabel = 'Purchase Units';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Learning Content';
-
-    protected static ?int $navigationSort = 1;
-
-    public static function form(Schema $schema): Schema
-    {
-        return PurchaseUnitForm::configure($schema);
-    }
+    protected static ?int $navigationSort = 6;
 
     public static function table(Table $table): Table
     {
@@ -41,8 +30,6 @@ class PurchaseUnitResource extends BaseResource
     {
         return [
             'index' => Pages\ListPurchaseUnits::route('/'),
-            'create' => Pages\CreatePurchaseUnit::route('/create'),
-            'edit' => Pages\EditPurchaseUnit::route('/{record}/edit'),
         ];
     }
 }

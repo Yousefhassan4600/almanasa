@@ -16,6 +16,8 @@ class CourseResource extends BaseResource
 
     protected static string|UnitEnum|null $navigationGroup = 'Learning Content';
 
+    protected static ?int $navigationSort = 1;
+
     public static function form(Schema $schema): Schema
     {
         return CourseForm::configure($schema);

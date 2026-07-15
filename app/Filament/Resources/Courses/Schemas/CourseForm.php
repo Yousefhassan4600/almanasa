@@ -5,10 +5,14 @@ namespace App\Filament\Resources\Courses\Schemas;
 use App\Models\AcademyTeacher;
 use App\Models\AccountSubject;
 use App\Models\PurchaseUnit;
+use BackedEnum;
+use Filament\Forms\Components\Contracts\CanDisableOptions;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -66,10 +70,79 @@ class CourseForm
                         Textarea::make('description.en')
                             ->label('Description (English)')
                             ->columnSpanFull(),
-                        TextInput::make('thumbnail')
-                            ->label('Thumbnail'),
+                        FileUpload::make('thumbnail')
+                            ->label('Thumbnail')
+                            ->image()
+                            ->directory('courses/thumbnails')
+                            ->columnSpanFull(),
                     ])
-                    ->columns(3),
+                    ->columns(1)
+                    ->columnSpan(2),
+                Section::make('Prices')
+                    ->schema([
+                        Repeater::make('prices')
+                            ->label('Course Prices')
+                            ->relationship()
+                            ->schema([
+                                Select::make('purchase_unit_id')
+                                    ->label('Purchase Unit')
+                                    ->options(fn (): array => PurchaseUnit::query()
+                                        ->where('is_active', true)
+                                        ->orderBy('sort_order')
+                                        ->get()
+                                        ->mapWithKeys(fn (PurchaseUnit $purchaseUnit): array => [
+                                            $purchaseUnit->id => $purchaseUnit->name,
+                                        ])
+                                        ->all())
+                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                    ->disableOptionWhen(
+                                        static function (Component&CanDisableOptions $component, string $value, mixed $state): bool {
+                                            $repeater = $component->getParentRepeater();
+
+                                            if (! $repeater) {
+                                                return false;
+                                            }
+
+                                            $fieldPath = (string) str($component->getStatePath())
+                                                ->after("{$repeater->getStatePath()}.")
+                                                ->after('.');
+
+                                            $selectedSiblingIds = collect($repeater->getRawState())
+                                                ->pluck($fieldPath)
+                                                ->flatten()
+                                                ->filter(fn (mixed $selectedId): bool => filled($selectedId))
+                                                ->map(fn (mixed $selectedId): string => (string) ($selectedId instanceof BackedEnum ? $selectedId->value : $selectedId));
+
+                                            $currentRowIds = collect(is_array($state) ? $state : [$state])
+                                                ->filter(fn (mixed $selectedId): bool => filled($selectedId))
+                                                ->map(fn (mixed $selectedId): string => (string) ($selectedId instanceof BackedEnum ? $selectedId->value : $selectedId));
+
+                                            return $selectedSiblingIds
+                                                ->diff($currentRowIds)
+                                                ->contains((string) $value);
+                                        },
+                                        merge: true,
+                                    )
+                                    ->searchable()
+                                    ->preload()
+                                    ->required(),
+                                TextInput::make('price')
+                                    ->label('Price')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->required(),
+                                TextInput::make('offer_price')
+                                    ->label('Offer Price')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->required(),
+
+                            ])
+                            ->columns(3)
+                            ->defaultItems(0)
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpan(3),
                 Section::make('Course Details')
                     ->schema([
                         TextInput::make('weekly_lectures_count')
@@ -100,40 +173,28 @@ class CourseForm
                             ->suffix('%')
                             ->required(),
                     ])
-                    ->columns(3),
-                Section::make('Prices')
+                    ->columns(1)
+                    ->columnSpan(1),
+                Section::make('Outcomes')
                     ->schema([
-                        Repeater::make('prices')
-                            ->label('Course Prices')
+                        Repeater::make('outcomes')
+                            ->label('Course Outcomes')
                             ->relationship()
                             ->schema([
-                                Select::make('purchase_unit_id')
-                                    ->label('Purchase Unit')
-                                    ->options(fn (): array => PurchaseUnit::query()
-                                        ->where('is_active', true)
-                                        ->orderBy('sort_order')
-                                        ->get()
-                                        ->mapWithKeys(fn (PurchaseUnit $purchaseUnit): array => [
-                                            $purchaseUnit->id => $purchaseUnit->name,
-                                        ])
-                                        ->all())
-                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                                    ->searchable()
-                                    ->preload()
+                                TextInput::make('title.ar')
+                                    ->label('Title (Arabic)')
                                     ->required(),
-                                TextInput::make('price')
-                                    ->label('Price')
-                                    ->numeric()
+                                TextInput::make('title.en')
+                                    ->label('Title (English)')
                                     ->required(),
-                                TextInput::make('offer_price')
-                                    ->label('Offer Price')
-                                    ->numeric(),
                             ])
-                            ->columns(3)
+                            ->columns(2)
                             ->defaultItems(0)
+                            ->grid(2)
+                            ->orderColumn('sort_order')
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),
-            ])->columns(1);
+            ])->columns(6);
     }
 }

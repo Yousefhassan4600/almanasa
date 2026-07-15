@@ -19,10 +19,10 @@ class LessonForm
                 Select::make('course_id')
                     ->label('Course')
                     ->options(fn (): array => Course::query()
-                        ->with(['provider'])
+                        ->with(['provider', 'academyTeacher.teacher.owner'])
                         ->get()
                         ->mapWithKeys(fn (Course $course): array => [
-                            $course->id => $course->title.' - '.$course->provider?->name,
+                            $course->id => $course->title.' - '.$course->provider?->name.' - '.$course->academyTeacher?->teacher?->owner?->name,
                         ])
                         ->all())
                     ->searchable()
@@ -39,6 +39,7 @@ class LessonForm
                         ])
                         ->all())
                     ->searchable()
+                    ->required()
                     ->preload(),
                 TextInput::make('title.ar')
                     ->label('Title (Arabic)')
@@ -47,16 +48,9 @@ class LessonForm
                     ->label('Title (English)')
                     ->required(),
                 Textarea::make('description.ar')
-                    ->label('Description (Arabic)')
-                    ->columnSpanFull(),
+                    ->label('Description (Arabic)'),
                 Textarea::make('description.en')
-                    ->label('Description (English)')
-                    ->columnSpanFull(),
-                TextInput::make('sort_order')
-                    ->label('Sort Order')
-                    ->numeric()
-                    ->default(0)
-                    ->required(),
+                    ->label('Description (English)'),
                 Toggle::make('is_active')
                     ->label('Is Active')
                     ->default(true),

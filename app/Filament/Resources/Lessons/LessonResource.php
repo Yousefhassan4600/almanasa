@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Lessons;
 
 use App\Filament\Base\BaseResource;
+use App\Filament\Resources\Lessons\RelationManagers\LessonItemsRelationManager;
 use App\Filament\Resources\Lessons\Schemas\LessonForm;
 use App\Filament\Resources\Lessons\Tables\LessonsTable;
 use App\Models\Lesson;
@@ -16,6 +17,8 @@ class LessonResource extends BaseResource
 
     protected static string|UnitEnum|null $navigationGroup = 'Learning Content';
 
+    protected static ?int $navigationSort = 2;
+
     public static function form(Schema $schema): Schema
     {
         return LessonForm::configure($schema);
@@ -28,7 +31,9 @@ class LessonResource extends BaseResource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            LessonItemsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

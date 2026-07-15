@@ -7,6 +7,7 @@ use App\Enums\ContentStatus;
 use App\Enums\CoursePeriodType;
 use App\Enums\EmployeeRole;
 use App\Enums\EnrollmentStatus;
+use App\Enums\LessonTypeEnum;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentMethodSlugs;
 use App\Enums\PaymentStatus;
@@ -576,28 +577,30 @@ class DatabaseSeeder extends Seeder
             'offer_price' => 450,
         ]);
 
-        foreach ([
-            1 => [
-                'en' => 'Master all required mathematics lessons.',
-                'ar' => 'إتقان جميع دروس منهج الرياضيات المقررة',
-            ],
-            2 => [
-                'en' => 'Solve different types of questions and practice exercises.',
-                'ar' => 'حل جميع أنواع المسائل والتدريبات المتنوعة',
-            ],
-            3 => [
-                'en' => 'Understand rules and concepts deeply and easily.',
-                'ar' => 'فهم القوانين والمفاهيم بعمق وسهولة',
-            ],
-            4 => [
-                'en' => 'Practice intensively on exam questions.',
-                'ar' => 'التدريب المكثف على أسئلة الامتحانات',
-            ],
-            5 => [
-                'en' => 'Achieve the highest grades, God willing.',
-                'ar' => 'تحقيق أعلى الدرجات بإذن الله',
-            ],
-        ] as $sortOrder => $outcome) {
+        foreach (
+            [
+                1 => [
+                    'en' => 'Master all required mathematics lessons.',
+                    'ar' => 'إتقان جميع دروس منهج الرياضيات المقررة',
+                ],
+                2 => [
+                    'en' => 'Solve different types of questions and practice exercises.',
+                    'ar' => 'حل جميع أنواع المسائل والتدريبات المتنوعة',
+                ],
+                3 => [
+                    'en' => 'Understand rules and concepts deeply and easily.',
+                    'ar' => 'فهم القوانين والمفاهيم بعمق وسهولة',
+                ],
+                4 => [
+                    'en' => 'Practice intensively on exam questions.',
+                    'ar' => 'التدريب المكثف على أسئلة الامتحانات',
+                ],
+                5 => [
+                    'en' => 'Achieve the highest grades, God willing.',
+                    'ar' => 'تحقيق أعلى الدرجات بإذن الله',
+                ],
+            ] as $sortOrder => $outcome
+        ) {
             CourseOutcome::query()->updateOrCreate([
                 'course_id' => $academyCourse->id,
                 'sort_order' => $sortOrder,
@@ -663,11 +666,12 @@ class DatabaseSeeder extends Seeder
             'lesson_id' => $lesson->id,
             'sort_order' => 1,
         ], [
+            'type' => LessonTypeEnum::Video,
             'title' => $this->translation(
                 'Introduction to Real Numbers',
                 'مقدمة في الأعداد الحقيقية'
             ),
-            'video_url' => 'https://videos.example.test/real-numbers-introduction',
+            'video_url' => 'courses/lesson_1/videos/01KXJYXHWGK3J6W8T2J7FT5338.mp4',
             'duration_minutes' => 30,
             'is_active' => true,
             'is_free' => true,
@@ -677,11 +681,12 @@ class DatabaseSeeder extends Seeder
             'lesson_id' => $lesson->id,
             'sort_order' => 2,
         ], [
+            'type' => LessonTypeEnum::Link,
             'title' => $this->translation(
                 'Second Explanation: Practical Applications',
                 'الشرح الثاني: تطبيقات عملية'
             ),
-            'video_url' => 'https://videos.example.test/real-numbers-practice',
+            'link_url' => 'https://www.youtube.com/',
             'duration_minutes' => 25,
             'is_active' => true,
             'is_free' => false,
@@ -691,6 +696,7 @@ class DatabaseSeeder extends Seeder
             'lesson_id' => $lesson->id,
             'sort_order' => 3,
         ], [
+            'type' => LessonTypeEnum::Assignment,
             'title' => $this->translation('Homework', 'الواجب المنزلي'),
             'assignment_id' => $homeworkAssignment->id,
             'duration_minutes' => 30,
@@ -702,11 +708,12 @@ class DatabaseSeeder extends Seeder
             'lesson_id' => $lesson->id,
             'sort_order' => 4,
         ], [
+            'type' => LessonTypeEnum::File,
             'title' => $this->translation(
                 'Paper Summary (PDF)',
                 'الملخص الورقي (PDF)'
             ),
-            'file_url' => 'resources/real-numbers-summary.pdf',
+            'file_url' => 'courses/lesson_1/files/01KXJYHREW6FY3XBXR6SQ1JSPQ.png',
             'is_active' => true,
             'is_free' => false,
         ]);
@@ -715,6 +722,7 @@ class DatabaseSeeder extends Seeder
             'lesson_id' => $lesson->id,
             'sort_order' => 5,
         ], [
+            'type' => LessonTypeEnum::Exam,
             'title' => $this->translation('Lesson Exam', 'امتحان الحصة'),
             'exam_id' => $lessonExam->id,
             'duration_minutes' => 20,

@@ -56,7 +56,10 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('action="/login/send-otp"', false)
             ->assertDontSee('http://127.0.0.1:8000/livewire', false)
             ->assertSee('href="/login"', false)
-            ->assertSee('href="/subjects"', false)
+            ->assertSee('href="/my_lessons"', false)
+            ->assertSee('دروسي', false)
+            ->assertDontSee('id="dropdownNvbarButton"', false)
+            ->assertDontSee('href="/teachers"', false)
             ->assertDontSee('href="login.html"', false)
             ->assertDontSee('href="subjects.html"', false);
     }

@@ -128,9 +128,11 @@ class AcademySiteController extends Controller
         );
 
         $html = $this->injectWebsiteHeader($html, $provider, $page);
+        $html = $this->injectHomeHeroActions($html, $page);
         $html = $this->injectHomeSubjects($html, $provider);
         $html = $this->injectHomeCta($html, $provider);
         $html = $this->injectSubjectsPage($html, $provider, $page);
+        $html = $this->injectTeachersPage($html, $provider, $page);
 
         $html = $this->injectAuthForm($html, $provider, $page);
 
@@ -242,6 +244,30 @@ class AcademySiteController extends Controller
         ) ?? $html;
     }
 
+    private function injectHomeHeroActions(string $html, string $page): string
+    {
+        if ($page !== 'index.html') {
+            return $html;
+        }
+
+        $exploreUrl = Auth::check() ? '/subjects' : '/login';
+        $startJourney = Auth::check()
+            ? ''
+            : '<a href="/login" class="w-full sm:w-auto bg-[#5D3FD3] text-white font-semibold text-lg px-8 py-4 rounded-[12px] shadow-lg shadow-[#5D3FD3]/20 transition-all hover:bg-[#4c32b3] hover:shadow-xl active:scale-95 text-center">ابدأ رحلتك الآن</a>';
+
+        $actions = '<div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">'
+            .$startJourney
+            .'<a href="'.$exploreUrl.'" class="w-full sm:w-auto bg-transparent text-[#5D3FD3] border-2 border-[#5D3FD3] font-semibold text-lg px-8 py-4 rounded-[12px] transition-all hover:bg-[#5D3FD3]/5 active:scale-95 text-center">استكشف المواد</a>'
+            .'</div>';
+
+        return preg_replace(
+            '/<div\s+class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4"\s*>\s*<button\b[^>]*>\s*ابدأ رحلتك الآن\s*<\/button>\s*<button\b[^>]*>\s*استكشف المواد\s*<\/button>\s*<\/div>/s',
+            $actions,
+            $html,
+            1,
+        ) ?? $html;
+    }
+
     private function injectHomeSubjects(string $html, Provider $provider): string
     {
         return preg_replace(
@@ -261,6 +287,20 @@ class AcademySiteController extends Controller
         return preg_replace(
             '/<section class="relative bg-white pb-20" dir="rtl">.*?<\/section>\s*<!-- subjects grid -->\s*<section class="py-12 bg-white" dir="rtl">.*?<\/section>/s',
             "\n@livewire('website.subjects-page', ['providerId' => {$provider->id}], key('website-subjects-page-{$provider->id}'))\n",
+            $html,
+            1,
+        ) ?? $html;
+    }
+
+    private function injectTeachersPage(string $html, Provider $provider, string $page): string
+    {
+        if ($page !== 'teachers.html') {
+            return $html;
+        }
+
+        return preg_replace(
+            '/\s*<!-- hero -->\s*<section\s+class="bg-gradient-to-br from-purple-50\/60 to-indigo-50\/40 py-12 md:py-20 overflow-hidden"\s+dir="rtl"\s*>.*?<\/section>\s*<!-- teachers grid -->\s*<section class="py-16 bg-white" dir="rtl">.*?<\/section>/s',
+            "\n@livewire('website.teachers-page', ['providerId' => {$provider->id}], key('website-teachers-page-{$provider->id}'))\n",
             $html,
             1,
         ) ?? $html;

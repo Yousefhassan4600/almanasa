@@ -11,10 +11,14 @@ use App\Livewire\Website\HomeSubjects;
 use App\Livewire\Website\LoginForm;
 use App\Livewire\Website\RegisterForm;
 use App\Livewire\Website\SubjectsPage;
+use App\Livewire\Website\TeachersPage;
+use App\Models\AcademyTeacher;
+use App\Models\AcademyTeacherGradeSubject;
 use App\Models\Account;
 use App\Models\AccountSubject;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Course;
 use App\Models\EducationStage;
 use App\Models\Grade;
 use App\Models\GradeSubject;
@@ -212,6 +216,28 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('>الملف الشخصي<', false);
     }
 
+    public function test_home_hero_actions_follow_auth_state(): void
+    {
+        $provider = $this->provider();
+
+        $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->assertOk()
+            ->assertSee('href="/login"', false)
+            ->assertSee('ابدأ رحلتك الآن', false)
+            ->assertSee('استكشف المواد', false);
+
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+        $this->studentProfile($user);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->assertOk()
+            ->assertSee('href="/subjects"', false)
+            ->assertSee('استكشف المواد', false)
+            ->assertDontSee('ابدأ رحلتك الآن', false);
+    }
+
     public function test_home_subjects_are_filtered_by_student_grade_and_provider(): void
     {
         $provider = $this->provider();
@@ -252,6 +278,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
             ->assertOk()
             ->assertSeeLivewire(HomeSubjects::class)
+            ->assertSee('href="/teachers?subject=', false)
             ->assertSee('الرياضيات', false)
             ->assertSee('الفيزياء', false)
             ->assertDontSee('fa-flask-vial', false);
@@ -310,6 +337,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertOk()
             ->assertSeeLivewire(SubjectsPage::class)
             ->assertSee('wire:model.live.debounce.300ms="search"', false)
+            ->assertSee('href="/teachers?subject=', false)
             ->assertSee('Grade 1', false)
             ->assertSee('الرياضيات', false)
             ->assertSee('الفيزياء', false)
@@ -324,6 +352,96 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('الرياضيات', false)
             ->assertDontSee('الفيزياء', false)
             ->assertDontSee('الكيمياء', false);
+    }
+
+    public function test_teachers_page_shows_teachers_for_selected_subject(): void
+    {
+        $provider = $this->provider();
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+
+        $stage = EducationStage::query()->create(['name' => 'Secondary', 'sort_order' => 1]);
+        $studentGrade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
+        $this->studentProfile($user, $studentGrade);
+
+        $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
+        $math = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Mathematics', 'ar' => 'الرياضيات'],
+            'description' => ['en' => 'Math description', 'ar' => 'شرح الرياضيات'],
+        ]);
+        $physics = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Physics', 'ar' => 'الفيزياء'],
+            'description' => ['en' => 'Physics description', 'ar' => 'شرح الفيزياء'],
+        ]);
+
+        $mathAccountSubject = AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $studentGrade->id,
+                'subject_id' => $math->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+        $physicsAccountSubject = AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $studentGrade->id,
+                'subject_id' => $physics->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+
+        $mathTeacherUser = User::factory()->create(['first_name' => 'Math', 'last_name' => 'Teacher']);
+        $physicsTeacherUser = User::factory()->create(['first_name' => 'Physics', 'last_name' => 'Teacher']);
+        $mathTeacherAccount = $this->teacherAccount($provider, $mathTeacherUser);
+        $physicsTeacherAccount = $this->teacherAccount($provider, $physicsTeacherUser);
+        $mathTeacher = AcademyTeacher::query()->create([
+            'provider_id' => $provider->id,
+            'teacher_account_id' => $mathTeacherAccount->id,
+            'experience_years' => 7,
+            'is_active' => true,
+        ]);
+        $physicsTeacher = AcademyTeacher::query()->create([
+            'provider_id' => $provider->id,
+            'teacher_account_id' => $physicsTeacherAccount->id,
+            'experience_years' => 5,
+            'is_active' => true,
+        ]);
+
+        AcademyTeacherGradeSubject::query()->create([
+            'academy_teacher_id' => $mathTeacher->id,
+            'account_subject_id' => $mathAccountSubject->id,
+            'is_active' => true,
+        ]);
+        AcademyTeacherGradeSubject::query()->create([
+            'academy_teacher_id' => $physicsTeacher->id,
+            'account_subject_id' => $physicsAccountSubject->id,
+            'is_active' => true,
+        ]);
+
+        Course::query()->create([
+            'provider_id' => $provider->id,
+            'account_subject_id' => $mathAccountSubject->id,
+            'teacher_account_id' => $mathTeacherAccount->id,
+            'title' => ['en' => 'Math Course', 'ar' => 'كورس الرياضيات'],
+            'slug' => 'math-course',
+            'price' => 500,
+            'monthly_price' => 180,
+            'weekly_lectures_count' => 2,
+            'status' => 'published',
+        ]);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/teachers?subject='.$mathAccountSubject->id)
+            ->assertOk()
+            ->assertSeeLivewire(TeachersPage::class)
+            ->assertSee('الرياضيات', false)
+            ->assertSee('Math Teacher', false)
+            ->assertSee('180 EGP', false)
+            ->assertDontSee('Physics Teacher', false)
+            ->assertDontSee('الفيزياء', false);
     }
 
     public function test_home_cta_links_guests_to_login(): void
@@ -504,8 +622,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'name' => str($slug)->headline()->toString(),
             'slug' => $slug,
             'subdomain' => $slug,
-            'website_enabled' => true,
-            'registration_enabled' => $registrationEnabled,
+            'pause_website' => false,
             'is_active' => true,
         ]);
 
@@ -527,6 +644,17 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'provider_id' => $provider->id,
             'owner_user_id' => $user->id,
             'type' => AccountType::Student,
+            'is_active' => true,
+            'approved_at' => now(),
+        ]);
+    }
+
+    private function teacherAccount(Provider $provider, User $user): Account
+    {
+        return Account::query()->create([
+            'provider_id' => $provider->id,
+            'owner_user_id' => $user->id,
+            'type' => AccountType::AcademyTeacher,
             'is_active' => true,
             'approved_at' => now(),
         ]);

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Courses;
 
 use App\Filament\Base\BaseResource;
+use App\Filament\Resources\Courses\RelationManagers\LessonsRelationManager;
 use App\Filament\Resources\Courses\Schemas\CourseForm;
 use App\Filament\Resources\Courses\Tables\CoursesTable;
 use App\Models\Course;
@@ -30,7 +31,9 @@ class CourseResource extends BaseResource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            LessonsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

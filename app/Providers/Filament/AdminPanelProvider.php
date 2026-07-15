@@ -59,18 +59,16 @@ class AdminPanelProvider extends PanelProvider
                     ->icon(Heroicon::OutlinedBookOpen),
                 NavigationGroup::make('Learning Content')
                     ->icon(Heroicon::OutlinedBookOpen),
-                NavigationGroup::make('Operations')
-                    ->icon(Heroicon::OutlinedCube),
-                NavigationGroup::make('Communication & Website')
-                    ->icon(Heroicon::OutlinedChatBubbleLeftRight),
-                NavigationGroup::make('Sales & Payments')
-                    ->icon(Heroicon::OutlinedCreditCard),
                 NavigationGroup::make('Students & Families')
                     ->icon(Heroicon::OutlinedUserGroup),
+                NavigationGroup::make('Sales & Payments')
+                    ->icon(Heroicon::OutlinedCreditCard),
+                NavigationGroup::make('Communication & Website')
+                    ->icon(Heroicon::OutlinedChatBubbleLeftRight),
             ])
             ->renderHook(
                 PanelsRenderHook::GLOBAL_SEARCH_AFTER,
-                fn (): string => Livewire::mount('admin.account-picker'),
+                fn(): string => Livewire::mount('admin.account-picker'),
             )
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
@@ -99,7 +97,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                EnsureCurrentAccount::class.':dashboard',
+                EnsureCurrentAccount::class . ':dashboard',
             ])
             ->sidebarWidth(69)
             ->maxContentWidth(Width::Full)

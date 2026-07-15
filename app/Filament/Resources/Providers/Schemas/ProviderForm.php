@@ -110,6 +110,9 @@ class ProviderForm
                         TextInput::make('contact_email')
                             ->label('Contact Email')
                             ->email(),
+                        TextInput::make('youtube_link')
+                            ->label('Youtube Link')
+                            ->url(),
                         TextInput::make('facebook_link')
                             ->label('Facebook Link')
                             ->url(),

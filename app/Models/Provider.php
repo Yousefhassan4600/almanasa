@@ -100,6 +100,11 @@ class Provider extends Model
         return $this->hasMany(ProviderPaymentMethod::class);
     }
 
+    public function providerCodes(): HasMany
+    {
+        return $this->hasMany(ProviderCode::class);
+    }
+
     public function currentSubscription(): HasOne
     {
         return $this->hasOne(ProviderSubscription::class)->latestOfMany();

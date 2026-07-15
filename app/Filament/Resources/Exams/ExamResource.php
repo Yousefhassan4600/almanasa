@@ -14,9 +14,9 @@ class ExamResource extends BaseResource
 {
     protected static ?string $model = Exam::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Learning Content';
+    // protected static string|UnitEnum|null $navigationGroup = 'Learning Content';
 
-    protected static ?int $navigationSort = 5;
+    // protected static ?int $navigationSort = 5;
 
     public static function form(Schema $schema): Schema
     {

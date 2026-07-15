@@ -1,0 +1,67 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('education_stages', function (Blueprint $table): void {
+            $table->id();
+            $table->text('name');
+            $table->integer('sort_order')->default(0);
+            $table->timestamps();
+        });
+
+        Schema::create('grades', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('education_stage_id')->constrained('education_stages')->cascadeOnUpdate()->restrictOnDelete();
+            $table->text('name');
+            $table->integer('sort_order')->default(0);
+            $table->timestamps();
+        });
+
+        Schema::create('tracks', function (Blueprint $table): void {
+            $table->id();
+            $table->text('name');
+            $table->string('code')->nullable()->unique();
+            $table->integer('sort_order')->default(0);
+            $table->timestamps();
+        });
+
+        Schema::create('subjects', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('track_id')->constrained('tracks')->cascadeOnUpdate()->restrictOnDelete();
+            $table->text('name');
+            $table->string('icon')->nullable();
+            $table->string('image')->nullable();
+            $table->text('description')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('grade_subjects', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('grade_id')->constrained('grades')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('subject_id')->constrained('subjects')->cascadeOnUpdate()->restrictOnDelete();
+            $table->timestamps();
+            $table->unique([
+                0 => 'grade_id',
+                1 => 'subject_id',
+            ]);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('grade_subjects');
+
+        Schema::dropIfExists('subjects');
+        Schema::dropIfExists('tracks');
+
+        Schema::dropIfExists('grades');
+
+        Schema::dropIfExists('education_stages');
+    }
+};

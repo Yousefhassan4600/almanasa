@@ -29,4 +29,9 @@ class PurchaseUnit extends Model
     {
         return $this->hasMany(CoursePrice::class, 'purchase_unit_id');
     }
+
+    public function providerCodes(): HasMany
+    {
+        return $this->hasMany(ProviderCode::class, 'purchase_unit_id');
+    }
 }

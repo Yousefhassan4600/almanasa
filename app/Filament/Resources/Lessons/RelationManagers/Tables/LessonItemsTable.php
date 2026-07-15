@@ -1,35 +1,35 @@
 <?php
 
-namespace App\Filament\Resources\Banners\Tables;
+namespace App\Filament\Resources\Lessons\RelationManagers\Tables;
 
 use App\Filament\Base\BaseTable;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 
-class BannersTable extends BaseTable
+class LessonItemsTable extends BaseTable
 {
     protected function columns(): array
     {
         return [
             TextColumn::make('id')
                 ->label('#')
-                ->searchable()
-                ->sortable(),
-            ImageColumn::make('cover')
-                ->label('Cover'),
-            TextColumn::make('provider.name')
-                ->label('Provider')
-                ->searchable()
-                ->sortable(),
+                ->searchable(),
             TextColumn::make('title')
                 ->label('Title')
+                ->searchable()
                 ->wrap(),
-            TextColumn::make('subtitle')
-                ->label('Subtitle')
+            TextColumn::make('type')
+                ->label('Type')
+                ->badge()
                 ->wrap(),
+            TextColumn::make('duration_minutes')
+                ->label('Duration Minutes')
+                ->badge()
+                ->sortable(),
             ToggleColumn::make('is_active')
-                ->label('Is Active'),
+                ->label('Active'),
+            ToggleColumn::make('is_free')
+                ->label('Free'),
         ];
     }
 

@@ -16,6 +16,8 @@ class AssignmentResource extends BaseResource
 
     protected static string|UnitEnum|null $navigationGroup = 'Learning Content';
 
+    protected static ?int $navigationSort = 4;
+
     public static function form(Schema $schema): Schema
     {
         return AssignmentForm::configure($schema);

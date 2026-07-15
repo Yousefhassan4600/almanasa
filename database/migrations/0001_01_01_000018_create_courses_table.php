@@ -109,6 +109,7 @@ return new class extends Migration
         Schema::create('lesson_items', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('lesson_id')->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
+            $table->string('type');
             $table->text('title');
             $table->text('description')->nullable();
             $table->string('video_url')->nullable();

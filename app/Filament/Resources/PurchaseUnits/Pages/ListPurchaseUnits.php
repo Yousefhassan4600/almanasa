@@ -8,4 +8,9 @@ use App\Filament\Resources\PurchaseUnits\PurchaseUnitResource;
 class ListPurchaseUnits extends BaseListRecords
 {
     protected static string $resource = PurchaseUnitResource::class;
+
+    protected function hasCreateAction(): bool
+    {
+        return false;
+    }
 }

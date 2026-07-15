@@ -8,4 +8,9 @@ use App\Filament\Resources\CoursePeriods\CoursePeriodResource;
 class ListCoursePeriods extends BaseListRecords
 {
     protected static string $resource = CoursePeriodResource::class;
+
+    protected function hasCreateAction(): bool
+    {
+        return false;
+    }
 }

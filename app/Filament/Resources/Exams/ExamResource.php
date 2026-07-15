@@ -16,6 +16,8 @@ class ExamResource extends BaseResource
 
     protected static string|UnitEnum|null $navigationGroup = 'Learning Content';
 
+    protected static ?int $navigationSort = 5;
+
     public static function form(Schema $schema): Schema
     {
         return ExamForm::configure($schema);

@@ -36,6 +36,7 @@ return new class extends Migration
             $table->string('primary_color')->nullable();
             $table->string('secondary_color')->nullable();
             $table->boolean('pause_website')->default(false);
+            $table->string('current_course_period_type')->default('term_1');
             $table->integer('completion_watch_percentage')->default(70)->min(1)->max(100);
             $table->boolean('is_active')->default(true);
             $table->boolean('use_custom_domain')->default(false);

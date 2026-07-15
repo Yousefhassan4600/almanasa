@@ -18,6 +18,8 @@ class SubjectsTable extends BaseTable
                 ->label('#'),
             ImageColumn::make('icon')
                 ->label('Icon'),
+            ImageColumn::make('image')
+                ->label('Image'),
             TextColumn::make('track.name')
                 ->label('Track'),
             TextColumn::make('name')

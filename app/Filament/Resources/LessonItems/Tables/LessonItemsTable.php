@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\LessonItems\Tables;
 
 use App\Filament\Base\BaseTable;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 
 class LessonItemsTable extends BaseTable
@@ -14,8 +15,8 @@ class LessonItemsTable extends BaseTable
                 ->label('Lesson Id')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('type')
-                ->label('Type')
+            TextColumn::make('lesson.title')
+                ->label('Lesson')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('title')
@@ -30,14 +31,20 @@ class LessonItemsTable extends BaseTable
                 ->label('File Url')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('duration_seconds')
-                ->label('Duration Seconds')
+            TextColumn::make('link_url')
+                ->label('Link Url')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('assignment_id')
-                ->label('Assignment Id')
+            TextColumn::make('duration_minutes')
+                ->label('Duration Minutes')
                 ->searchable()
                 ->sortable(),
+            IconColumn::make('is_active')
+                ->label('Active')
+                ->boolean(),
+            IconColumn::make('is_free')
+                ->label('Free')
+                ->boolean(),
         ];
     }
 

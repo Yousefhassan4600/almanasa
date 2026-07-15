@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
-use App\Enums\ContentStatus;
+use App\Enums\CoursePeriodType;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Translatable\HasTranslations;
 
 class Lesson extends Model
@@ -16,7 +18,6 @@ class Lesson extends Model
 
     protected array $tenantRelations = [
         'course',
-        'course_unit',
     ];
 
     public array $translatable = [
@@ -27,9 +28,7 @@ class Lesson extends Model
     protected function casts(): array
     {
         return [
-            'is_free' => 'boolean',
-            'status' => ContentStatus::class,
-            'published_at' => 'datetime',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -38,8 +37,25 @@ class Lesson extends Model
         return $this->belongsTo(Course::class, 'course_id');
     }
 
-    public function course_unit(): BelongsTo
+    public function coursePeriod(): BelongsTo
     {
-        return $this->belongsTo(CourseUnit::class, 'course_unit_id');
+        return $this->belongsTo(CoursePeriod::class, 'course_period_id');
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(LessonItem::class, 'lesson_id');
+    }
+
+    public function scopeVisibleForProviderCurrentPeriod(Builder $query, Provider $provider): Builder
+    {
+        $periodType = $provider->current_course_period_type instanceof CoursePeriodType
+            ? $provider->current_course_period_type
+            : CoursePeriodType::Term1;
+
+        return $query->whereHas(
+            'coursePeriod',
+            fn (Builder $query): Builder => $query->whereIn('type', $periodType->visiblePeriodTypes())
+        );
     }
 }

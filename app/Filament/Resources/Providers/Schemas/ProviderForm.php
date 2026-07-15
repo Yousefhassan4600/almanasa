@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Providers\Schemas;
 
+use App\Enums\CoursePeriodType;
 use App\Enums\ProviderType;
 use App\Models\GradeSubject;
 use Filament\Forms\Components\ColorPicker;
@@ -139,6 +140,11 @@ class ProviderForm
                             ->suffix('%')
                             ->minValue(1)
                             ->maxValue(100),
+                        Select::make('current_course_period_type')
+                            ->label('Current Course Period')
+                            ->options(CoursePeriodType::options())
+                            ->default(CoursePeriodType::Term1->value)
+                            ->required(),
                         RichEditor::make('terms_conditions')
                             ->label('Terms Conditions')
                             ->columnSpanFull(),

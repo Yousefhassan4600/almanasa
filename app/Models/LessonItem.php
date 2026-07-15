@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
-use App\Enums\LessonItemType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Translatable\HasTranslations;
@@ -28,8 +27,8 @@ class LessonItem extends Model
     protected function casts(): array
     {
         return [
-            'type' => LessonItemType::class,
-            'is_required' => 'boolean',
+            'is_active' => 'boolean',
+            'is_free' => 'boolean',
         ];
     }
 

@@ -3,14 +3,12 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
-use App\Enums\ContentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Translatable\HasTranslations;
 
-class CourseUnit extends Model
+class CoursePrice extends Model
 {
-    use FiltersByTenant, HasTranslations;
+    use FiltersByTenant;
 
     protected $guarded = [];
 
@@ -18,19 +16,21 @@ class CourseUnit extends Model
         'course',
     ];
 
-    public array $translatable = [
-        'description',
-    ];
-
     protected function casts(): array
     {
         return [
-            'status' => ContentStatus::class,
+            'price' => 'decimal:2',
+            'offer_price' => 'decimal:2',
         ];
     }
 
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class, 'course_id');
+    }
+
+    public function purchaseUnit(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseUnit::class, 'purchase_unit_id');
     }
 }

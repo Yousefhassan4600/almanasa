@@ -14,24 +14,25 @@ class CoursesTable extends BaseTable
                 ->label('Provider Id')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('teacher_account_id')
-                ->label('Teacher Account Id')
+            TextColumn::make('provider.name')
+                ->label('Provider')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('accountSubject.name')
                 ->label('Grade Subject')
                 ->searchable(),
+            TextColumn::make('academyTeacher.teacher.owner.name')
+                ->label('Teacher')
+                ->searchable(),
             TextColumn::make('title')
                 ->label('Title')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('slug')
-                ->label('Slug')
-                ->searchable()
+            TextColumn::make('num_of_lessons')
+                ->label('Lessons')
                 ->sortable(),
-            TextColumn::make('thumbnail')
-                ->label('Thumbnail')
-                ->searchable()
+            TextColumn::make('num_of_hours')
+                ->label('Hours')
                 ->sortable(),
         ];
     }

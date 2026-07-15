@@ -20,6 +20,7 @@ class SubjectForm
                     ->relationship('track', 'name')
                     ->searchable()
                     ->preload()
+                    ->columnSpanFull()
                     ->required(),
                 TextInput::make('name.ar')
                     ->label('Name (Arabic)')
@@ -30,8 +31,11 @@ class SubjectForm
                 FileUpload::make('icon')
                     ->label('Icon')
                     ->image()
-                    ->directory('subjects/icons')
-                    ->columnSpanFull(),
+                    ->directory('subjects/icons'),
+                FileUpload::make('image')
+                    ->label('Image')
+                    ->image()
+                    ->directory('subjects/images'),
                 Textarea::make('description.ar')
                     ->label('Description (Arabic)')
                     ->columnSpanFull(),

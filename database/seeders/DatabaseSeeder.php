@@ -4,28 +4,32 @@ namespace Database\Seeders;
 
 use App\Enums\AccountType;
 use App\Enums\ContentStatus;
+use App\Enums\CoursePeriodType;
 use App\Enums\EmployeeRole;
 use App\Enums\EnrollmentStatus;
-use App\Enums\LessonItemType;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentMethodSlugs;
 use App\Enums\PaymentStatus;
 use App\Enums\ProviderSubscriptionStatus;
 use App\Enums\ProviderType;
+use App\Enums\PurchaseUnitType;
 use App\Enums\SubscriptionStatus;
 use App\Models\AcademyTeacher;
 use App\Models\AcademyTeacherGradeSubject;
 use App\Models\Account;
 use App\Models\AccountSubject;
+use App\Models\Assignment;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Course;
 use App\Models\CourseOutcome;
-use App\Models\CourseUnit;
+use App\Models\CoursePeriod;
+use App\Models\CoursePrice;
 use App\Models\EducationStage;
 use App\Models\Employee;
+use App\Models\Exam;
 use App\Models\Grade;
 use App\Models\GradeSubject;
 use App\Models\Lesson;
@@ -40,6 +44,7 @@ use App\Models\Provider;
 use App\Models\ProviderPlan;
 use App\Models\ProviderPlanOption;
 use App\Models\ProviderSubscription;
+use App\Models\PurchaseUnit;
 use App\Models\Role;
 use App\Models\StudentEnrollment;
 use App\Models\Subject;
@@ -53,6 +58,62 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->seedPaymentMethods();
+
+        $lessonPurchaseUnit = PurchaseUnit::query()->updateOrCreate([
+            'type' => PurchaseUnitType::Lesson->value,
+        ], [
+            'name' => $this->translation('Lesson', 'حصة'),
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+
+        $monthPurchaseUnit = PurchaseUnit::query()->updateOrCreate([
+            'type' => PurchaseUnitType::Month->value,
+        ], [
+            'name' => $this->translation('Month', 'شهر'),
+            'sort_order' => 2,
+            'is_active' => true,
+        ]);
+
+        PurchaseUnit::query()->updateOrCreate([
+            'type' => PurchaseUnitType::Term->value,
+        ], [
+            'name' => $this->translation('Term', 'ترم'),
+            'sort_order' => 3,
+            'is_active' => true,
+        ]);
+
+        PurchaseUnit::query()->updateOrCreate([
+            'type' => PurchaseUnitType::Year->value,
+        ], [
+            'name' => $this->translation('Year', 'سنة'),
+            'sort_order' => 4,
+            'is_active' => true,
+        ]);
+
+        $termOnePeriod = CoursePeriod::query()->updateOrCreate([
+            'type' => CoursePeriodType::Term1->value,
+        ], [
+            'name' => $this->translation('Term 1', 'الترم الأول'),
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+
+        CoursePeriod::query()->updateOrCreate([
+            'type' => CoursePeriodType::Term2->value,
+        ], [
+            'name' => $this->translation('Term 2', 'الترم الثاني'),
+            'sort_order' => 2,
+            'is_active' => true,
+        ]);
+
+        CoursePeriod::query()->updateOrCreate([
+            'type' => CoursePeriodType::Yearly->value,
+        ], [
+            'name' => $this->translation('Yearly', 'العام الدراسي'),
+            'sort_order' => 3,
+            'is_active' => true,
+        ]);
 
         $egypt = Country::query()->firstOrCreate([
             'code' => 'EG',
@@ -478,92 +539,187 @@ class DatabaseSeeder extends Seeder
             provider: $academyProvider,
         );
 
-        $academyCourse = Course::query()->firstOrCreate([
+        $academyCourse = Course::query()->updateOrCreate([
             'provider_id' => $academyProvider->id,
-            'slug' => 'secondary-1-mathematics-first-term',
-        ], [
             'account_subject_id' => $academyMathCoverage->id,
-            'teacher_account_id' => $academyTeacherAccount->id,
+            'academy_teacher_id' => $academyTeacherAssignment->id,
+        ], [
             'title' => $this->translation(
-                'Secondary 1 Mathematics - First Term',
-                'رياضيات الصف الأول الثانوي - الترم الأول'
+                'Welcome to the Mathematics Course',
+                'أهلاً بك في كورس الرياضيات'
             ),
             'description' => $this->translation(
-                'Recorded mathematics course for Secondary 1 students.',
-                'كورس رياضيات مسجل لطلاب الصف الأول الثانوي.'
+                'Secondary 1 scientific mathematics course with recorded lessons, practice, assignments, and exams.',
+                'كورس رياضيات للصف الأول الثانوي علمي رياضة يحتوي على دروس مسجلة وتدريبات وواجبات وامتحانات.'
             ),
-            'term' => 'First Term',
-            'price' => 500,
-            'monthly_price' => 180,
             'weekly_lectures_count' => 2,
+            'num_of_lessons' => 65,
+            'num_of_hours' => 12,
+            'academy_percentage' => 50,
+            'teacher_percentage' => 40,
+            'platform_percentage' => 10,
+        ]);
+
+        CoursePrice::query()->updateOrCreate([
+            'course_id' => $academyCourse->id,
+            'purchase_unit_id' => $lessonPurchaseUnit->id,
+        ], [
+            'price' => 80,
+            'offer_price' => null,
+        ]);
+
+        CoursePrice::query()->updateOrCreate([
+            'course_id' => $academyCourse->id,
+            'purchase_unit_id' => $monthPurchaseUnit->id,
+        ], [
+            'price' => 500,
+            'offer_price' => 450,
+        ]);
+
+        foreach ([
+            1 => [
+                'en' => 'Master all required mathematics lessons.',
+                'ar' => 'إتقان جميع دروس منهج الرياضيات المقررة',
+            ],
+            2 => [
+                'en' => 'Solve different types of questions and practice exercises.',
+                'ar' => 'حل جميع أنواع المسائل والتدريبات المتنوعة',
+            ],
+            3 => [
+                'en' => 'Understand rules and concepts deeply and easily.',
+                'ar' => 'فهم القوانين والمفاهيم بعمق وسهولة',
+            ],
+            4 => [
+                'en' => 'Practice intensively on exam questions.',
+                'ar' => 'التدريب المكثف على أسئلة الامتحانات',
+            ],
+            5 => [
+                'en' => 'Achieve the highest grades, God willing.',
+                'ar' => 'تحقيق أعلى الدرجات بإذن الله',
+            ],
+        ] as $sortOrder => $outcome) {
+            CourseOutcome::query()->updateOrCreate([
+                'course_id' => $academyCourse->id,
+                'sort_order' => $sortOrder,
+            ], [
+                'title' => $this->translation($outcome['en'], $outcome['ar']),
+            ]);
+        }
+
+        $lesson = Lesson::query()->updateOrCreate([
+            'course_id' => $academyCourse->id,
+            'course_period_id' => $termOnePeriod->id,
+            'sort_order' => 1,
+        ], [
+            'title' => $this->translation(
+                'Lesson 1: Introduction to Real Numbers',
+                'الحصة الأولى: مقدمة الأعداد الحقيقية'
+            ),
+            'description' => $this->translation(
+                'Introduction to real numbers with explanation, practice, homework, summary, and lesson exam.',
+                'مقدمة في الأعداد الحقيقية مع شرح وتطبيقات وواجب وملخص وامتحان للحصة.'
+            ),
+            'is_active' => true,
+        ]);
+
+        $homeworkAssignment = Assignment::query()->updateOrCreate([
+            'provider_id' => $academyProvider->id,
+            'course_id' => $academyCourse->id,
+            'lesson_id' => $lesson->id,
+        ], [
+            'title' => $this->translation('Homework', 'الواجب المنزلي'),
+            'description' => $this->translation(
+                'Homework for the real numbers introduction lesson.',
+                'واجب الحصة الخاصة بمقدمة الأعداد الحقيقية.'
+            ),
+            'duration_minutes' => 30,
+            'max_score' => 10,
+            'allow_retake' => true,
+            'max_attempts' => 3,
             'status' => ContentStatus::Published,
-            'is_featured' => true,
             'published_at' => now(),
         ]);
 
-        CourseOutcome::query()->firstOrCreate([
+        $lessonExam = Exam::query()->updateOrCreate([
+            'provider_id' => $academyProvider->id,
             'course_id' => $academyCourse->id,
+            'lesson_id' => $lesson->id,
+        ], [
+            'title' => $this->translation('Lesson Exam', 'امتحان الحصة'),
+            'description' => $this->translation(
+                'Short exam for the real numbers introduction lesson.',
+                'امتحان قصير على حصة مقدمة الأعداد الحقيقية.'
+            ),
+            'duration_minutes' => 20,
+            'max_score' => 10,
+            'pass_score' => 5,
+            'max_attempts' => 1,
+            'stop_on_page_leave' => false,
+            'status' => ContentStatus::Published,
+            'published_at' => now(),
+        ]);
+
+        LessonItem::query()->updateOrCreate([
+            'lesson_id' => $lesson->id,
+            'sort_order' => 1,
         ], [
             'title' => $this->translation(
-                'Solve first-term algebra and geometry problems confidently.',
-                'حل مسائل الجبر والهندسة للترم الأول بثقة.'
+                'Introduction to Real Numbers',
+                'مقدمة في الأعداد الحقيقية'
             ),
-        ]);
-
-        $unit = CourseUnit::query()->firstOrCreate([
-            'course_id' => $academyCourse->id,
-            'title' => 'Algebra Foundations',
-        ], [
-            'description' => $this->translation(
-                'Numbers, expressions, and equations.',
-                'الأعداد والتعبيرات والمعادلات.'
-            ),
-            'term' => 'First Term',
-            'sort_order' => 1,
-            'status' => ContentStatus::Published,
-        ]);
-
-        $lesson = Lesson::query()->firstOrCreate([
-            'course_id' => $academyCourse->id,
-            'course_unit_id' => $unit->id,
-            'sort_order' => 1,
-        ], [
-            'title' => $this->translation('Linear Equations', 'المعادلات الخطية'),
-            'description' => $this->translation(
-                'Recorded explanation and practice for linear equations.',
-                'شرح مسجل وتدريبات على المعادلات الخطية.'
-            ),
-            'duration_seconds' => 1800,
+            'video_url' => 'https://videos.example.test/real-numbers-introduction',
+            'duration_minutes' => 30,
+            'is_active' => true,
             'is_free' => true,
-            'status' => ContentStatus::Published,
-            'published_at' => now(),
         ]);
 
-        LessonItem::query()->firstOrCreate([
+        LessonItem::query()->updateOrCreate([
             'lesson_id' => $lesson->id,
-            'type' => LessonItemType::Video,
-        ], [
-            'title' => $this->translation(
-                'Linear Equations Recorded Lesson',
-                'درس مسجل عن المعادلات الخطية'
-            ),
-            'video_url' => 'https://videos.example.test/linear-equations',
-            'duration_seconds' => 1800,
-            'sort_order' => 1,
-            'is_required' => true,
-        ]);
-
-        LessonItem::query()->firstOrCreate([
-            'lesson_id' => $lesson->id,
-            'type' => LessonItemType::Pdf,
-        ], [
-            'title' => $this->translation(
-                'Linear Equations Summary PDF',
-                'ملخص المعادلات الخطية PDF'
-            ),
-            'file_url' => 'resources/linear-equations-summary.pdf',
             'sort_order' => 2,
-            'is_required' => false,
+        ], [
+            'title' => $this->translation(
+                'Second Explanation: Practical Applications',
+                'الشرح الثاني: تطبيقات عملية'
+            ),
+            'video_url' => 'https://videos.example.test/real-numbers-practice',
+            'duration_minutes' => 25,
+            'is_active' => true,
+            'is_free' => false,
+        ]);
+
+        LessonItem::query()->updateOrCreate([
+            'lesson_id' => $lesson->id,
+            'sort_order' => 3,
+        ], [
+            'title' => $this->translation('Homework', 'الواجب المنزلي'),
+            'assignment_id' => $homeworkAssignment->id,
+            'duration_minutes' => 30,
+            'is_active' => true,
+            'is_free' => false,
+        ]);
+
+        LessonItem::query()->updateOrCreate([
+            'lesson_id' => $lesson->id,
+            'sort_order' => 4,
+        ], [
+            'title' => $this->translation(
+                'Paper Summary (PDF)',
+                'الملخص الورقي (PDF)'
+            ),
+            'file_url' => 'resources/real-numbers-summary.pdf',
+            'is_active' => true,
+            'is_free' => false,
+        ]);
+
+        LessonItem::query()->updateOrCreate([
+            'lesson_id' => $lesson->id,
+            'sort_order' => 5,
+        ], [
+            'title' => $this->translation('Lesson Exam', 'امتحان الحصة'),
+            'exam_id' => $lessonExam->id,
+            'duration_minutes' => 20,
+            'is_active' => true,
+            'is_free' => false,
         ]);
 
         $package = Package::query()->firstOrCreate([

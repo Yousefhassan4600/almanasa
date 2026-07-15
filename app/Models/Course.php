@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
-use App\Enums\ContentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
@@ -23,11 +23,9 @@ class Course extends Model
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
-            'monthly_price' => 'decimal:2',
-            'status' => ContentStatus::class,
-            'is_featured' => 'boolean',
-            'published_at' => 'datetime',
+            'academy_percentage' => 'decimal:2',
+            'teacher_percentage' => 'decimal:2',
+            'platform_percentage' => 'decimal:2',
         ];
     }
 
@@ -36,13 +34,28 @@ class Course extends Model
         return $this->belongsTo(Provider::class, 'provider_id');
     }
 
-    public function teacher(): BelongsTo
+    public function academyTeacher(): BelongsTo
     {
-        return $this->belongsTo(Account::class, 'teacher_account_id');
+        return $this->belongsTo(AcademyTeacher::class, 'academy_teacher_id');
     }
 
     public function accountSubject(): BelongsTo
     {
         return $this->belongsTo(AccountSubject::class, 'account_subject_id');
+    }
+
+    public function outcomes(): HasMany
+    {
+        return $this->hasMany(CourseOutcome::class, 'course_id');
+    }
+
+    public function prices(): HasMany
+    {
+        return $this->hasMany(CoursePrice::class, 'course_id');
+    }
+
+    public function lessons(): HasMany
+    {
+        return $this->hasMany(Lesson::class, 'course_id');
     }
 }

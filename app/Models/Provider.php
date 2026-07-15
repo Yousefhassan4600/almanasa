@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Enums\CoursePeriodType;
 use App\Enums\ProviderType;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +27,7 @@ class Provider extends Model
     {
         return [
             'type' => ProviderType::class,
+            'current_course_period_type' => CoursePeriodType::class,
             'latitude' => 'decimal:2',
             'longitude' => 'decimal:2',
             'pause_website' => 'boolean',

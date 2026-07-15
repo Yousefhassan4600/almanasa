@@ -15,25 +15,24 @@ class LessonsTable extends BaseTable
                 ->label('Course Id')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('course_unit_id')
-                ->label('Course Unit Id')
+            TextColumn::make('course.title')
+                ->label('Course')
+                ->searchable()
+                ->sortable(),
+            TextColumn::make('coursePeriod.name')
+                ->label('Period')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('title')
                 ->label('Title')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('duration_seconds')
-                ->label('Duration Seconds')
-                ->searchable()
+            TextColumn::make('sort_order')
+                ->label('Sort')
                 ->sortable(),
-            IconColumn::make('is_free')
-                ->label('Is Free')
+            IconColumn::make('is_active')
+                ->label('Active')
                 ->boolean(),
-            TextColumn::make('status')
-                ->label('Status')
-                ->searchable()
-                ->sortable(),
         ];
     }
 

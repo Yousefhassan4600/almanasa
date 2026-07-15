@@ -10,6 +10,7 @@ use App\Enums\PurchaseUnitType;
 use App\Livewire\Website\AuthControls;
 use App\Livewire\Website\HomeCta;
 use App\Livewire\Website\HomeSubjects;
+use App\Livewire\Website\LessonPage;
 use App\Livewire\Website\LoginForm;
 use App\Livewire\Website\RegisterForm;
 use App\Livewire\Website\SingleTeacherPage;
@@ -559,6 +560,86 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('مقدمة في الأعداد الحقيقية', false)
             ->assertSee('180', false)
             ->assertDontSee('المراجعات النهائية', false);
+    }
+
+    public function test_lesson_page_uses_selected_lesson_item_content(): void
+    {
+        $provider = $this->provider();
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+
+        $stage = EducationStage::query()->create(['name' => 'Secondary', 'sort_order' => 1]);
+        $grade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
+        $this->studentProfile($user, $grade);
+        $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
+        $subject = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Mathematics', 'ar' => 'الرياضيات'],
+        ]);
+        $accountSubject = AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $grade->id,
+                'subject_id' => $subject->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+
+        $teacherUser = User::factory()->create(['first_name' => 'Ahmed', 'last_name' => 'Teacher']);
+        $teacherAccount = $this->teacherAccount($provider, $teacherUser);
+        $teacher = AcademyTeacher::query()->create([
+            'provider_id' => $provider->id,
+            'teacher_account_id' => $teacherAccount->id,
+            'experience_years' => 7,
+            'is_active' => true,
+        ]);
+        $course = Course::query()->create([
+            'provider_id' => $provider->id,
+            'account_subject_id' => $accountSubject->id,
+            'academy_teacher_id' => $teacher->id,
+            'title' => ['en' => 'Math Course', 'ar' => 'كورس الرياضيات'],
+        ]);
+        $period = CoursePeriod::query()->create([
+            'type' => CoursePeriodType::Term1->value,
+            'name' => ['en' => 'Term 1', 'ar' => 'الترم الأول'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $lesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $period->id,
+            'title' => ['en' => 'Algebra Basics', 'ar' => 'أساسيات الجبر'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $firstItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'title' => ['en' => 'First Explanation', 'ar' => 'الشرح الأول من قاعدة البيانات'],
+            'video_url' => 'https://videos.example.test/database-video',
+            'duration_minutes' => 30,
+            'sort_order' => 1,
+            'is_active' => true,
+            'is_free' => true,
+        ]);
+        LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'title' => ['en' => 'Second Explanation', 'ar' => 'الشرح الثاني من قاعدة البيانات'],
+            'video_url' => 'https://videos.example.test/database-video-two',
+            'duration_minutes' => 25,
+            'sort_order' => 2,
+            'is_active' => true,
+            'is_free' => false,
+        ]);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$firstItem->id)
+            ->assertOk()
+            ->assertSeeLivewire(LessonPage::class)
+            ->assertSee('أساسيات الجبر', false)
+            ->assertSee('الشرح الأول من قاعدة البيانات', false)
+            ->assertSee('الشرح الثاني من قاعدة البيانات', false)
+            ->assertSee('https://videos.example.test/database-video', false)
+            ->assertDontSee('الشرح الأول: المفاهيم الأساسية', false);
     }
 
     public function test_home_cta_links_guests_to_login(): void

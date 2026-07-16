@@ -26,7 +26,7 @@ class GenerateExamModels
                 $exam->models()->updateOrCreate([
                     'model_number' => $modelNumber,
                 ], [
-                    'question_ids' => $this->generateQuestionIds($exam, $totalQuestions),
+                    'question_ids' => $this->generateQuestionItems($exam, $totalQuestions),
                 ]);
             }
 
@@ -37,9 +37,9 @@ class GenerateExamModels
     }
 
     /**
-     * @return array<int, int>
+     * @return array<int, array{id: int, max_score: float}>
      */
-    private function generateQuestionIds(Exam $exam, int $totalQuestions): array
+    private function generateQuestionItems(Exam $exam, int $totalQuestions): array
     {
         $difficultyCounts = [
             QuestionDifficulty::Easy->value => (int) ($exam->num_of_easy_questions ?? 0),
@@ -82,7 +82,25 @@ class GenerateExamModels
             ]);
         }
 
-        return $questionIds;
+        return $this->withDefaultMaxScores($questionIds, (float) ($exam->max_degree ?? 0));
+    }
+
+    /**
+     * @param  array<int, int>  $questionIds
+     * @return array<int, array{id: int, max_score: float}>
+     */
+    private function withDefaultMaxScores(array $questionIds, float $maxDegree): array
+    {
+        $maxScore = $questionIds === []
+            ? 0
+            : round($maxDegree / count($questionIds), 2);
+
+        return collect($questionIds)
+            ->map(fn (int $questionId): array => [
+                'id' => $questionId,
+                'max_score' => $maxScore,
+            ])
+            ->all();
     }
 
     /**

@@ -5,38 +5,42 @@ namespace App\Filament\Resources\CourseReviews\Tables;
 use App\Filament\Base\BaseTable;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 
 class CourseReviewsTable extends BaseTable
 {
     protected function columns(): array
     {
         return [
-            TextColumn::make('student_user_id')
-                ->label('Student User Id')
+            TextColumn::make('id')
+                ->label('#'),
+            TextColumn::make('student.name')
+                ->label('Student')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('provider_id')
-                ->label('Provider Id')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('course_id')
-                ->label('Course Id')
+            TextColumn::make('course.title')
+                ->label('Course')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('rating')
                 ->label('Rating')
-                ->searchable()
-                ->sortable(),
+                ->suffix(' / 5')
+                ->badge(),
             IconColumn::make('is_approved')
                 ->label('Is Approved')
                 ->boolean(),
+            // ToggleColumn::make('is_approved')
+            //     ->label('Is Approved'),
         ];
     }
 
-    protected function extraFilters(): array
+    public function hasViewAction(): bool
     {
-        return [
-            //
-        ];
+        return false;
+    }
+
+    public function hasEditAction(): bool
+    {
+        return false;
     }
 }

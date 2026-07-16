@@ -8,4 +8,9 @@ use App\Filament\Resources\CourseReviews\CourseReviewResource;
 class ListCourseReviews extends BaseListRecords
 {
     protected static string $resource = CourseReviewResource::class;
+
+    public function hasCreateAction(): bool
+    {
+        return false;
+    }
 }

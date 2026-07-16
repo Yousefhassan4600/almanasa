@@ -14,7 +14,7 @@ class StudentEnrollmentResource extends BaseResource
 {
     protected static ?string $model = StudentEnrollment::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Students & Families';
+    protected static string|UnitEnum|null $navigationGroup = 'Sales & Payments';
 
     public static function form(Schema $schema): Schema
     {

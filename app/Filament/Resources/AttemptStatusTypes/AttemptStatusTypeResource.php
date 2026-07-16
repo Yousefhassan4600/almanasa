@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Filament\Resources\AttemptStatusTypes;
+
+use App\Filament\Base\BaseResource;
+use App\Filament\Clusters\EducationCatalog;
+use App\Filament\Resources\AttemptStatusTypes\Tables\AttemptStatusTypesTable;
+use App\Models\AttemptStatusType;
+use Filament\Tables\Table;
+use UnitEnum;
+
+class AttemptStatusTypeResource extends BaseResource
+{
+    protected static ?string $model = AttemptStatusType::class;
+
+    protected static ?string $cluster = EducationCatalog::class;
+
+    protected static ?int $navigationSort = 7;
+
+    public static function table(Table $table): Table
+    {
+        return AttemptStatusTypesTable::configure($table);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListAttemptStatusTypes::route('/'),
+        ];
+    }
+}

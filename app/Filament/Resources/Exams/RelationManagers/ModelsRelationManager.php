@@ -6,6 +6,7 @@ use App\Models\ExamModel;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -65,6 +66,15 @@ class ModelsRelationManager extends RelationManager
                     ->label('Difficulty')
                     ->badge()
                     ->sortable(),
+                TextInputColumn::make('max_score')
+                    ->label('Max Score')
+                    ->type('number')
+                    ->step('0.01')
+                    ->rules(['numeric', 'min:0'])
+                    ->getStateUsing(fn ($record): string => (string) ($this->activeExamModel()?->questionMaxScore((int) $record->id) ?? '0'))
+                    ->updateStateUsing(function ($record, mixed $state): void {
+                        $this->activeExamModel()?->updateQuestionMaxScore((int) $record->id, (float) $state);
+                    }),
             ])
             ->filters([])
             ->headerActions([])
@@ -74,10 +84,7 @@ class ModelsRelationManager extends RelationManager
 
     private function scopeQueryToExamModel(Builder $query, ExamModel $examModel): Builder
     {
-        $questionIds = collect($examModel->question_ids ?? [])
-            ->filter()
-            ->map(fn ($questionId): int => (int) $questionId)
-            ->values();
+        $questionIds = $examModel->questionIdList();
 
         if ($questionIds->isEmpty()) {
             return $query->whereRaw('1 = 0');
@@ -90,5 +97,16 @@ class ModelsRelationManager extends RelationManager
         return $query
             ->whereIn('id', $questionIds)
             ->orderByRaw("case id {$orderSql} end");
+    }
+
+    private function activeExamModel(): ?ExamModel
+    {
+        if (! $this->activeTab) {
+            return null;
+        }
+
+        return $this->getOwnerRecord()
+            ->models()
+            ->find((int) $this->activeTab);
     }
 }

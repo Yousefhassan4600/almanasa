@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             ProvidersAndAccountsSeeder::class,
             CoursesSeeder::class,
             CommerceSeeder::class,
+            StudentActivitySeeder::class,
         ]);
     }
 }

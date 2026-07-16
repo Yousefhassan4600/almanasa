@@ -16,6 +16,8 @@ class StudentAttemptResource extends BaseResource
 
     protected static string|UnitEnum|null $navigationGroup = 'Students & Families';
 
+    protected static ?int $navigationSort = 1;
+
     public static function form(Schema $schema): Schema
     {
         return StudentAttemptForm::configure($schema);

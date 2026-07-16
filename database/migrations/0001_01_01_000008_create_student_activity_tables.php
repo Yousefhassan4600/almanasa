@@ -8,27 +8,53 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::create('attempt_status_types', function (Blueprint $table): void {
+            $table->id();
+            $table->integer('sort_order')->default(0);
+            $table->text('name');
+            $table->string('slug')->unique();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+
+        Schema::create('lesson_progress_status_types', function (Blueprint $table): void {
+            $table->id();
+            $table->integer('sort_order')->default(0);
+            $table->text('name');
+            $table->string('slug')->unique();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+
         Schema::create('student_attempts', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('student_user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('course_id')->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('exam_model_id')->nullable()->constrained('exam_models')->cascadeOnUpdate()->nullOnDelete();
             $table->string('attemptable_type');
             $table->unsignedBigInteger('attemptable_id');
             $table->integer('attempt_number')->default(1);
-            $table->string('status')->default('in_progress');
-            $table->decimal('score', 10, 2)->nullable();
             $table->decimal('max_score', 10, 2)->nullable();
-            $table->decimal('percentage', 10, 2)->nullable();
-            $table->timestamp('started_at')->nullable();
-            $table->timestamp('submitted_at')->nullable();
-            $table->timestamp('graded_at')->nullable();
-            $table->integer('time_spent_seconds')->nullable();
             $table->timestamps();
             $table->index([
                 0 => 'attemptable_type',
                 1 => 'attemptable_id',
             ]);
+        });
+
+        Schema::create('attempt_statuses', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('student_attempt_id')->constrained('student_attempts')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('attempt_status_type_id')->constrained('attempt_status_types')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('created_by_user_id')->nullable()->constrained('users')->cascadeOnUpdate()->nullOnDelete();
+            $table->boolean('is_current')->default(true);
+            $table->text('notes')->nullable();
+            $table->timestamp('status_at')->nullable();
+            $table->timestamps();
+            $table->index([
+                0 => 'student_attempt_id',
+                1 => 'is_current',
+            ], 'attempt_status_current_idx');
         });
 
         Schema::create('student_answers', function (Blueprint $table): void {
@@ -45,15 +71,8 @@ return new class extends Migration
         Schema::create('lesson_progress', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('student_user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('course_id')->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('lesson_id')->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('status')->default('not_started');
-            $table->integer('watched_seconds')->default(0);
-            $table->integer('required_seconds')->nullable();
-            $table->decimal('completion_percentage', 10, 2)->default(0);
-            $table->timestamp('completed_at')->nullable();
-            $table->timestamp('last_watched_at')->nullable();
             $table->timestamps();
             $table->unique([
                 0 => 'student_user_id',
@@ -61,22 +80,28 @@ return new class extends Migration
             ]);
         });
 
-        Schema::create('download_logs', function (Blueprint $table): void {
+        Schema::create('lesson_progress_statuses', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('student_user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('lesson_item_id')->constrained('lesson_items')->cascadeOnUpdate()->restrictOnDelete();
-            $table->timestamp('downloaded_at');
+            $table->foreignId('lesson_progress_id')->constrained('lesson_progress')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('lesson_progress_status_type_id')->constrained('lesson_progress_status_types')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('created_by_user_id')->nullable()->constrained('users')->cascadeOnUpdate()->nullOnDelete();
+            $table->boolean('is_current')->default(true);
+            $table->text('notes')->nullable();
+            $table->timestamp('status_at')->nullable();
             $table->timestamps();
+            $table->index([
+                0 => 'lesson_progress_id',
+                1 => 'is_current',
+            ], 'lesson_progress_status_current_idx');
         });
 
         Schema::create('course_reviews', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('student_user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('course_id')->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
-            $table->integer('rating');
+            $table->unsignedTinyInteger('rating');
             $table->text('comment')->nullable();
-            $table->boolean('is_approved')->default(false);
+            $table->boolean('is_approved')->default(true);
             $table->timestamps();
         });
     }
@@ -85,12 +110,18 @@ return new class extends Migration
     {
         Schema::dropIfExists('course_reviews');
 
-        Schema::dropIfExists('download_logs');
+        Schema::dropIfExists('lesson_progress_statuses');
 
         Schema::dropIfExists('lesson_progress');
 
         Schema::dropIfExists('student_answers');
 
+        Schema::dropIfExists('attempt_statuses');
+
         Schema::dropIfExists('student_attempts');
+
+        Schema::dropIfExists('lesson_progress_status_types');
+
+        Schema::dropIfExists('attempt_status_types');
     }
 };

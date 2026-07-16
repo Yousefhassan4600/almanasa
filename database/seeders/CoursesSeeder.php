@@ -198,7 +198,7 @@ class CoursesSeeder extends BaseSeeder
             'exam_id' => $lessonExam->id,
             'model_number' => 1,
         ], [
-            'question_ids' => $questionIds,
+            'question_ids' => $this->examQuestionItems($questionIds, (float) $lessonExam->max_degree),
         ]);
 
         $this->lessonItems($lesson, $homeworkAssignment, $lessonExam);
@@ -313,5 +313,23 @@ class CoursesSeeder extends BaseSeeder
             ]);
 
         }
+    }
+
+    /**
+     * @param  array<int, int>  $questionIds
+     * @return array<int, array{id: int, max_score: float}>
+     */
+    private function examQuestionItems(array $questionIds, float $maxDegree): array
+    {
+        $maxScore = $questionIds === []
+            ? 0
+            : round($maxDegree / count($questionIds), 2);
+
+        return collect($questionIds)
+            ->map(fn (int $questionId): array => [
+                'id' => $questionId,
+                'max_score' => $maxScore,
+            ])
+            ->all();
     }
 }

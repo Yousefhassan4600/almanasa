@@ -4,11 +4,7 @@ namespace App\Filament\Resources\Lessons\RelationManagers;
 
 use App\Enums\LessonTypeEnum;
 use App\Filament\Base\RelationManagers\BaseRelationManager;
-use App\Filament\Resources\Assignments\AssignmentResource;
-use App\Filament\Resources\Exams\ExamResource;
 use App\Filament\Resources\Lessons\RelationManagers\Tables\LessonItemsTable;
-use App\Models\Assignment;
-use App\Models\Exam;
 use App\Models\LessonItem;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -18,7 +14,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -56,40 +51,44 @@ class LessonItemsRelationManager extends BaseRelationManager
                     ])
                     ->disk('public')
                     ->visibility('public')
-                    ->directory(fn(): string => 'courses/lesson_' . $this->getOwnerRecord()->getKey() . '/videos')
-                    ->visible(fn(Get $get): bool => $get('type') === LessonTypeEnum::Video->value)
-                    ->required(fn(Get $get): bool => $get('type') === LessonTypeEnum::Video->value)
+                    ->directory(fn (): string => 'courses/lesson_'.$this->getOwnerRecord()->getKey().'/videos')
+                    ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::Video->value)
+                    ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Video->value)
                     ->columnSpanFull(),
                 FileUpload::make('file_url')
                     ->label('File')
-                    ->directory(fn(): string => 'courses/lesson_' . $this->getOwnerRecord()->getKey() . '/files')
-                    ->visible(fn(Get $get): bool => $get('type') === LessonTypeEnum::File->value)
-                    ->required(fn(Get $get): bool => $get('type') === LessonTypeEnum::File->value)
+                    ->directory(fn (): string => 'courses/lesson_'.$this->getOwnerRecord()->getKey().'/files')
+                    ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::File->value)
+                    ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::File->value)
                     ->columnSpanFull(),
                 TextInput::make('link_url')
                     ->label('Link Url')
-                    ->visible(fn(Get $get): bool => $get('type') === LessonTypeEnum::Link->value)
-                    ->required(fn(Get $get): bool => $get('type') === LessonTypeEnum::Link->value)
+                    ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::Link->value)
+                    ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Link->value)
                     ->columnSpanFull(),
-                Select::make('assignment_id')
-                    ->label('Assignment')
-                    ->options(fn(): array => Assignment::query()
-                        ->where('lesson_id', $this->getOwnerRecord()->getKey())
-                        ->pluck('title', 'id')
-                        ->all())
-                    ->visible(fn(Get $get): bool => $get('type') === LessonTypeEnum::Assignment->value)
-                    ->required(fn(Get $get): bool => $get('type') === LessonTypeEnum::Assignment->value)
+                Select::make('assignments')
+                    ->label('Assignments')
+                    ->relationship(
+                        name: 'assignments',
+                        titleAttribute: 'title',
+                        modifyQueryUsing: fn ($query) => $query->where('course_id', $this->getOwnerRecord()->course_id),
+                    )
+                    ->multiple()
+                    ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::Assignments->value)
+                    ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Assignments->value)
                     ->searchable()
                     ->preload()
                     ->columnSpanFull(),
-                Select::make('exam_id')
-                    ->label('Exam')
-                    ->options(fn(): array => Exam::query()
-                        ->where('lesson_id', $this->getOwnerRecord()->getKey())
-                        ->pluck('title', 'id')
-                        ->all())
-                    ->visible(fn(Get $get): bool => $get('type') === LessonTypeEnum::Exam->value)
-                    ->required(fn(Get $get): bool => $get('type') === LessonTypeEnum::Exam->value)
+                Select::make('exams')
+                    ->label('Exams')
+                    ->relationship(
+                        name: 'exams',
+                        titleAttribute: 'title',
+                        modifyQueryUsing: fn ($query) => $query->where('course_id', $this->getOwnerRecord()->course_id),
+                    )
+                    ->multiple()
+                    ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::Exams->value)
+                    ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Exams->value)
                     ->searchable()
                     ->preload()
                     ->columnSpanFull(),
@@ -123,8 +122,8 @@ class LessonItemsRelationManager extends BaseRelationManager
             Action::make('link')
                 ->hiddenLabel()
                 ->tooltip('Open')
-                ->url(fn(LessonItem $record): ?string => $this->resolveItemUrl($record))
-                ->visible(fn(LessonItem $record): bool => filled($this->resolveItemUrl($record)))
+                ->url(fn (LessonItem $record): ?string => $this->resolveItemUrl($record))
+                ->visible(fn (LessonItem $record): bool => filled($this->resolveItemUrl($record)))
                 ->openUrlInNewTab()
                 ->icon('heroicon-o-link'),
         ];
@@ -140,12 +139,6 @@ class LessonItemsRelationManager extends BaseRelationManager
             LessonTypeEnum::Video => $this->resolveFileUrl($record->video_url),
             LessonTypeEnum::File => $this->resolveFileUrl($record->file_url),
             LessonTypeEnum::Link => $this->normalizeUrl($record->link_url),
-            // LessonTypeEnum::Assignment => $record->assignment_id
-            //     ? AssignmentResource::getUrl('edit', ['record' => $record->assignment_id])
-            //     : null,
-            // LessonTypeEnum::Exam => $record->exam_id
-            //     ? ExamResource::getUrl('edit', ['record' => $record->exam_id])
-            //     : null,
             default => null,
         };
     }

@@ -14,10 +14,13 @@
     $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
     $teacherName = $teacher?->teacher?->owner?->name ?: 'المعلم';
     $activeColor = '#5D3FD3';
+    $lessonItemType = $lessonItem?->type instanceof \App\Enums\LessonTypeEnum ? $lessonItem->type->value : (string) $lessonItem?->type;
+    $lessonAssignments = $lessonItem?->assignments ?? collect();
+    $lessonExams = $lessonItem?->exams ?? collect();
 
     $contentType = match (true) {
-        (bool) $lessonItem?->assignment_id => 'assignment',
-        (bool) $lessonItem?->exam_id => 'exam',
+        $lessonItemType === \App\Enums\LessonTypeEnum::Assignments->value => 'assignment',
+        $lessonItemType === \App\Enums\LessonTypeEnum::Exams->value => 'exam',
         filled($lessonItem?->file_url) => 'file',
         default => 'video',
     };
@@ -90,13 +93,17 @@
                                 <div>
                                     <h1 class="text-xl sm:text-2xl font-black text-gray-800">{{ $itemTitle }}</h1>
                                     <span class="text-xs text-gray-400 block mt-1 font-semibold">
-                                        مدة الحل: {{ $lessonItem->assignment?->duration_minutes ?? $lessonItem->duration_minutes ?? '—' }} دقيقة
+                                        مدة الحل: {{ $lessonAssignments->max('duration_minutes') ?? $lessonItem->duration_minutes ?? '—' }} دقيقة
                                     </span>
                                 </div>
                             </div>
-                            <a href="/home_work?assignment={{ $lessonItem->assignment_id }}" class="w-full sm:w-auto bg-[#5D3FD3] hover:bg-[#4c32b3] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
-                                ابدأ الآن
-                            </a>
+                            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                @foreach ($lessonAssignments as $assignment)
+                                    <a href="/home_work?assignment={{ $assignment->id }}" class="w-full sm:w-auto bg-[#5D3FD3] hover:bg-[#4c32b3] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
+                                        {{ $assignment->getTranslation('title', 'ar', false) ?: $assignment->title }}
+                                    </a>
+                                @endforeach
+                            </div>
                         </div>
                     @elseif ($contentType === 'exam')
                         <div class="bg-[#FFF1F2] border-r-[6px] border-[#E11D48] rounded-[24px] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
@@ -107,13 +114,17 @@
                                 <div>
                                     <h1 class="text-xl sm:text-2xl font-black text-gray-800">{{ $itemTitle }}</h1>
                                     <span class="text-xs text-gray-400 block mt-1 font-semibold">
-                                        مدة الاختبار: {{ $lessonItem->exam?->duration_minutes ?? $lessonItem->duration_minutes ?? '—' }} دقيقة
+                                        مدة الاختبار: {{ $lessonExams->max('duration_minutes') ?? $lessonItem->duration_minutes ?? '—' }} دقيقة
                                     </span>
                                 </div>
                             </div>
-                            <a href="/quiz?exam={{ $lessonItem->exam_id }}" class="w-full sm:w-auto bg-[#E11D48] hover:bg-[#be123c] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
-                                ابدأ الاختبار
-                            </a>
+                            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                @foreach ($lessonExams as $exam)
+                                    <a href="/quiz?exam={{ $exam->id }}" class="w-full sm:w-auto bg-[#E11D48] hover:bg-[#be123c] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
+                                        {{ $exam->getTranslation('title', 'ar', false) ?: $exam->title }}
+                                    </a>
+                                @endforeach
+                            </div>
                         </div>
                     @else
                         <div class="bg-[#FCF6ED] border-r-[6px] border-[#D97706] rounded-[24px] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
@@ -169,9 +180,10 @@
                             @foreach ($lessonItems as $playlistItem)
                                 @php
                                     $playlistTitle = $playlistItem->getTranslation('title', 'ar', false) ?: $playlistItem->title;
+                                    $playlistItemType = $playlistItem->type instanceof \App\Enums\LessonTypeEnum ? $playlistItem->type->value : (string) $playlistItem->type;
                                     $playlistType = match (true) {
-                                        (bool) $playlistItem->assignment_id => 'assignment',
-                                        (bool) $playlistItem->exam_id => 'exam',
+                                        $playlistItemType === \App\Enums\LessonTypeEnum::Assignments->value => 'assignment',
+                                        $playlistItemType === \App\Enums\LessonTypeEnum::Exams->value => 'exam',
                                         filled($playlistItem->file_url) => 'file',
                                         default => 'video',
                                     };

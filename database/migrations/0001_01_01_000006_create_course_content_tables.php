@@ -78,35 +78,44 @@ return new class extends Migration
 
         Schema::create('assignments', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('course_id')->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('lesson_id')->nullable()->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('title');
             $table->text('description')->nullable();
-            $table->integer('duration_minutes')->nullable();
-            $table->decimal('max_score', 10, 2)->default(100);
-            $table->boolean('allow_retake')->default(true);
-            $table->integer('max_attempts')->nullable();
-            $table->string('status')->default('draft');
-            $table->timestamp('published_at')->nullable();
+            $table->unsignedInteger('num_of_questions')->nullable();
+            $table->unsignedInteger('num_of_easy_questions')->nullable();
+            $table->unsignedInteger('num_of_medium_questions')->nullable();
+            $table->unsignedInteger('num_of_hard_questions')->nullable();
+            $table->unsignedInteger('duration_minutes')->nullable();
+            $table->timestamp('starts_at')->nullable();
+            $table->boolean('is_today_only')->default(false);
+            $table->json('question_ids')->nullable();
             $table->timestamps();
         });
 
         Schema::create('exams', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('course_id')->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('lesson_id')->nullable()->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('title');
             $table->text('description')->nullable();
-            $table->integer('duration_minutes')->nullable();
-            $table->decimal('max_score', 10, 2)->default(100);
-            $table->decimal('pass_score', 10, 2)->nullable();
-            $table->integer('max_attempts')->default(1);
-            $table->boolean('stop_on_page_leave')->default(false);
-            $table->string('status')->default('draft');
-            $table->timestamp('published_at')->nullable();
+            $table->unsignedInteger('num_of_questions')->nullable();
+            $table->unsignedInteger('num_of_easy_questions')->nullable();
+            $table->unsignedInteger('num_of_medium_questions')->nullable();
+            $table->unsignedInteger('num_of_hard_questions')->nullable();
+            $table->unsignedInteger('duration_minutes')->nullable();
+            $table->timestamp('starts_at')->nullable();
+            $table->timestamp('ends_at')->nullable();
+            $table->decimal('max_degree', 10, 2)->nullable();
+            $table->unsignedInteger('num_of_models')->default(1);
             $table->timestamps();
+        });
+
+        Schema::create('exam_models', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('exam_id')->constrained('exams')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->unsignedInteger('model_number');
+            $table->json('question_ids')->nullable();
+            $table->timestamps();
+            $table->unique(['exam_id', 'model_number']);
         });
 
         Schema::create('lesson_items', function (Blueprint $table): void {
@@ -118,8 +127,6 @@ return new class extends Migration
             $table->string('video_url')->nullable();
             $table->string('file_url')->nullable();
             $table->string('link_url')->nullable();
-            $table->foreignId('assignment_id')->nullable()->constrained('assignments')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('exam_id')->nullable()->constrained('exams')->cascadeOnUpdate()->restrictOnDelete();
             $table->integer('duration_minutes')->nullable();
             $table->boolean('is_active')->default(true);
             $table->boolean('is_free')->default(false);
@@ -127,26 +134,41 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('lesson_item_assignments', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('lesson_item_id')->constrained('lesson_items')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('assignment_id')->constrained('assignments')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->unsignedInteger('sort_order')->default(0);
+            $table->timestamps();
+            $table->unique(['lesson_item_id', 'assignment_id'], 'lesson_item_assignment_unique');
+        });
+
+        Schema::create('lesson_item_exams', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('lesson_item_id')->constrained('lesson_items')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('exam_id')->constrained('exams')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->unsignedInteger('sort_order')->default(0);
+            $table->timestamps();
+            $table->unique(['lesson_item_id', 'exam_id'], 'lesson_item_exam_unique');
+        });
+
         Schema::create('questions', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('questionable_type');
-            $table->unsignedBigInteger('questionable_id');
-            $table->string('type');
+            $table->foreignId('lesson_id')->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('title');
-            $table->decimal('points', 10, 2)->default(1);
+            $table->string('media')->nullable();
+            $table->string('type');
+            $table->string('difficulty');
             $table->integer('sort_order')->default(0);
             $table->timestamps();
-            $table->index([
-                0 => 'questionable_type',
-                1 => 'questionable_id',
-            ]);
+            $table->index(['lesson_id', 'type', 'difficulty']);
         });
 
         Schema::create('question_options', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('question_id')->constrained('questions')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('title');
+            $table->string('media')->nullable();
             $table->boolean('is_correct')->default(false);
             $table->integer('sort_order')->default(0);
             $table->timestamps();
@@ -157,7 +179,10 @@ return new class extends Migration
     {
         Schema::dropIfExists('question_options');
         Schema::dropIfExists('questions');
+        Schema::dropIfExists('lesson_item_exams');
+        Schema::dropIfExists('lesson_item_assignments');
         Schema::dropIfExists('lesson_items');
+        Schema::dropIfExists('exam_models');
         Schema::dropIfExists('exams');
         Schema::dropIfExists('assignments');
         Schema::dropIfExists('lessons');

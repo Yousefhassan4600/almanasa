@@ -10,25 +10,28 @@ class QuestionsTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('provider_id')
-                ->label('Provider Id')
-                ->searchable()
+            TextColumn::make('id')
+                ->label('#')
                 ->sortable(),
-            TextColumn::make('questionable_type')
-                ->label('Questionable Type')
+            TextColumn::make('title')
+                ->label('Title')
                 ->searchable()
-                ->sortable(),
-            TextColumn::make('questionable_id')
-                ->label('Questionable Id')
+                ->wrap(),
+            TextColumn::make('lesson.course.title')
+                ->label('Course')
                 ->searchable()
-                ->sortable(),
+                ->wrap(),
+            TextColumn::make('lesson.title')
+                ->label('Lesson')
+                ->searchable()
+                ->wrap(),
             TextColumn::make('type')
                 ->label('Type')
-                ->searchable()
+                ->badge()
                 ->sortable(),
-            TextColumn::make('points')
-                ->label('Points')
-                ->searchable()
+            TextColumn::make('difficulty')
+                ->label('Difficulty')
+                ->badge()
                 ->sortable(),
         ];
     }

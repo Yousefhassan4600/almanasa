@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Enums\QuestionDifficulty;
 use App\Enums\QuestionType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Translatable\HasTranslations;
 
 class Question extends Model
@@ -14,6 +15,10 @@ class Question extends Model
     use FiltersByTenant, HasTranslations;
 
     protected $guarded = [];
+
+    protected array $tenantRelations = [
+        'lesson',
+    ];
 
     public array $translatable = [
         'title',
@@ -23,17 +28,17 @@ class Question extends Model
     {
         return [
             'type' => QuestionType::class,
-            'points' => 'decimal:2',
+            'difficulty' => QuestionDifficulty::class,
         ];
     }
 
-    public function provider(): BelongsTo
+    public function lesson(): BelongsTo
     {
-        return $this->belongsTo(Provider::class, 'provider_id');
+        return $this->belongsTo(Lesson::class, 'lesson_id');
     }
 
-    public function questionable(): MorphTo
+    public function options(): HasMany
     {
-        return $this->morphTo();
+        return $this->hasMany(QuestionOption::class, 'question_id');
     }
 }

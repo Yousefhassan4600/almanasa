@@ -38,8 +38,8 @@ class LessonPage extends Component
     {
         return LessonItem::query()
             ->with([
-                'assignment:id,title,description,duration_minutes,max_score',
-                'exam:id,title,description,duration_minutes,max_score',
+                'assignments:id,course_id,title,description,duration_minutes,num_of_questions',
+                'exams:id,course_id,title,description,duration_minutes,max_degree,num_of_questions',
                 'lesson' => fn ($query) => $query
                     ->with([
                         'coursePeriod:id,type,name,sort_order',

@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
-use App\Enums\ContentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\Translatable\HasTranslations;
 
 class Assignment extends Model
@@ -13,6 +13,10 @@ class Assignment extends Model
     use FiltersByTenant, HasTranslations;
 
     protected $guarded = [];
+
+    protected array $tenantRelations = [
+        'course',
+    ];
 
     public array $translatable = [
         'title',
@@ -22,16 +26,10 @@ class Assignment extends Model
     protected function casts(): array
     {
         return [
-            'max_score' => 'decimal:2',
-            'allow_retake' => 'boolean',
-            'status' => ContentStatus::class,
-            'published_at' => 'datetime',
+            'question_ids' => 'array',
+            'starts_at' => 'datetime',
+            'is_today_only' => 'boolean',
         ];
-    }
-
-    public function provider(): BelongsTo
-    {
-        return $this->belongsTo(Provider::class, 'provider_id');
     }
 
     public function course(): BelongsTo
@@ -39,8 +37,10 @@ class Assignment extends Model
         return $this->belongsTo(Course::class, 'course_id');
     }
 
-    public function lesson(): BelongsTo
+    public function lessonItems(): BelongsToMany
     {
-        return $this->belongsTo(Lesson::class, 'lesson_id');
+        return $this->belongsToMany(LessonItem::class, 'lesson_item_assignments')
+            ->withPivot(['sort_order'])
+            ->withTimestamps();
     }
 }

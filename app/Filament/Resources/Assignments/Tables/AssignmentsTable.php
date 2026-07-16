@@ -11,32 +11,30 @@ class AssignmentsTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('provider_id')
-                ->label('Provider Id')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('course_id')
-                ->label('Course Id')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('lesson_id')
-                ->label('Lesson Id')
-                ->searchable()
+            TextColumn::make('id')
+                ->label('#')
                 ->sortable(),
             TextColumn::make('title')
                 ->label('Title')
                 ->searchable()
+                ->wrap(),
+            TextColumn::make('course.title')
+                ->label('Course')
+                ->searchable()
+                ->wrap(),
+            TextColumn::make('num_of_questions')
+                ->label('Questions')
                 ->sortable(),
             TextColumn::make('duration_minutes')
-                ->label('Duration Minutes')
-                ->searchable()
+                ->label('Duration')
+                ->suffix(' min')
                 ->sortable(),
-            TextColumn::make('max_score')
-                ->label('Max Score')
-                ->searchable()
+            TextColumn::make('starts_at')
+                ->label('Starts At')
+                ->dateTime()
                 ->sortable(),
-            IconColumn::make('allow_retake')
-                ->label('Allow Retake')
+            IconColumn::make('is_today_only')
+                ->label('Today Only')
                 ->boolean(),
         ];
     }

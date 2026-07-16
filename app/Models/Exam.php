@@ -3,9 +3,10 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
-use App\Enums\ContentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Translatable\HasTranslations;
 
 class Exam extends Model
@@ -13,6 +14,10 @@ class Exam extends Model
     use FiltersByTenant, HasTranslations;
 
     protected $guarded = [];
+
+    protected array $tenantRelations = [
+        'course',
+    ];
 
     public array $translatable = [
         'title',
@@ -22,17 +27,10 @@ class Exam extends Model
     protected function casts(): array
     {
         return [
-            'max_score' => 'decimal:2',
-            'pass_score' => 'decimal:2',
-            'stop_on_page_leave' => 'boolean',
-            'status' => ContentStatus::class,
-            'published_at' => 'datetime',
+            'starts_at' => 'datetime',
+            'ends_at' => 'datetime',
+            'max_degree' => 'decimal:2',
         ];
-    }
-
-    public function provider(): BelongsTo
-    {
-        return $this->belongsTo(Provider::class, 'provider_id');
     }
 
     public function course(): BelongsTo
@@ -40,8 +38,15 @@ class Exam extends Model
         return $this->belongsTo(Course::class, 'course_id');
     }
 
-    public function lesson(): BelongsTo
+    public function models(): HasMany
     {
-        return $this->belongsTo(Lesson::class, 'lesson_id');
+        return $this->hasMany(ExamModel::class, 'exam_id');
+    }
+
+    public function lessonItems(): BelongsToMany
+    {
+        return $this->belongsToMany(LessonItem::class, 'lesson_item_exams')
+            ->withPivot(['sort_order'])
+            ->withTimestamps();
     }
 }

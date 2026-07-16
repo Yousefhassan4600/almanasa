@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Lessons;
 
 use App\Filament\Base\BaseResource;
 use App\Filament\Resources\Lessons\RelationManagers\LessonItemsRelationManager;
+use App\Filament\Resources\Lessons\RelationManagers\QuestionsRelationManager;
 use App\Filament\Resources\Lessons\Schemas\LessonForm;
 use App\Filament\Resources\Lessons\Tables\LessonsTable;
 use App\Models\Lesson;
@@ -33,6 +34,7 @@ class LessonResource extends BaseResource
     {
         return [
             LessonItemsRelationManager::class,
+            QuestionsRelationManager::class,
         ];
     }
 

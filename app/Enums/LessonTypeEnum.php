@@ -7,8 +7,8 @@ enum LessonTypeEnum: string
     case Video = 'video';
     case File = 'file';
     case Link = 'link';
-    case Assignment = 'assignment';
-    case Exam = 'exam';
+    case Assignments = 'assignments';
+    case Exams = 'exams';
 
     public static function options(): array
     {
@@ -16,8 +16,8 @@ enum LessonTypeEnum: string
             self::Video->value => 'Video',
             self::File->value => 'File',
             self::Link->value => 'Link',
-            self::Assignment->value => 'Assignment',
-            self::Exam->value => 'Exam',
+            self::Assignments->value => 'Assignments',
+            self::Exams->value => 'Exams',
         ];
     }
 }

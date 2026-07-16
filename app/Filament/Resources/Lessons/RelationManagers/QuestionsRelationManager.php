@@ -1,35 +1,29 @@
 <?php
 
-namespace App\Filament\Resources\Questions\Schemas;
+namespace App\Filament\Resources\Lessons\RelationManagers;
 
 use App\Enums\QuestionDifficulty;
 use App\Enums\QuestionType;
-use App\Models\Lesson;
+use App\Filament\Base\RelationManagers\BaseRelationManager;
+use App\Filament\Resources\Questions\Tables\QuestionsTable;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Filament\Tables\Table;
 
-class QuestionForm
+class QuestionsRelationManager extends BaseRelationManager
 {
-    public static function configure(Schema $schema): Schema
+    protected static string $relationship = 'questions';
+
+    protected static ?string $title = 'Questions';
+
+    public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Select::make('lesson_id')
-                    ->label('Lesson')
-                    ->options(fn(): array => Lesson::query()
-                        ->with(['course'])
-                        ->get()
-                        ->mapWithKeys(fn(Lesson $lesson): array => [
-                            $lesson->id => collect([$lesson->course?->title, $lesson->title])->filter()->join(' - '),
-                        ])
-                        ->all())
-                    ->searchable()
-                    ->preload()
-                    ->required(),
                 Select::make('type')
                     ->label('Type')
                     ->options(QuestionType::options())
@@ -48,7 +42,8 @@ class QuestionForm
                     ->label('Media')
                     ->disk('public')
                     ->visibility('public')
-                    ->directory('questions/media'),
+                    ->directory('questions/media')
+                    ->columnSpanFull(),
                 Repeater::make('options')
                     ->label('Options')
                     ->relationship()
@@ -69,11 +64,26 @@ class QuestionForm
                             ->label('Correct')
                             ->default(false),
                     ])
-                    ->columns(1)
-                    ->grid(4)
+                    ->columns(2)
+                    ->grid(2)
                     ->orderColumn('sort_order')
                     ->columnSpanFull(),
             ])
-            ->columns(3);
+            ->columns(2);
+    }
+
+    public function table(Table $table): Table
+    {
+        return QuestionsTable::configure($table)
+            ->heading('Questions')
+            ->recordTitleAttribute('title')
+            ->headerActions($this->getTableHeaderActions())
+            ->filters([])
+            ->recordActions($this->getTableActions());
+    }
+
+    public function getTableFilters(): array
+    {
+        return [];
     }
 }

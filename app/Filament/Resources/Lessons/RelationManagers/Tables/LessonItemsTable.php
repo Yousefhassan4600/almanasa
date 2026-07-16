@@ -22,6 +22,12 @@ class LessonItemsTable extends BaseTable
                 ->label('Type')
                 ->badge()
                 ->wrap(),
+            TextColumn::make('assignments.title')
+                ->label('Assignments')
+                ->badge(),
+            TextColumn::make('exams.title')
+                ->label('Exams')
+                ->badge(),
             TextColumn::make('duration_minutes')
                 ->label('Duration Minutes')
                 ->badge()

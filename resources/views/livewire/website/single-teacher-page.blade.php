@@ -136,7 +136,13 @@
                                                             @foreach ($lessonItems as $item)
                                                                 @php
                                                                     $itemTitle = $item->getTranslation('title', 'ar', false) ?: $item->title;
-                                                                    $icon = $item->assignment_id ? 'fa-regular fa-clipboard' : ($item->exam_id ? 'fa-regular fa-circle-question' : ($item->file_url ? 'fa-regular fa-file-pdf' : 'fa-regular fa-circle-play'));
+                                                                    $itemType = $item->type instanceof \App\Enums\LessonTypeEnum ? $item->type->value : (string) $item->type;
+                                                                    $icon = match (true) {
+                                                                        $itemType === \App\Enums\LessonTypeEnum::Assignments->value => 'fa-regular fa-clipboard',
+                                                                        $itemType === \App\Enums\LessonTypeEnum::Exams->value => 'fa-regular fa-circle-question',
+                                                                        filled($item->file_url) => 'fa-regular fa-file-pdf',
+                                                                        default => 'fa-regular fa-circle-play',
+                                                                    };
                                                                     $isLocked = ! $item->is_free;
                                                                 @endphp
 

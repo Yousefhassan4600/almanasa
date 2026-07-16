@@ -2,10 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Enums\ContentStatus;
 use App\Enums\CoursePeriodType;
 use App\Enums\LessonTypeEnum;
 use App\Enums\PurchaseUnitType;
+use App\Enums\QuestionDifficulty;
+use App\Enums\QuestionType;
 use App\Models\AcademyTeacher;
 use App\Models\AccountSubject;
 use App\Models\Assignment;
@@ -14,11 +15,14 @@ use App\Models\CourseOutcome;
 use App\Models\CoursePeriod;
 use App\Models\CoursePrice;
 use App\Models\Exam;
+use App\Models\ExamModel;
 use App\Models\Lesson;
 use App\Models\LessonItem;
 use App\Models\Provider;
 use App\Models\ProviderCode;
 use App\Models\PurchaseUnit;
+use App\Models\Question;
+use App\Models\QuestionOption;
 
 class CoursesSeeder extends BaseSeeder
 {
@@ -63,7 +67,7 @@ class CoursesSeeder extends BaseSeeder
         $this->coursePrices($academyCourse, $lessonPurchaseUnit, $monthPurchaseUnit);
         $this->providerCode($academyProvider, $monthPurchaseUnit);
         $this->courseOutcomes($academyCourse);
-        $this->lessonContent($academyProvider, $academyCourse, $termOnePeriod);
+        $this->lessonContent($academyCourse, $termOnePeriod);
     }
 
     private function coursePrices(Course $course, PurchaseUnit $lessonPurchaseUnit, PurchaseUnit $monthPurchaseUnit): void
@@ -132,7 +136,7 @@ class CoursesSeeder extends BaseSeeder
         }
     }
 
-    private function lessonContent(Provider $provider, Course $course, CoursePeriod $termOnePeriod): void
+    private function lessonContent(Course $course, CoursePeriod $termOnePeriod): void
     {
         $lesson = Lesson::query()->updateOrCreate([
             'course_id' => $course->id,
@@ -150,44 +154,113 @@ class CoursesSeeder extends BaseSeeder
             'is_active' => true,
         ]);
 
+        $questionIds = $this->questions($lesson);
+
         $homeworkAssignment = Assignment::query()->updateOrCreate([
-            'provider_id' => $provider->id,
             'course_id' => $course->id,
-            'lesson_id' => $lesson->id,
         ], [
             'title' => $this->translation('Homework', 'الواجب المنزلي'),
             'description' => $this->translation(
                 'Homework for the real numbers introduction lesson.',
                 'واجب الحصة الخاصة بمقدمة الأعداد الحقيقية.'
             ),
+            'num_of_questions' => 3,
+            'num_of_easy_questions' => 1,
+            'num_of_medium_questions' => 1,
+            'num_of_hard_questions' => 1,
             'duration_minutes' => 30,
-            'max_score' => 10,
-            'allow_retake' => true,
-            'max_attempts' => 3,
-            'status' => ContentStatus::Published,
-            'published_at' => now(),
+            'starts_at' => now(),
+            'is_today_only' => false,
+            'question_ids' => $questionIds,
         ]);
 
         $lessonExam = Exam::query()->updateOrCreate([
-            'provider_id' => $provider->id,
             'course_id' => $course->id,
-            'lesson_id' => $lesson->id,
         ], [
             'title' => $this->translation('Lesson Exam', 'امتحان الحصة'),
             'description' => $this->translation(
                 'Short exam for the real numbers introduction lesson.',
                 'امتحان قصير على حصة مقدمة الأعداد الحقيقية.'
             ),
+            'num_of_questions' => 3,
+            'num_of_easy_questions' => 1,
+            'num_of_medium_questions' => 1,
+            'num_of_hard_questions' => 1,
             'duration_minutes' => 20,
-            'max_score' => 10,
-            'pass_score' => 5,
-            'max_attempts' => 1,
-            'stop_on_page_leave' => false,
-            'status' => ContentStatus::Published,
-            'published_at' => now(),
+            'starts_at' => now(),
+            'ends_at' => now()->addWeek(),
+            'max_degree' => 10,
+            'num_of_models' => 1,
+        ]);
+
+        ExamModel::query()->updateOrCreate([
+            'exam_id' => $lessonExam->id,
+            'model_number' => 1,
+        ], [
+            'question_ids' => $questionIds,
         ]);
 
         $this->lessonItems($lesson, $homeworkAssignment, $lessonExam);
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function questions(Lesson $lesson): array
+    {
+        $questions = [
+            1 => [
+                'title' => $this->translation('Which set contains the real numbers?', 'أي مجموعة تحتوي على الأعداد الحقيقية؟'),
+                'type' => QuestionType::Mcq,
+                'difficulty' => QuestionDifficulty::Easy,
+                'options' => [
+                    [$this->translation('Rational and irrational numbers', 'الأعداد النسبية وغير النسبية'), true],
+                    [$this->translation('Only natural numbers', 'الأعداد الطبيعية فقط'), false],
+                    [$this->translation('Only integers', 'الأعداد الصحيحة فقط'), false],
+                ],
+            ],
+            2 => [
+                'title' => $this->translation('Every integer is a rational number.', 'كل عدد صحيح هو عدد نسبي.'),
+                'type' => QuestionType::TrueFalse,
+                'difficulty' => QuestionDifficulty::Medium,
+                'options' => [
+                    [$this->translation('True', 'صح'), true],
+                    [$this->translation('False', 'خطأ'), false],
+                ],
+            ],
+            3 => [
+                'title' => $this->translation('Explain the difference between rational and irrational numbers.', 'اشرح الفرق بين الأعداد النسبية وغير النسبية.'),
+                'type' => QuestionType::Statement,
+                'difficulty' => QuestionDifficulty::Hard,
+                'options' => [],
+            ],
+        ];
+
+        return collect($questions)
+            ->map(function (array $questionData, int $sortOrder) use ($lesson): int {
+                $question = Question::query()->updateOrCreate([
+                    'lesson_id' => $lesson->id,
+                    'sort_order' => $sortOrder,
+                ], [
+                    'title' => $questionData['title'],
+                    'type' => $questionData['type'],
+                    'difficulty' => $questionData['difficulty'],
+                ]);
+
+                foreach ($questionData['options'] as $optionSortOrder => [$title, $isCorrect]) {
+                    QuestionOption::query()->updateOrCreate([
+                        'question_id' => $question->id,
+                        'sort_order' => $optionSortOrder + 1,
+                    ], [
+                        'title' => $title,
+                        'is_correct' => $isCorrect,
+                    ]);
+                }
+
+                return $question->id;
+            })
+            ->values()
+            ->all();
     }
 
     private function lessonItems(Lesson $lesson, Assignment $homeworkAssignment, Exam $lessonExam): void
@@ -209,9 +282,8 @@ class CoursesSeeder extends BaseSeeder
                     'is_free' => false,
                 ],
                 3 => [
-                    'type' => LessonTypeEnum::Assignment,
+                    'type' => LessonTypeEnum::Assignments,
                     'title' => $this->translation('Homework', 'الواجب المنزلي'),
-                    'assignment_id' => $homeworkAssignment->id,
                     'duration_minutes' => 30,
                     'is_free' => false,
                 ],
@@ -222,21 +294,28 @@ class CoursesSeeder extends BaseSeeder
                     'is_free' => false,
                 ],
                 5 => [
-                    'type' => LessonTypeEnum::Exam,
+                    'type' => LessonTypeEnum::Exams,
                     'title' => $this->translation('Lesson Exam', 'امتحان الحصة'),
-                    'exam_id' => $lessonExam->id,
                     'duration_minutes' => 20,
                     'is_free' => false,
                 ],
             ] as $sortOrder => $item
         ) {
-            LessonItem::query()->updateOrCreate([
+            $lessonItem = LessonItem::query()->updateOrCreate([
                 'lesson_id' => $lesson->id,
                 'sort_order' => $sortOrder,
             ], [
                 ...$item,
                 'is_active' => true,
             ]);
+
+            if (($item['type'] ?? null) === LessonTypeEnum::Assignments) {
+                $lessonItem->assignments()->sync([$homeworkAssignment->id]);
+            }
+
+            if (($item['type'] ?? null) === LessonTypeEnum::Exams) {
+                $lessonItem->exams()->sync([$lessonExam->id]);
+            }
         }
     }
 }

@@ -50,6 +50,11 @@ class Lesson extends Model
         return $this->hasMany(LessonItem::class, 'lesson_id');
     }
 
+    public function questions(): HasMany
+    {
+        return $this->hasMany(Question::class, 'lesson_id');
+    }
+
     public function scopeVisibleForProviderCurrentPeriod(Builder $query, Provider $provider): Builder
     {
         $periodType = $provider->current_course_period_type instanceof CoursePeriodType

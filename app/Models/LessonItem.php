@@ -6,6 +6,7 @@ use App\Concerns\FiltersByTenant;
 use App\Enums\LessonTypeEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\Translatable\HasTranslations;
 
 class LessonItem extends Model
@@ -16,8 +17,6 @@ class LessonItem extends Model
 
     protected array $tenantRelations = [
         'lesson',
-        'assignment',
-        'exam',
     ];
 
     public array $translatable = [
@@ -39,13 +38,17 @@ class LessonItem extends Model
         return $this->belongsTo(Lesson::class, 'lesson_id');
     }
 
-    public function assignment(): BelongsTo
+    public function assignments(): BelongsToMany
     {
-        return $this->belongsTo(Assignment::class, 'assignment_id');
+        return $this->belongsToMany(Assignment::class, 'lesson_item_assignments')
+            ->withPivot(['sort_order'])
+            ->withTimestamps();
     }
 
-    public function exam(): BelongsTo
+    public function exams(): BelongsToMany
     {
-        return $this->belongsTo(Exam::class, 'exam_id');
+        return $this->belongsToMany(Exam::class, 'lesson_item_exams')
+            ->withPivot(['sort_order'])
+            ->withTimestamps();
     }
 }

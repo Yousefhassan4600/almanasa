@@ -6,6 +6,7 @@ use App\Concerns\FiltersByTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
@@ -57,6 +58,11 @@ class Course extends Model
     public function lessons(): HasMany
     {
         return $this->hasMany(Lesson::class, 'course_id');
+    }
+
+    public function questions(): HasManyThrough
+    {
+        return $this->hasManyThrough(Question::class, Lesson::class, 'course_id', 'lesson_id');
     }
 
     public function assignments(): HasMany

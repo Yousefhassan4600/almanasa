@@ -155,7 +155,7 @@ return new class extends Migration
         Schema::create('questions', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('lesson_id')->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
-            $table->text('title');
+            $table->string('title');
             $table->string('media')->nullable();
             $table->string('type');
             $table->string('difficulty');
@@ -167,7 +167,7 @@ return new class extends Migration
         Schema::create('question_options', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('question_id')->constrained('questions')->cascadeOnUpdate()->restrictOnDelete();
-            $table->text('title');
+            $table->string('title');
             $table->string('media')->nullable();
             $table->boolean('is_correct')->default(false);
             $table->integer('sort_order')->default(0);

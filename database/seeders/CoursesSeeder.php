@@ -210,26 +210,26 @@ class CoursesSeeder extends BaseSeeder
     {
         $questions = [
             1 => [
-                'title' => $this->translation('Which set contains the real numbers?', 'أي مجموعة تحتوي على الأعداد الحقيقية؟'),
+                'title' => 'Which set contains the real numbers?',
                 'type' => QuestionType::Mcq,
                 'difficulty' => QuestionDifficulty::Easy,
                 'options' => [
-                    [$this->translation('Rational and irrational numbers', 'الأعداد النسبية وغير النسبية'), true],
-                    [$this->translation('Only natural numbers', 'الأعداد الطبيعية فقط'), false],
-                    [$this->translation('Only integers', 'الأعداد الصحيحة فقط'), false],
+                    ['Rational and irrational numbers', true],
+                    ['Only natural numbers', false],
+                    ['Only integers', false],
                 ],
             ],
             2 => [
-                'title' => $this->translation('Every integer is a rational number.', 'كل عدد صحيح هو عدد نسبي.'),
+                'title' => 'Every integer is a rational number.',
                 'type' => QuestionType::TrueFalse,
                 'difficulty' => QuestionDifficulty::Medium,
                 'options' => [
-                    [$this->translation('True', 'صح'), true],
-                    [$this->translation('False', 'خطأ'), false],
+                    ['True', true],
+                    ['False', false],
                 ],
             ],
             3 => [
-                'title' => $this->translation('Explain the difference between rational and irrational numbers.', 'اشرح الفرق بين الأعداد النسبية وغير النسبية.'),
+                'title' => 'Explain the difference between rational and irrational numbers.',
                 'type' => QuestionType::Statement,
                 'difficulty' => QuestionDifficulty::Hard,
                 'options' => [],

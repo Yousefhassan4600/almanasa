@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Lessons\RelationManagers;
 
 use App\Enums\QuestionDifficulty;
 use App\Enums\QuestionType;
+use App\Filament\Actions\ImportQuestionsFromExcelAction;
 use App\Filament\Base\RelationManagers\BaseRelationManager;
 use App\Filament\Resources\Questions\Tables\QuestionsTable;
 use Filament\Forms\Components\FileUpload;
@@ -32,11 +33,8 @@ class QuestionsRelationManager extends BaseRelationManager
                     ->label('Difficulty')
                     ->options(QuestionDifficulty::options())
                     ->required(),
-                Textarea::make('title.ar')
-                    ->label('Title (Arabic)')
-                    ->required(),
-                Textarea::make('title.en')
-                    ->label('Title (English)')
+                Textarea::make('title')
+                    ->label('Title')
                     ->required(),
                 FileUpload::make('media')
                     ->label('Media')
@@ -48,11 +46,8 @@ class QuestionsRelationManager extends BaseRelationManager
                     ->label('Options')
                     ->relationship()
                     ->schema([
-                        Textarea::make('title.ar')
-                            ->label('Title (Arabic)')
-                            ->required(),
-                        Textarea::make('title.en')
-                            ->label('Title (English)')
+                        Textarea::make('title')
+                            ->label('Title')
                             ->required(),
                         FileUpload::make('media')
                             ->label('Media')
@@ -64,12 +59,12 @@ class QuestionsRelationManager extends BaseRelationManager
                             ->label('Correct')
                             ->default(false),
                     ])
-                    ->columns(2)
+                    ->columns(1)
                     ->grid(2)
                     ->orderColumn('sort_order')
                     ->columnSpanFull(),
             ])
-            ->columns(2);
+            ->columns(1);
     }
 
     public function table(Table $table): Table
@@ -85,5 +80,12 @@ class QuestionsRelationManager extends BaseRelationManager
     public function getTableFilters(): array
     {
         return [];
+    }
+
+    protected function extraHeaderActions(): array
+    {
+        return [
+            ImportQuestionsFromExcelAction::make(lessonId: $this->getOwnerRecord()->getKey()),
+        ];
     }
 }

@@ -20,10 +20,10 @@ class QuestionForm
             ->components([
                 Select::make('lesson_id')
                     ->label('Lesson')
-                    ->options(fn(): array => Lesson::query()
+                    ->options(fn (): array => Lesson::query()
                         ->with(['course'])
                         ->get()
-                        ->mapWithKeys(fn(Lesson $lesson): array => [
+                        ->mapWithKeys(fn (Lesson $lesson): array => [
                             $lesson->id => collect([$lesson->course?->title, $lesson->title])->filter()->join(' - '),
                         ])
                         ->all())
@@ -38,11 +38,8 @@ class QuestionForm
                     ->label('Difficulty')
                     ->options(QuestionDifficulty::options())
                     ->required(),
-                Textarea::make('title.ar')
-                    ->label('Title (Arabic)')
-                    ->required(),
-                Textarea::make('title.en')
-                    ->label('Title (English)')
+                Textarea::make('title')
+                    ->label('Title')
                     ->required(),
                 FileUpload::make('media')
                     ->label('Media')
@@ -53,11 +50,8 @@ class QuestionForm
                     ->label('Options')
                     ->relationship()
                     ->schema([
-                        Textarea::make('title.ar')
-                            ->label('Title (Arabic)')
-                            ->required(),
-                        Textarea::make('title.en')
-                            ->label('Title (English)')
+                        Textarea::make('title')
+                            ->label('Title')
                             ->required(),
                         FileUpload::make('media')
                             ->label('Media')

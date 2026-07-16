@@ -8,20 +8,15 @@ use App\Enums\QuestionType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Spatie\Translatable\HasTranslations;
 
 class Question extends Model
 {
-    use FiltersByTenant, HasTranslations;
+    use FiltersByTenant;
 
     protected $guarded = [];
 
     protected array $tenantRelations = [
         'lesson',
-    ];
-
-    public array $translatable = [
-        'title',
     ];
 
     protected function casts(): array

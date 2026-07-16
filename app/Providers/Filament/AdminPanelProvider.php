@@ -49,10 +49,10 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->navigationGroups([
-                NavigationGroup::make(BaseResource::PROJECT_DATA_NAVIGATION_GROUP)
-                    ->icon(Heroicon::OutlinedAdjustmentsHorizontal),
                 NavigationGroup::make('Users & Subscriptions')
                     ->icon(Heroicon::OutlinedUsers),
+                NavigationGroup::make(BaseResource::PROJECT_DATA_NAVIGATION_GROUP)
+                    ->icon(Heroicon::OutlinedAdjustmentsHorizontal),
                 NavigationGroup::make('Users & Accounts')
                     ->icon(Heroicon::OutlinedUsers),
                 NavigationGroup::make('Provider Setup')

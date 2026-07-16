@@ -14,9 +14,9 @@ class AssignmentResource extends BaseResource
 {
     protected static ?string $model = Assignment::class;
 
-    // protected static string|UnitEnum|null $navigationGroup = 'Learning Content';
+    protected static string|UnitEnum|null $navigationGroup = 'Learning Content';
 
-    // protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
     {
@@ -30,7 +30,9 @@ class AssignmentResource extends BaseResource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            RelationManagers\QuestionsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

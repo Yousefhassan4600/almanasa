@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Filament\Resources\Assignments\RelationManagers;
+
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+
+class QuestionsRelationManager extends RelationManager
+{
+    protected static string $relationship = 'selectedQuestions';
+
+    protected static ?string $title = 'Questions';
+
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return true;
+    }
+
+    protected function makeTable(): Table
+    {
+        return Table::make($this)
+            ->query(fn (): Builder => $this->getOwnerRecord()->selectedQuestions())
+            ->heading(static::$title);
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->heading('Questions')
+            ->columns([
+                TextColumn::make('id')
+                    ->label('#')
+                    ->sortable(),
+                TextColumn::make('title')
+                    ->label('Title')
+                    ->searchable()
+                    ->wrap(),
+                TextColumn::make('lesson.course.title')
+                    ->label('Course')
+                    ->searchable()
+                    ->wrap(),
+                TextColumn::make('lesson.title')
+                    ->label('Lesson')
+                    ->searchable()
+                    ->wrap(),
+                TextColumn::make('type')
+                    ->label('Type')
+                    ->badge()
+                    ->sortable(),
+                TextColumn::make('difficulty')
+                    ->label('Difficulty')
+                    ->badge()
+                    ->sortable(),
+            ])
+            ->headerActions([])
+            ->recordActions([])
+            ->toolbarActions([]);
+    }
+}

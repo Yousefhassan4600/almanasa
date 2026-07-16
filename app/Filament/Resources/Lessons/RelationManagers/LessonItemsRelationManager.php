@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Lessons\RelationManagers;
 use App\Enums\LessonTypeEnum;
 use App\Filament\Base\RelationManagers\BaseRelationManager;
 use App\Filament\Resources\Lessons\RelationManagers\Tables\LessonItemsTable;
+use App\Models\Assignment;
+use App\Models\Exam;
 use App\Models\LessonItem;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -66,32 +68,8 @@ class LessonItemsRelationManager extends BaseRelationManager
                     ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::Link->value)
                     ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Link->value)
                     ->columnSpanFull(),
-                Select::make('assignments')
-                    ->label('Assignments')
-                    ->relationship(
-                        name: 'assignments',
-                        titleAttribute: 'title',
-                        modifyQueryUsing: fn ($query) => $query->where('course_id', $this->getOwnerRecord()->course_id),
-                    )
-                    ->multiple()
-                    ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::Assignments->value)
-                    ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Assignments->value)
-                    ->searchable()
-                    ->preload()
-                    ->columnSpanFull(),
-                Select::make('exams')
-                    ->label('Exams')
-                    ->relationship(
-                        name: 'exams',
-                        titleAttribute: 'title',
-                        modifyQueryUsing: fn ($query) => $query->where('course_id', $this->getOwnerRecord()->course_id),
-                    )
-                    ->multiple()
-                    ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::Exams->value)
-                    ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Exams->value)
-                    ->searchable()
-                    ->preload()
-                    ->columnSpanFull(),
+                $this->singleAssignmentSelect($this->getOwnerRecord()->course_id),
+                $this->singleExamSelect($this->getOwnerRecord()->course_id),
                 TextInput::make('duration_minutes')
                     ->label('Duration Minutes')
                     ->numeric()
@@ -165,5 +143,35 @@ class LessonItemsRelationManager extends BaseRelationManager
         }
 
         return Storage::disk('public')->url($path);
+    }
+
+    private function singleAssignmentSelect(int|string|null $courseId): Select
+    {
+        return Select::make('assignment_id')
+            ->label('Assignment')
+            ->options(fn (): array => Assignment::query()
+                ->where('course_id', $courseId)
+                ->pluck('title', 'id')
+                ->all())
+            ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::Assignments->value)
+            ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Assignments->value)
+            ->searchable()
+            ->preload()
+            ->columnSpanFull();
+    }
+
+    private function singleExamSelect(int|string|null $courseId): Select
+    {
+        return Select::make('exam_id')
+            ->label('Exam')
+            ->options(fn (): array => Exam::query()
+                ->where('course_id', $courseId)
+                ->pluck('title', 'id')
+                ->all())
+            ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::Exams->value)
+            ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Exams->value)
+            ->searchable()
+            ->preload()
+            ->columnSpanFull();
     }
 }

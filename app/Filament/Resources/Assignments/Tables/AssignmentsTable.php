@@ -20,13 +20,14 @@ class AssignmentsTable extends BaseTable
                 ->wrap(),
             TextColumn::make('course.title')
                 ->label('Course')
-                ->searchable()
                 ->wrap(),
             TextColumn::make('num_of_questions')
-                ->label('Questions')
+                ->label('Number of Questions')
+                ->badge()
                 ->sortable(),
             TextColumn::make('duration_minutes')
                 ->label('Duration')
+                ->badge()
                 ->suffix(' min')
                 ->sortable(),
             TextColumn::make('starts_at')

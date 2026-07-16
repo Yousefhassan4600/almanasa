@@ -22,18 +22,22 @@ class ExamsTable extends BaseTable
                 ->searchable()
                 ->wrap(),
             TextColumn::make('num_of_questions')
-                ->label('Questions')
+                ->label('Number of Questions')
+                ->badge()
                 ->sortable(),
             TextColumn::make('num_of_models')
-                ->label('Models')
+                ->label('Number of Models')
+                ->badge()
+                ->sortable(),
+            TextColumn::make('max_degree')
+                ->label('Max Degree')
+                ->badge()
+                ->numeric()
                 ->sortable(),
             TextColumn::make('duration_minutes')
                 ->label('Duration')
                 ->suffix(' min')
-                ->sortable(),
-            TextColumn::make('max_degree')
-                ->label('Max Degree')
-                ->numeric()
+                ->badge()
                 ->sortable(),
             TextColumn::make('starts_at')
                 ->label('Starts At')

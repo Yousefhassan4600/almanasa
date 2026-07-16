@@ -191,6 +191,7 @@ class CoursesSeeder extends BaseSeeder
             'ends_at' => now()->addWeek(),
             'max_degree' => 10,
             'num_of_models' => 1,
+            'lesson_ids' => [$lesson->id],
         ]);
 
         ExamModel::query()->updateOrCreate([
@@ -284,6 +285,7 @@ class CoursesSeeder extends BaseSeeder
                 3 => [
                     'type' => LessonTypeEnum::Assignments,
                     'title' => $this->translation('Homework', 'الواجب المنزلي'),
+                    'assignment_id' => $homeworkAssignment->id,
                     'duration_minutes' => 30,
                     'is_free' => false,
                 ],
@@ -296,6 +298,7 @@ class CoursesSeeder extends BaseSeeder
                 5 => [
                     'type' => LessonTypeEnum::Exams,
                     'title' => $this->translation('Lesson Exam', 'امتحان الحصة'),
+                    'exam_id' => $lessonExam->id,
                     'duration_minutes' => 20,
                     'is_free' => false,
                 ],
@@ -309,13 +312,6 @@ class CoursesSeeder extends BaseSeeder
                 'is_active' => true,
             ]);
 
-            if (($item['type'] ?? null) === LessonTypeEnum::Assignments) {
-                $lessonItem->assignments()->sync([$homeworkAssignment->id]);
-            }
-
-            if (($item['type'] ?? null) === LessonTypeEnum::Exams) {
-                $lessonItem->exams()->sync([$lessonExam->id]);
-            }
         }
     }
 }

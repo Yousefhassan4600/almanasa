@@ -3,9 +3,10 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Translatable\HasTranslations;
 
 class Assignment extends Model
@@ -26,6 +27,7 @@ class Assignment extends Model
     protected function casts(): array
     {
         return [
+            'lesson_ids' => 'array',
             'question_ids' => 'array',
             'starts_at' => 'datetime',
             'is_today_only' => 'boolean',
@@ -37,10 +39,19 @@ class Assignment extends Model
         return $this->belongsTo(Course::class, 'course_id');
     }
 
-    public function lessonItems(): BelongsToMany
+    public function lessonItems(): HasMany
     {
-        return $this->belongsToMany(LessonItem::class, 'lesson_item_assignments')
-            ->withPivot(['sort_order'])
-            ->withTimestamps();
+        return $this->hasMany(LessonItem::class, 'assignment_id');
+    }
+
+    public function selectedQuestions(): Builder
+    {
+        $questionIds = $this->question_ids ?? [];
+
+        if ($questionIds === []) {
+            return Question::query()->whereRaw('1 = 0');
+        }
+
+        return Question::query()->whereIn('id', $questionIds);
     }
 }

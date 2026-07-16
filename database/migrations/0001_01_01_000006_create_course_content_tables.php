@@ -88,6 +88,7 @@ return new class extends Migration
             $table->unsignedInteger('duration_minutes')->nullable();
             $table->timestamp('starts_at')->nullable();
             $table->boolean('is_today_only')->default(false);
+            $table->json('lesson_ids')->nullable();
             $table->json('question_ids')->nullable();
             $table->timestamps();
         });
@@ -106,6 +107,7 @@ return new class extends Migration
             $table->timestamp('ends_at')->nullable();
             $table->decimal('max_degree', 10, 2)->nullable();
             $table->unsignedInteger('num_of_models')->default(1);
+            $table->json('lesson_ids')->nullable();
             $table->timestamps();
         });
 
@@ -121,6 +123,8 @@ return new class extends Migration
         Schema::create('lesson_items', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('lesson_id')->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('assignment_id')->nullable()->constrained('assignments')->cascadeOnUpdate()->nullOnDelete();
+            $table->foreignId('exam_id')->nullable()->constrained('exams')->cascadeOnUpdate()->nullOnDelete();
             $table->string('type');
             $table->text('title');
             $table->text('description')->nullable();
@@ -132,24 +136,6 @@ return new class extends Migration
             $table->boolean('is_free')->default(false);
             $table->integer('sort_order')->default(0);
             $table->timestamps();
-        });
-
-        Schema::create('lesson_item_assignments', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('lesson_item_id')->constrained('lesson_items')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('assignment_id')->constrained('assignments')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->unsignedInteger('sort_order')->default(0);
-            $table->timestamps();
-            $table->unique(['lesson_item_id', 'assignment_id'], 'lesson_item_assignment_unique');
-        });
-
-        Schema::create('lesson_item_exams', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('lesson_item_id')->constrained('lesson_items')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('exam_id')->constrained('exams')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->unsignedInteger('sort_order')->default(0);
-            $table->timestamps();
-            $table->unique(['lesson_item_id', 'exam_id'], 'lesson_item_exam_unique');
         });
 
         Schema::create('questions', function (Blueprint $table): void {
@@ -179,8 +165,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('question_options');
         Schema::dropIfExists('questions');
-        Schema::dropIfExists('lesson_item_exams');
-        Schema::dropIfExists('lesson_item_assignments');
         Schema::dropIfExists('lesson_items');
         Schema::dropIfExists('exam_models');
         Schema::dropIfExists('exams');

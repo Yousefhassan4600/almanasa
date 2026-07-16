@@ -103,6 +103,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
 
         $this->get($providerUrl.'/otp')->assertRedirect('/login');
         $this->get($providerUrl.'/register')->assertRedirect('/login');
+        $this->get($providerUrl.'/my_lessons')->assertRedirect('/login');
     }
 
     public function test_provider_branding_banner_and_footer_data_render_on_website(): void

@@ -7,6 +7,7 @@ use App\Enums\AccountType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Account extends Model
@@ -62,6 +63,31 @@ class Account extends Model
     public function academyTeachers(): HasMany
     {
         return $this->hasMany(AcademyTeacher::class, 'provider_id', 'provider_id');
+    }
+
+    public function studentProfile(): HasOne
+    {
+        return $this->hasOne(StudentProfile::class, 'user_id', 'owner_user_id');
+    }
+
+    public function parentStudents(): HasMany
+    {
+        return $this->hasMany(ParentStudent::class, 'student_user_id', 'owner_user_id');
+    }
+
+    public function studentAttempts(): HasMany
+    {
+        return $this->hasMany(StudentAttempt::class, 'student_user_id', 'owner_user_id');
+    }
+
+    public function lessonProgresses(): HasMany
+    {
+        return $this->hasMany(LessonProgress::class, 'student_user_id', 'owner_user_id');
+    }
+
+    public function courseReviews(): HasMany
+    {
+        return $this->hasMany(CourseReview::class, 'student_user_id', 'owner_user_id');
     }
 
     public function canAccessDashboard(): bool

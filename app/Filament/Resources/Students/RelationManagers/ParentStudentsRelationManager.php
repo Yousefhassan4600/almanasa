@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\StudentProfiles\RelationManagers;
+namespace App\Filament\Resources\Students\RelationManagers;
 
 use App\Enums\AccountType;
 use App\Enums\RelationEnum;
@@ -29,7 +29,7 @@ class ParentStudentsRelationManager extends BaseRelationManager
         return [
             CreateAction::make()
                 ->color('primary')
-                ->after(fn(ParentStudent $record): Account => $this->createParentAccount($record)),
+                ->after(fn (ParentStudent $record): Account => $this->createParentAccount($record)),
         ];
     }
 
@@ -40,16 +40,16 @@ class ParentStudentsRelationManager extends BaseRelationManager
                 Select::make('parent_user_id')
                     ->label('Parent')
                     ->relationship('parent', 'phone')
-                    ->getOptionLabelFromRecordUsing(fn(User $record): string => trim("{$record->name} {$record->phone}"))
+                    ->getOptionLabelFromRecordUsing(fn (User $record): string => trim("{$record->name} {$record->phone}"))
                     ->rules([
-                        fn(?ParentStudent $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record): void {
-                            $studentUserId = $this->getOwnerRecord()->user_id;
+                        fn (?ParentStudent $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record): void {
+                            $studentUserId = $this->studentUserId();
 
                             if (blank($value) || blank($studentUserId)) {
                                 return;
                             }
 
-                            if ((int) $value === (int) $studentUserId) {
+                            if ((int) $value === $studentUserId) {
                                 $fail('The parent user cannot be the same as the student user.');
 
                                 return;
@@ -58,7 +58,7 @@ class ParentStudentsRelationManager extends BaseRelationManager
                             $parentStudentExists = ParentStudent::query()
                                 ->where('parent_user_id', $value)
                                 ->where('student_user_id', $studentUserId)
-                                ->when($record?->exists, fn($query) => $query->whereKeyNot($record->getKey()))
+                                ->when($record?->exists, fn ($query) => $query->whereKeyNot($record->getKey()))
                                 ->exists();
 
                             if ($parentStudentExists) {
@@ -86,10 +86,9 @@ class ParentStudentsRelationManager extends BaseRelationManager
         return $table
             ->recordTitleAttribute('parent_user_id')
             ->columns([
-                TextColumn::make('parent.name')
+                TextColumn::make('parent.first_name')
                     ->label('Parent')
-                    ->searchable()
-                    ->sortable(),
+                    ->formatStateUsing(fn (ParentStudent $record): string => $record->parent?->name ?: '-'),
                 TextColumn::make('parent.phone')
                     ->label('Phone')
                     ->searchable()
@@ -126,7 +125,7 @@ class ParentStudentsRelationManager extends BaseRelationManager
     private function createParentAccount(ParentStudent $parentStudent): Account
     {
         return Account::query()->firstOrCreate([
-            'provider_id' => $this->parentAccountProviderId(),
+            'provider_id' => $this->studentAccount()->provider_id,
             'type' => AccountType::Parent->value,
             'owner_user_id' => $parentStudent->parent_user_id,
         ], [
@@ -135,23 +134,16 @@ class ParentStudentsRelationManager extends BaseRelationManager
         ]);
     }
 
-    private function parentAccountProviderId(): ?int
+    private function studentUserId(): int
     {
-        $currentAccount = request()->attributes->get('current_account');
+        return (int) $this->studentAccount()->owner_user_id;
+    }
 
-        if ($currentAccount instanceof Account && $currentAccount->provider_id) {
-            return $currentAccount->provider_id;
-        }
+    private function studentAccount(): Account
+    {
+        /** @var Account $account */
+        $account = $this->getOwnerRecord();
 
-        $currentProviderId = (int) request()->session()->get('current_provider_id');
-
-        if ($currentProviderId > 0) {
-            return $currentProviderId;
-        }
-
-        return Account::query()
-            ->where('owner_user_id', $this->getOwnerRecord()->user_id)
-            ->where('type', AccountType::Student->value)
-            ->value('provider_id');
+        return $account;
     }
 }

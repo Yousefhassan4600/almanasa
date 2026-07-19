@@ -13,6 +13,7 @@ use App\Models\Grade;
 use App\Models\GradeSubject;
 use App\Models\ProviderPlan;
 use App\Models\ProviderPlanOption;
+use App\Models\StudentProfile;
 use App\Models\Subject;
 use App\Models\Track;
 
@@ -194,6 +195,18 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
             owner: $studentUser,
             provider: $academyProvider,
         );
+
+        StudentProfile::query()->updateOrCreate([
+            'user_id' => $studentUser->id,
+        ], [
+            'email' => 'omar.student@example.test',
+            'gender' => 'male',
+            'country_id' => $egypt->id,
+            'city_id' => $cairo->id,
+            'education_stage_id' => $secondaryOneMath->grade->education_stage_id,
+            'grade_id' => $secondaryOneMath->grade_id,
+            'school_name' => 'Future Stars Secondary School',
+        ]);
 
         $this->account(
             type: AccountType::Parent,

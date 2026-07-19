@@ -2,12 +2,16 @@
 
 namespace App\Livewire\Website;
 
+use App\Enums\AccountType;
+use App\Enums\ProviderType;
 use App\Enums\PurchaseUnitType;
 use App\Models\AcademyTeacher;
+use App\Models\Account;
 use App\Models\AccountSubject;
 use App\Models\Course;
 use App\Models\Provider;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -31,7 +35,9 @@ class SingleTeacherPage extends Component
 
     public function render(): mixed
     {
-        $provider = Provider::query()->findOrFail($this->providerId);
+        $provider = Provider::query()
+            ->with('owner:id,first_name,last_name')
+            ->findOrFail($this->providerId);
         $teacher = $this->teacher($provider);
         $accountSubject = $this->accountSubject($provider);
         $course = $teacher && $accountSubject
@@ -47,8 +53,17 @@ class SingleTeacherPage extends Component
         ]);
     }
 
-    private function teacher(Provider $provider): ?AcademyTeacher
+    private function teacher(Provider $provider): AcademyTeacher|Account|null
     {
+        if ($provider->type === ProviderType::StandaloneTeacher) {
+            return Account::query()
+                ->with('owner:id,first_name,last_name')
+                ->whereBelongsTo($provider)
+                ->where('type', AccountType::StandaloneTeacher)
+                ->where('is_active', true)
+                ->first();
+        }
+
         return AcademyTeacher::query()
             ->with(['teacher:id,owner_user_id,provider_id,type,is_active', 'teacher.owner:id,first_name,last_name'])
             ->whereBelongsTo($provider)
@@ -59,7 +74,9 @@ class SingleTeacherPage extends Component
 
     private function accountSubject(Provider $provider): ?AccountSubject
     {
-        return AccountSubject::query()
+        $gradeId = Auth::user()?->studentProfile()->value('grade_id');
+
+        $query = AccountSubject::query()
             ->with([
                 'gradeSubject:id,grade_id,subject_id',
                 'gradeSubject.grade:id,education_stage_id,name',
@@ -69,15 +86,39 @@ class SingleTeacherPage extends Component
             ])
             ->whereBelongsTo($provider)
             ->where('is_active', true)
-            ->when($this->subjectId, fn (Builder $query): Builder => $query->whereKey($this->subjectId))
-            ->first();
+            ->when(
+                $gradeId,
+                fn (Builder $query): Builder => $query->whereHas(
+                    'gradeSubject',
+                    fn (Builder $query): Builder => $query->where('grade_id', $gradeId),
+                ),
+            )
+            ->when(
+                $provider->type === ProviderType::StandaloneTeacher,
+                fn (Builder $query): Builder => $query->whereHas(
+                    'courses',
+                    fn (Builder $query): Builder => $query
+                        ->whereBelongsTo($provider)
+                        ->whereNull('academy_teacher_id'),
+                ),
+            );
+
+        $selected = filled($this->subjectId)
+            ? (clone $query)->whereKey($this->subjectId)->first()
+            : null;
+
+        $selected ??= $query->first();
+        $this->subjectId = $selected?->id;
+
+        return $selected;
     }
 
-    private function course(Provider $provider, AcademyTeacher $teacher, AccountSubject $accountSubject): ?Course
+    private function course(Provider $provider, AcademyTeacher|Account $teacher, AccountSubject $accountSubject): ?Course
     {
         return Course::query()
             ->with([
                 'academyTeacher.teacher.owner:id,first_name,last_name',
+                'provider.owner:id,first_name,last_name',
                 'accountSubject.gradeSubject.grade.educationStage',
                 'accountSubject.gradeSubject.subject.track',
                 'lessons' => fn ($query) => $query
@@ -95,8 +136,12 @@ class SingleTeacherPage extends Component
                 'prices.purchaseUnit',
             ])
             ->whereBelongsTo($provider)
-            ->whereBelongsTo($teacher, 'academyTeacher')
             ->whereBelongsTo($accountSubject)
+            ->when(
+                $provider->type === ProviderType::StandaloneTeacher,
+                fn (Builder $query): Builder => $query->whereNull('academy_teacher_id'),
+                fn (Builder $query): Builder => $query->whereBelongsTo($teacher, 'academyTeacher'),
+            )
             ->first();
     }
 

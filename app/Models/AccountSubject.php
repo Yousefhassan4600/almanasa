@@ -39,6 +39,11 @@ class AccountSubject extends Model
         return $this->hasMany(AcademyTeacherGradeSubject::class);
     }
 
+    public function courses(): HasMany
+    {
+        return $this->hasMany(Course::class, 'account_subject_id');
+    }
+
     public function getNameAttribute(): string
     {
         $provider = $this->relationLoaded('provider') ? $this->provider?->name : $this->provider()->value('name');

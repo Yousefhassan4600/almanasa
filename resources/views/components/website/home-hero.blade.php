@@ -12,8 +12,13 @@
     $subtitle = $banner?->getTranslation('subtitle', 'ar', false)
         ?: $banner?->getTranslation('subtitle', 'en', false)
         ?: 'فيديوهات تفاعلية، تمارين وامتحانات ذكية، تقارير متابعة تفصيلية لتحقيق أفضل النتائج.';
-    $bannerImage = filled($banner?->cover) ? (filter_var($banner->cover, FILTER_VALIDATE_URL) ? $banner->cover : asset('storage/'.$banner->cover)) : '/academy/assets/images/herostudent.png';
-    $exploreUrl = \Illuminate\Support\Facades\Auth::check() ? '/subjects' : '/login';
+    $defaultBannerImage = $isTeacher ? '/teacher/assets/images/herostudent.png' : '/academy/assets/images/herostudent.png';
+    $bannerImage = filled($banner?->cover) ? (filter_var($banner->cover, FILTER_VALIDATE_URL) ? $banner->cover : asset('storage/'.$banner->cover)) : $defaultBannerImage;
+    $exploreUrl = match (true) {
+        ! \Illuminate\Support\Facades\Auth::check() => '/login',
+        $isTeacher => '/single_teacher',
+        default => '/subjects',
+    };
 @endphp
 
 <section class="relative bg-gradient-to-b from-[#F3F0FF] to-white pt-12 pb-6 px-4 md:px-8 overflow-hidden" dir="rtl">

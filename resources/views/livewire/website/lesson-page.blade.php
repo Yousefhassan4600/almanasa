@@ -1,7 +1,10 @@
 @php
+    use App\Enums\ProviderType;
+
     $lesson = $lessonItem?->lesson;
     $course = $lesson?->course;
     $teacher = $course?->academyTeacher;
+    $isStandaloneTeacher = $course?->provider?->type === ProviderType::StandaloneTeacher;
     $accountSubject = $course?->accountSubject;
     $grade = $accountSubject?->gradeSubject?->grade;
     $subject = $accountSubject?->gradeSubject?->subject;
@@ -12,7 +15,9 @@
     $courseTitle = $course?->getTranslation('title', 'ar', false) ?: $course?->title;
     $subjectName = $subject?->getTranslation('name', 'ar', false) ?: $subject?->name;
     $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
-    $teacherName = $teacher?->teacher?->owner?->name ?: 'المعلم';
+    $teacherName = $isStandaloneTeacher
+        ? ($course?->provider?->owner?->name ?: 'المعلم')
+        : ($teacher?->teacher?->owner?->name ?: 'المعلم');
     $activeColor = '#5D3FD3';
     $lessonItemType = $lessonItem?->type instanceof \App\Enums\LessonTypeEnum ? $lessonItem->type->value : (string) $lessonItem?->type;
     $lessonAssignments = $lessonItem?->assignments ?? collect();

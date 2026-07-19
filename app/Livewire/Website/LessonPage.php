@@ -2,9 +2,13 @@
 
 namespace App\Livewire\Website;
 
+use App\Models\Assignment;
+use App\Models\Exam;
 use App\Models\LessonItem;
 use App\Models\Provider;
+use App\Models\StudentAttempt;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -31,6 +35,7 @@ class LessonPage extends Component
             'provider' => $provider,
             'lessonItem' => $lessonItem,
             'lessonItems' => $lessonItem?->lesson?->items ?? collect(),
+            'attempts' => $this->attempts($lessonItem?->assignment ?? $lessonItem?->exam),
         ]);
     }
 
@@ -38,8 +43,8 @@ class LessonPage extends Component
     {
         return LessonItem::query()
             ->with([
-                'assignments:id,course_id,title,description,duration_minutes,num_of_questions',
-                'exams:id,course_id,title,description,duration_minutes,max_degree,num_of_questions',
+                'assignment:id,course_id,title,description,duration_minutes,num_of_questions,num_of_attempts',
+                'exam:id,course_id,title,description,duration_minutes,max_degree,num_of_questions,num_of_attempts',
                 'lesson' => fn ($query) => $query
                     ->with([
                         'coursePeriod:id,type,name,sort_order',
@@ -50,17 +55,49 @@ class LessonPage extends Component
                         'course.accountSubject.gradeSubject.subject:id,track_id,name',
                         'course.accountSubject.gradeSubject.subject.track:id,name',
                         'items' => fn ($query) => $query
-                            ->where('is_active', true)
+                            ->with('exam:id,course_id,title,duration_minutes')
                             ->oldest('sort_order')
                             ->oldest('id'),
                     ]),
             ])
-            ->where('is_active', true)
             ->whereHas(
                 'lesson.course',
                 fn (Builder $query): Builder => $query->whereBelongsTo($provider),
             )
             ->when($this->itemId, fn (Builder $query): Builder => $query->whereKey($this->itemId))
             ->first();
+    }
+
+    /**
+     * @return array{limit: int|null, used: int, remaining: int|null}
+     */
+    private function attempts(Assignment|Exam|null $assessment): array
+    {
+        $limit = (int) ($assessment?->num_of_attempts ?? 0);
+        $limit = $limit > 0 ? $limit : null;
+
+        if (! $assessment || ! Auth::check()) {
+            return [
+                'limit' => $limit,
+                'used' => 0,
+                'remaining' => $limit,
+            ];
+        }
+
+        $used = StudentAttempt::query()
+            ->where('student_user_id', Auth::id())
+            ->where('attemptable_type', $assessment::class)
+            ->where('attemptable_id', $assessment->id)
+            ->whereHas(
+                'currentStatus.type',
+                fn (Builder $query): Builder => $query->whereIn('slug', ['submitted', 'graded']),
+            )
+            ->count();
+
+        return [
+            'limit' => $limit,
+            'used' => $used,
+            'remaining' => $limit === null ? null : max(0, $limit - $used),
+        ];
     }
 }

@@ -52,6 +52,7 @@ class StudentAttempt extends Model
                 ->where('student_user_id', $studentAttempt->student_user_id)
                 ->where('attemptable_type', Exam::class)
                 ->where('attemptable_id', $studentAttempt->attemptable_id)
+                ->where('attempt_number', $studentAttempt->attempt_number)
                 ->when(
                     $studentAttempt->exists,
                     fn (Builder $query): Builder => $query->whereKeyNot($studentAttempt->getKey())
@@ -63,7 +64,7 @@ class StudentAttempt extends Model
             }
 
             throw ValidationException::withMessages([
-                'attemptable_id' => 'This student already has an attempt for this exam.',
+                'attemptable_id' => 'This student already has this attempt number for this exam.',
             ]);
         });
 

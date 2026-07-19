@@ -80,4 +80,21 @@ class Lesson extends Model
             fn (Builder $query): Builder => $query->whereIn('type', $periodType->visiblePeriodTypes())
         );
     }
+
+    public function scopeCurrentlyOpen(Builder $query): Builder
+    {
+        return $query
+            ->where(fn (Builder $query): Builder => $query
+                ->whereNull('starts_at')
+                ->orWhere('starts_at', '<=', now()))
+            ->where(fn (Builder $query): Builder => $query
+                ->whereNull('ends_at')
+                ->orWhere('ends_at', '>=', now()));
+    }
+
+    public function isCurrentlyOpen(): bool
+    {
+        return (blank($this->starts_at) || $this->starts_at->lte(now()))
+            && (blank($this->ends_at) || $this->ends_at->gte(now()));
+    }
 }

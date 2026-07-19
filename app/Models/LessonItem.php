@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Concerns\FiltersByTenant;
 use App\Enums\LessonTypeEnum;
 use App\Models\Traits\SoftDeletesWithUser;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -80,5 +81,24 @@ class LessonItem extends Model
     public function exam(): BelongsTo
     {
         return $this->belongsTo(Exam::class, 'exam_id');
+    }
+
+    public function scopeCurrentlyOpen(Builder $query): Builder
+    {
+        return $query
+            ->where('is_active', true)
+            ->where(fn (Builder $query): Builder => $query
+                ->whereNull('starts_at')
+                ->orWhere('starts_at', '<=', now()))
+            ->where(fn (Builder $query): Builder => $query
+                ->whereNull('ends_at')
+                ->orWhere('ends_at', '>=', now()));
+    }
+
+    public function isCurrentlyOpen(): bool
+    {
+        return $this->is_active
+            && (blank($this->starts_at) || $this->starts_at->lte(now()))
+            && (blank($this->ends_at) || $this->ends_at->gte(now()));
     }
 }

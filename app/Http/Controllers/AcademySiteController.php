@@ -52,12 +52,17 @@ class AcademySiteController extends Controller
             }
         }
 
-        if ($page === 'profile.html' && ! Auth::check()) {
-            abort(403);
+        if (in_array($page, ['profile.html', 'my_lessons.html', 'home_work.html', 'quiz.html', 'home_work_done.html', 'quiz_done.html', 'quiz_review.html'], true) && ! Auth::check()) {
+            return redirect('/login');
+        }
+
+        if (in_array($page, ['home_work.html', 'quiz.html', 'home_work_done.html', 'quiz_done.html', 'quiz_review.html'], true) && ! Auth::user()?->studentProfile()->exists()) {
+            return redirect('/register');
         }
 
         $template = $this->templateFor($provider);
-        $path = $template['path'].DIRECTORY_SEPARATOR.$page;
+        $templatePage = $this->templatePage($page);
+        $path = $template['path'].DIRECTORY_SEPARATOR.$templatePage;
 
         abort_unless(is_file($path), 404);
 
@@ -103,6 +108,14 @@ class AcademySiteController extends Controller
         return $page;
     }
 
+    private function templatePage(string $page): string
+    {
+        return match ($page) {
+            'quiz_review.html' => 'quiz_done.html',
+            default => $page,
+        };
+    }
+
     private function prepareHtml(string $html, Provider $provider, string $assetPath, string $page): string
     {
         $assetPath = rtrim($assetPath, '/').'/';
@@ -129,6 +142,8 @@ class AcademySiteController extends Controller
 
         $html = $this->injectSingleTeacherPage($html, $provider, $page);
         $html = $this->injectLessonPage($html, $provider, $page);
+        $html = $this->injectAssessmentPage($html, $provider, $page);
+        $html = $this->injectAttemptResultPage($html, $provider, $page);
         $html = $this->injectWebsiteHeader($html, $provider, $page);
         $html = $this->injectHomeHero($html, $page);
         $html = $this->injectHomeHeroActions($html, $provider, $page);
@@ -372,6 +387,49 @@ class AcademySiteController extends Controller
         return preg_replace(
             '/(<\/header>)\s*.*?(?=<footer\b)/s',
             "$1\n@livewire('website.lesson-page', ['providerId' => {$provider->id}], key('website-lesson-page-{$provider->id}'))\n",
+            $html,
+            1,
+        ) ?? $html;
+    }
+
+    private function injectAssessmentPage(string $html, Provider $provider, string $page): string
+    {
+        $type = match ($page) {
+            'home_work.html' => 'assignment',
+            'quiz.html' => 'exam',
+            default => null,
+        };
+
+        if (! $type) {
+            return $html;
+        }
+
+        return preg_replace(
+            '/(<\/header>)\s*.*?(?=<footer\b)/s',
+            "$1\n@livewire('website.assessment-page', ['providerId' => {$provider->id}, 'type' => '{$type}'], key('website-assessment-page-{$provider->id}-{$type}'))\n",
+            $html,
+            1,
+        ) ?? $html;
+    }
+
+    private function injectAttemptResultPage(string $html, Provider $provider, string $page): string
+    {
+        $type = match ($page) {
+            'home_work_done.html' => 'assignment',
+            'quiz_done.html' => 'exam',
+            'quiz_review.html' => 'exam',
+            default => null,
+        };
+
+        if (! $type) {
+            return $html;
+        }
+
+        $showReview = $page === 'quiz_review.html' ? 'true' : 'false';
+
+        return preg_replace(
+            '/(<\/header>)\s*.*?(?=<footer\b)/s',
+            "$1\n@livewire('website.attempt-result-page', ['providerId' => {$provider->id}, 'type' => '{$type}', 'showReview' => {$showReview}], key('website-attempt-result-page-{$provider->id}-{$type}-{$page}'))\n",
             $html,
             1,
         ) ?? $html;

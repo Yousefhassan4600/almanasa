@@ -28,7 +28,7 @@ class SubscriptionsRelationManager extends BaseRelationManager
                     ->label('Course'),
                 TextColumn::make('purchaseUnit.name')
                     ->label('Purchase Unit')
-                    ->searchable(),
+                    ->badge(),
                 TextColumn::make('purchase_type')
                     ->label('Purchase Type')
                     ->badge(),

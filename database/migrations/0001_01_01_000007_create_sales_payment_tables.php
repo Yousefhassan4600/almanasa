@@ -176,15 +176,10 @@ return new class extends Migration
             $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('student_user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('provider_payment_method_id')->nullable()->constrained('provider_payment_methods')->cascadeOnUpdate()->restrictOnDelete();
-            $table->decimal('amount', 10, 2);
             $table->string('transaction_reference')->nullable();
             $table->foreignId('provider_code_id')->nullable()->constrained('provider_codes')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('sender_phone')->nullable();
             $table->string('transfer_image')->nullable();
-            $table->text('gateway_response')->nullable();
-            $table->timestamp('paid_at')->nullable();
-            $table->foreignId('reviewed_by_user_id')->nullable()->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
-            $table->timestamp('reviewed_at')->nullable();
+            $table->boolean('is_paid')->default(false);
             $table->softDeletes();
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();

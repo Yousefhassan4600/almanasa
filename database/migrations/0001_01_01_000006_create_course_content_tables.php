@@ -41,6 +41,7 @@ return new class extends Migration
             $table->id();
             $table->string('type')->unique();
             $table->text('name')->nullable();
+            $table->unsignedInteger('period_days')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->softDeletes();

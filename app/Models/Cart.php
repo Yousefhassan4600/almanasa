@@ -8,6 +8,7 @@ use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cart extends Model
@@ -52,6 +53,18 @@ class Cart extends Model
     public function items(): HasMany
     {
         return $this->hasMany(CartItem::class, 'cart_id');
+    }
+
+    public function purchaseUnit(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            PurchaseUnit::class,
+            CartItem::class,
+            'cart_id',
+            'id',
+            'id',
+            'purchase_unit_id',
+        );
     }
 
     public function orders(): HasMany

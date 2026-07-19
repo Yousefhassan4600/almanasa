@@ -106,10 +106,7 @@ class CommerceSeeder extends BaseSeeder
             'provider_id' => $academyProvider->id,
             'student_user_id' => $studentUser->id,
             'provider_payment_method_id' => $providerPaymentMethod->id,
-            'amount' => $allSubjectsOfferPrice,
-            'paid_at' => now(),
-            'reviewed_by_user_id' => $academyOwner->id,
-            'reviewed_at' => now(),
+            'is_paid' => true,
         ]);
 
         $this->singleCourseCart($academyProvider, $studentUser, $academyCourse, $coursePrice, $singleCoursePrice);

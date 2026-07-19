@@ -12,8 +12,8 @@
                         </h4>
                     </div>
 
-                    <span style="display: inline-flex; align-items: center; border-radius: 999px; background: #dcfce7; color: #166534; padding: 0.2rem 0.6rem; font-size: 0.75rem; font-weight: 700;">
-                        {{ number_format((float) $payment->amount, 2) }}
+                    <span style="display: inline-flex; align-items: center; border-radius: 999px; background: {{ $payment->is_paid ? '#dcfce7' : '#fef3c7' }}; color: {{ $payment->is_paid ? '#166534' : '#92400e' }}; padding: 0.2rem 0.6rem; font-size: 0.75rem; font-weight: 700;">
+                        {{ $payment->is_paid ? __('Paid') : __('Unpaid') }}
                     </span>
                 </div>
 
@@ -22,26 +22,25 @@
                         <span style="font-weight: 700;">{{ __('Reference') }}:</span>
                         <span>{{ $payment->transaction_reference ?? '-' }}</span>
                     </div>
-                    <div>
-                        <span style="font-weight: 700;">{{ __('Provider Code') }}:</span>
-                        <span>{{ $payment->providerCode?->code ?? '-' }}</span>
-                    </div>
-                    <div>
-                        <span style="font-weight: 700;">{{ __('Sender Phone') }}:</span>
-                        <span>{{ $payment->sender_phone ?? '-' }}</span>
-                    </div>
-                    <div>
-                        <span style="font-weight: 700;">{{ __('Paid At') }}:</span>
-                        <span>{{ $payment->paid_at?->format('Y-m-d H:i') ?? '-' }}</span>
-                    </div>
-                    <div>
-                        <span style="font-weight: 700;">{{ __('Reviewed By') }}:</span>
-                        <span>{{ $payment->reviewedBy?->phone ?? '-' }}</span>
-                    </div>
-                    <div>
-                        <span style="font-weight: 700;">{{ __('Reviewed At') }}:</span>
-                        <span>{{ $payment->reviewed_at?->format('Y-m-d H:i') ?? '-' }}</span>
-                    </div>
+                    @if ($payment->providerCode?->code)
+                        <div>
+                            <span style="font-weight: 700;">{{ __('Provider Code') }}:</span>
+                            <span>{{ $payment->providerCode->code }}</span>
+                        </div>
+                    @endif
+
+                    @if ($payment->transfer_image)
+                        <div style="grid-column: 1 / -1;">
+                            <span style="font-weight: 700;">{{ __('Transfer Image') }}:</span>
+                            <div style="margin-top: 0.5rem;">
+                                <img
+                                    src="{{ \Illuminate\Support\Facades\Storage::url($payment->transfer_image) }}"
+                                    alt="{{ __('Transfer Image') }}"
+                                    style="display: block; max-width: 100%; max-height: 280px; border: 1px solid #e5e7eb; border-radius: 8px; object-fit: contain;"
+                                >
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         @empty

@@ -6,7 +6,9 @@ use App\Filament\Base\BaseTable;
 use App\Models\Order;
 use App\Models\OrderStatusType;
 use Filament\Actions\Action;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Contracts\View\View;
 
 class OrdersTable extends BaseTable
@@ -14,44 +16,76 @@ class OrdersTable extends BaseTable
     protected function columns(): array
     {
         return [
+            TextColumn::make('order_number')
+                ->label('#')
+                ->searchable()
+                ->sortable(),
             TextColumn::make('provider.name')
                 ->label('Provider')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('student.phone')
+            TextColumn::make('student.name')
                 ->label('Student')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('order_number')
-                ->label('Order Number')
-                ->searchable()
-                ->sortable(),
+                ->searchable(),
+            TextColumn::make('items')
+                ->label('Courses')
+                ->state(function (Order $record): array {
+                    $record->loadMissing('items.course');
+
+                    return $record->items
+                        ->pluck('course.title')
+                        ->filter()
+                        ->values()
+                        ->all();
+                })
+                ->listWithLineBreaks()
+                ->badge()
+                ->color('info'),
+            TextColumn::make('purchaseUnit.name')
+                ->label('Purchase Unit')
+                ->badge()
+                ->placeholder('-'),
             TextColumn::make('purchase_type')
                 ->label('Purchase Type')
-                ->badge()
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('subtotal')
-                ->label('Subtotal')
-                ->searchable()
-                ->sortable(),
+                ->badge(),
             TextColumn::make('total')
                 ->label('Total')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('currentStatus.type.name')
-                ->label('Status')
+                ->suffix(' EGP')
                 ->badge()
-                ->color(fn (Order $record): string => $this->statusBadgeColor($record))
-                ->placeholder('-'),
-            TextColumn::make('items_count')
-                ->label('Items')
-                ->counts('items')
-                ->sortable(),
-            TextColumn::make('payments_count')
-                ->label('Payments')
-                ->counts('payments')
-                ->sortable(),
+                ->color('success'),
+            SelectColumn::make('current_status_type_id')
+                ->label('Status')
+                ->getStateUsing(fn (Order $record): ?int => $record->currentStatus?->order_status_type_id)
+                ->options(fn (): array => OrderStatusType::query()
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->get()
+                    ->mapWithKeys(fn (OrderStatusType $statusType): array => [$statusType->id => $statusType->name])
+                    ->all())
+                ->selectablePlaceholder(false)
+                ->updateStateUsing(function (Order $record, mixed $state): mixed {
+                    $this->updateCurrentStatus($record, (int) $state);
+
+                    return $state;
+                }),
+            ToggleColumn::make('is_paid')
+                ->label('Paid')
+                ->getStateUsing(fn (Order $record): bool => (bool) $record->payments()
+                    ->latest()
+                    ->value('is_paid'))
+                ->updateStateUsing(function (Order $record, mixed $state): bool {
+                    $payment = $record->payments()
+                        ->latest()
+                        ->first();
+
+                    if ($payment) {
+                        $payment->update([
+                            'is_paid' => (bool) $state,
+                        ]);
+                    }
+
+                    return (bool) $state;
+                }),
         ];
     }
 
@@ -97,49 +131,38 @@ class OrdersTable extends BaseTable
                 ->modalHeading(fn (Order $record): string => 'Payments - '.$record->order_number)
                 ->modalContent(fn (Order $record): View => view('filament.resources.orders.payments-modal', [
                     'payments' => $record->payments()
-                        ->with(['providerPaymentMethod.paymentMethod', 'providerCode', 'reviewedBy'])
+                        ->with(['providerPaymentMethod.paymentMethod', 'providerCode'])
+                        ->latest()
+                        ->get(),
+                ])),
+            Action::make('logs')
+                ->label('')
+                ->icon('heroicon-o-clock')
+                ->color('primary')
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Close')
+                ->modalHeading('Status History')
+                ->modalContent(fn (Order $record): View => view('filament.resources.orders.status-logs-modal', [
+                    'statusLogs' => $record->statuses()
+                        ->with(['type', 'createdBy'])
+                        ->latest('status_at')
                         ->latest()
                         ->get(),
                 ])),
         ];
     }
 
-    private function statusBadgeColor(Order $record): string
+    private function updateCurrentStatus(Order $record, int $statusTypeId): void
     {
-        $sortOrder = $record->currentStatus?->type?->sort_order;
-
-        if ($sortOrder === null) {
-            return 'gray';
+        if ($statusTypeId <= 0 || $record->currentStatus?->order_status_type_id === $statusTypeId) {
+            return;
         }
 
-        [$firstSortOrder, $lastSortOrder] = $this->statusTypeSortBounds();
-
-        return match ($sortOrder) {
-            $firstSortOrder => 'warning',
-            $lastSortOrder => 'success',
-            default => 'info',
-        };
-    }
-
-    /**
-     * @return array{0: int|null, 1: int|null}
-     */
-    private function statusTypeSortBounds(): array
-    {
-        static $bounds = null;
-
-        if ($bounds !== null) {
-            return $bounds;
-        }
-
-        $sortOrders = OrderStatusType::query()
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->pluck('sort_order');
-
-        return $bounds = [
-            $sortOrders->first(),
-            $sortOrders->last(),
-        ];
+        $record->statuses()->create([
+            'order_status_type_id' => $statusTypeId,
+            'created_by_user_id' => auth()->id(),
+            'is_current' => true,
+            'status_at' => now(),
+        ]);
     }
 }

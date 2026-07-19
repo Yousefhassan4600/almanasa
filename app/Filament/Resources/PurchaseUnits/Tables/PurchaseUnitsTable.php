@@ -20,6 +20,10 @@ class PurchaseUnitsTable extends BaseTable
             TextColumn::make('type')
                 ->label('Type')
                 ->badge(),
+            TextColumn::make('period_days')
+                ->label('Period Days')
+                ->placeholder('-')
+                ->sortable(),
             ToggleColumn::make('is_active')
                 ->label('Active'),
         ];

@@ -13,31 +13,41 @@ class CartsTable extends BaseTable
     protected function columns(): array
     {
         return [
-            TextColumn::make('student.phone')
-                ->label('Student')
+            TextColumn::make('id')
+                ->label('#')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('provider.name')
-                ->label('Provider')
-                ->searchable()
-                ->sortable(),
+                ->label('Provider'),
+            TextColumn::make('student.name')
+                ->label('Student')
+                ->searchable(),
+            TextColumn::make('items')
+                ->label('Courses')
+                ->state(function (Cart $record): array {
+                    $record->loadMissing('items.course');
+
+                    return $record->items
+                        ->pluck('course.title')
+                        ->filter()
+                        ->values()
+                        ->all();
+                })
+                ->listWithLineBreaks()
+                ->badge()
+                ->color('info'),
+            TextColumn::make('purchaseUnit.name')
+                ->label('Purchase Unit')
+                ->badge()
+                ->placeholder('-'),
             TextColumn::make('purchase_type')
                 ->label('Purchase Type')
-                ->badge()
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('subtotal')
-                ->label('Subtotal')
-                ->searchable()
-                ->sortable(),
+                ->badge(),
             TextColumn::make('total')
                 ->label('Total')
-                ->searchable()
-                ->sortable(),
-            TextColumn::make('items_count')
-                ->label('Items')
-                ->counts('items')
-                ->sortable(),
+                ->suffix(' EGP')
+                ->badge()
+                ->color('success'),
         ];
     }
 

@@ -17,6 +17,7 @@ class PurchaseUnit extends Model
     protected $fillable = [
         'type',
         'name',
+        'period_days',
         'sort_order',
         'is_active',
         'deleted_by',
@@ -30,6 +31,7 @@ class PurchaseUnit extends Model
     {
         return [
             'type' => PurchaseUnitType::class,
+            'period_days' => 'integer',
             'is_active' => 'boolean',
         ];
     }

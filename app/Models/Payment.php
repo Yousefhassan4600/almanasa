@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Enums\PaymentMethodSlugs;
 use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Payment extends Model
 {
@@ -18,25 +20,54 @@ class Payment extends Model
         'provider_id',
         'student_user_id',
         'provider_payment_method_id',
-        'amount',
         'transaction_reference',
         'provider_code_id',
-        'sender_phone',
         'transfer_image',
-        'gateway_response',
-        'paid_at',
-        'reviewed_by_user_id',
-        'reviewed_at',
+        'is_paid',
         'deleted_by',
     ];
 
     protected function casts(): array
     {
         return [
-            'amount' => 'decimal:2',
-            'paid_at' => 'datetime',
-            'reviewed_at' => 'datetime',
+            'is_paid' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Payment $payment): void {
+            if (! $payment->provider_code_id) {
+                return;
+            }
+
+            $payment->loadMissing('order');
+
+            $providerCode = ProviderCode::query()->findOrFail($payment->provider_code_id);
+            $providerCode->assertValidForPayment($payment);
+
+            $payment->is_paid = true;
+            $payment->provider_payment_method_id ??= ProviderPaymentMethod::query()
+                ->where('provider_id', $payment->provider_id)
+                ->whereHas(
+                    'paymentMethod',
+                    fn ($query) => $query
+                        ->where('slug', PaymentMethodSlugs::Code->value)
+                        ->where('is_active', true)
+                )
+                ->value('id');
+        });
+
+        static::saved(function (Payment $payment): void {
+            if (! $payment->is_paid || (! $payment->wasRecentlyCreated && ! $payment->wasChanged('is_paid'))) {
+                return;
+            }
+
+            DB::transaction(function () use ($payment): void {
+                $payment->order?->markAsPaid();
+                $payment->order?->createMissingSubscriptionsForItems();
+            });
+        });
     }
 
     public function order(): BelongsTo
@@ -62,10 +93,5 @@ class Payment extends Model
     public function providerCode(): BelongsTo
     {
         return $this->belongsTo(ProviderCode::class, 'provider_code_id');
-    }
-
-    public function reviewedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'reviewed_by_user_id');
     }
 }

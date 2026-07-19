@@ -1,8 +1,13 @@
 @php
+    use App\Enums\ProviderType;
+
     $assessment = $attempt?->attemptable;
     $title = $assessment?->getTranslation('title', 'ar', false) ?: $assessment?->title;
     $isExam = $assessmentType === 'exam';
-    $themeColor = $isExam ? '#E11D48' : '#5D3FD3';
+    $isStandaloneTeacher = $provider?->type === ProviderType::StandaloneTeacher;
+    $themeColor = $isStandaloneTeacher ? '#FEB008' : '#5D3FD3';
+    $themeHoverColor = $isStandaloneTeacher ? '#E59B00' : '#4a32b0';
+    $themeSoftColor = $isStandaloneTeacher ? '#FFF7E6' : '#F2EEFF';
     $label = $isExam ? 'الاختبار' : 'الواجب';
     $statusSlug = $attempt?->currentStatus?->type?->slug;
     $hasPendingManualAnswers = $attempt?->studentAnswers?->contains(fn ($answer) => $answer->requires_manual_grading && $answer->score === null) ?? false;
@@ -48,9 +53,12 @@
         default => 'يمكنك مراجعة إجاباتك والمحاولة مرة أخرى إذا كان لديك محاولات متاحة.',
     };
     $course = $attempt?->course;
-    $courseUrl = $course?->academy_teacher_id && $course?->account_subject_id
-        ? "/single_teacher?teacher={$course->academy_teacher_id}&subject={$course->account_subject_id}"
-        : '/my_lessons';
+    $courseUrl = match (true) {
+        $isStandaloneTeacher && filled($course?->account_subject_id) => "/single_teacher?subject={$course->account_subject_id}",
+        filled($course?->academy_teacher_id) && filled($course?->account_subject_id) => "/single_teacher?teacher={$course->academy_teacher_id}&subject={$course->account_subject_id}",
+        $isStandaloneTeacher => '/single_teacher',
+        default => '/my_lessons',
+    };
     $reviewUrl = $attempt
         ? ($isExam ? "/quiz_review?attempt={$attempt->id}" : "/home_work_done?attempt={$attempt->id}&review=1")
         : '/my_lessons';
@@ -77,7 +85,7 @@
             <div class="min-h-screen p-4 md:p-8 flex flex-col items-center justify-center">
                 <div class="w-full max-w-4xl bg-white p-6 md:p-10 space-y-8">
                     <section class="w-full max-w-2xl mx-auto flex flex-col items-center text-center space-y-8 bg-white border border-gray-100 rounded-[2rem] p-8 md:p-12 shadow-sm">
-                        <div class="relative w-44 h-44 rounded-full bg-[#5D3FD3] flex flex-col items-center justify-center text-white shadow-xl shadow-[#5D3FD3]/20">
+                        <div class="relative w-44 h-44 rounded-full flex flex-col items-center justify-center text-white shadow-xl" style="background-color: {{ $themeColor }}; box-shadow: 0 20px 35px {{ $themeColor }}33">
                             <span class="absolute -top-2 right-1 bg-[#46F0B4] text-blue-950 font-black text-xs px-3 py-1.5 rounded-full shadow-md">
                                 {{ $resultBadge }}
                             </span>
@@ -92,18 +100,21 @@
                         </div>
 
                         <div class="w-full max-w-md bg-[#FAFAFA] border border-gray-100 rounded-3xl p-6 space-y-2">
-                            <div class="text-[#5D3FD3] text-2xl flex items-center justify-center">
+                            <div class="text-2xl flex items-center justify-center" style="color: {{ $themeColor }}">
                                 <i class="fa-regular fa-clock"></i>
                             </div>
                             <p class="text-xs font-bold text-gray-400">الوقت المستغرق</p>
-                            <h3 class="text-4xl font-black text-[#5D3FD3] tracking-tight">{{ $timeSpentText }}</h3>
+                            <h3 class="text-4xl font-black tracking-tight" style="color: {{ $themeColor }}">{{ $timeSpentText }}</h3>
                             <p class="text-[11px] font-bold text-gray-400">من أصل {{ $durationText }} دقيقة</p>
                         </div>
 
                         <div class="w-full max-w-md flex flex-col sm:flex-row items-center gap-4 pt-4">
                             <a
                                 href="{{ $courseUrl }}"
-                                class="w-full bg-[#5D3FD3] hover:bg-[#4a32b0] text-white font-black text-sm py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#5D3FD3]/15"
+                                class="w-full text-white font-black text-sm py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg"
+                                style="background-color: {{ $themeColor }}; box-shadow: 0 10px 24px {{ $themeColor }}26"
+                                onmouseover="this.style.backgroundColor='{{ $themeHoverColor }}'"
+                                onmouseout="this.style.backgroundColor='{{ $themeColor }}'"
                             >
                                 <i class="fa-solid fa-shapes"></i>
                                 <span>العودة للمادة</span>
@@ -111,7 +122,10 @@
 
                             <a
                                 href="{{ $reviewUrl }}"
-                                class="w-full bg-white border-2 border-[#5D3FD3] text-[#5D3FD3] hover:bg-[#F2EEFF] font-black text-sm py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                                class="w-full bg-white border-2 font-black text-sm py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                                style="border-color: {{ $themeColor }}; color: {{ $themeColor }}"
+                                onmouseover="this.style.backgroundColor='{{ $themeSoftColor }}'"
+                                onmouseout="this.style.backgroundColor='white'"
                             >
                                 <i class="fa-regular fa-square-check"></i>
                                 <span>مراجعة الإجابات الصحيحة</span>
@@ -126,7 +140,10 @@
             <div class="flex justify-start mb-6">
                 <a
                     href="{{ $courseUrl }}"
-                    class="inline-flex items-center justify-center gap-2 bg-[#5D3FD3] hover:bg-[#4a32b0] text-white font-black text-sm py-3 px-6 rounded-xl transition-all shadow-lg shadow-[#5D3FD3]/15"
+                    class="inline-flex items-center justify-center gap-2 text-white font-black text-sm py-3 px-6 rounded-xl transition-all shadow-lg"
+                    style="background-color: {{ $themeColor }}; box-shadow: 0 10px 24px {{ $themeColor }}26"
+                    onmouseover="this.style.backgroundColor='{{ $themeHoverColor }}'"
+                    onmouseout="this.style.backgroundColor='{{ $themeColor }}'"
                 >
                     <i class="fa-solid fa-shapes"></i>
                     <span>العودة للمادة</span>

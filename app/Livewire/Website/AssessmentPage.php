@@ -260,19 +260,7 @@ class AssessmentPage extends Component
             return blank($this->itemId);
         }
 
-        if (! $lessonItem->is_active) {
-            return false;
-        }
-
-        if (filled($lessonItem->starts_at) && $lessonItem->starts_at->isFuture()) {
-            return false;
-        }
-
-        if (filled($lessonItem->ends_at) && $lessonItem->ends_at->isPast()) {
-            return false;
-        }
-
-        return true;
+        return $lessonItem->isCurrentlyOpen();
     }
 
     private function assessmentLessonItem(Provider $provider, Assignment|Exam $assessment): ?LessonItem

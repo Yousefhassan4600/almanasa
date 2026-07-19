@@ -1,10 +1,14 @@
 @php
+    use App\Enums\ProviderType;
     use App\Enums\QuestionType;
     use App\Models\Exam;
 
     $title = $assessment?->getTranslation('title', 'ar', false) ?: $assessment?->title;
     $isExam = $assessment instanceof Exam;
-    $themeColor = '#5D3FD3';
+    $isStandaloneTeacher = $provider?->type === ProviderType::StandaloneTeacher;
+    $themeColor = $isStandaloneTeacher ? '#FEB008' : '#5D3FD3';
+    $themeHoverColor = $isStandaloneTeacher ? '#E59B00' : '#4c32b3';
+    $themeSoftColor = $isStandaloneTeacher ? '#FFF7E6' : '#F2EEFF';
     $label = $isExam ? 'الاختبار' : 'الواجب';
     $duration = $assessment?->duration_minutes;
     $questionCount = $questions->count();
@@ -33,12 +37,12 @@
                 <h1 class="text-2xl font-black text-blue-950">تم تسليم {{ $label }} من قبل</h1>
                 <p class="text-sm text-gray-500 font-semibold mt-3">يمكنك مراجعة النتيجة والإجابات من صفحة النتيجة.</p>
                 <div class="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <a href="{{ $resultUrl }}" class="w-full sm:w-auto inline-flex justify-center text-white text-sm font-bold py-3 px-8 rounded-xl bg-[#5D3FD3] hover:bg-[#4c32b3] transition-all">
+                    <a href="{{ $resultUrl }}" class="w-full sm:w-auto inline-flex justify-center text-white text-sm font-bold py-3 px-8 rounded-xl transition-all" style="background-color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $themeHoverColor }}'" onmouseout="this.style.backgroundColor='{{ $themeColor }}'">
                         عرض النتيجة
                     </a>
 
                     @if ($canRetry)
-                        <a href="{{ $retryUrl }}" class="w-full sm:w-auto inline-flex justify-center text-[#5D3FD3] text-sm font-bold py-3 px-8 rounded-xl bg-white border border-[#5D3FD3] hover:bg-purple-50 transition-all">
+                        <a href="{{ $retryUrl }}" class="w-full sm:w-auto inline-flex justify-center text-sm font-bold py-3 px-8 rounded-xl bg-white border transition-all" style="color: {{ $themeColor }}; border-color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $themeSoftColor }}'" onmouseout="this.style.backgroundColor='white'">
                             إعادة {{ $isExam ? 'الامتحان' : 'الواجب' }}
                         </a>
                     @endif
@@ -59,7 +63,7 @@
         @else
             <form wire:submit="submit" class="w-full max-w-4xl bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm space-y-8">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-gray-50 pb-6">
-                    <div class="flex items-center gap-2 text-[#5D3FD3]">
+                    <div class="flex items-center gap-2" style="color: {{ $themeColor }}">
                         <span class="text-xs font-bold text-gray-400">الوقت المتبقي</span>
                         @if ($hasCountdown)
                             <span
@@ -122,14 +126,14 @@
                             <i class="fa-solid fa-triangle-exclamation text-base"></i>
                             <p class="text-center sm:text-right">تنبيه: في حال الخروج من الصفحة قبل التسليم قد تفقد إجاباتك الحالية.</p>
                         </div>
-                        <button type="submit" class="bg-[#5D3FD3] hover:bg-[#4a32b0] text-white px-5 py-2 rounded-xl text-xs font-black whitespace-nowrap transition-all hidden sm:block">
+                        <button type="submit" class="text-white px-5 py-2 rounded-xl text-xs font-black whitespace-nowrap transition-all hidden sm:block" style="background-color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $themeHoverColor }}'" onmouseout="this.style.backgroundColor='{{ $themeColor }}'">
                             إنهاء الاختبار
                         </button>
                     </div>
                 @endif
 
                 <div class="flex justify-between items-center">
-                    <span class="bg-[#5D3FD3] text-white text-xs font-black px-4 py-1.5 rounded-full shadow-sm shadow-[#5D3FD3]/10">
+                    <span class="text-white text-xs font-black px-4 py-1.5 rounded-full shadow-sm" style="background-color: {{ $themeColor }}; box-shadow: 0 4px 12px {{ $themeColor }}1A">
                         السؤال {{ $currentNumber }}
                     </span>
                     <button type="button" class="text-xs font-bold text-red-400 hover:text-red-500 transition-all flex items-center gap-1.5">
@@ -148,7 +152,8 @@
                     <textarea
                         wire:model.live="answers.{{ $currentQuestion->id }}"
                         rows="6"
-                        class="w-full rounded-2xl border border-gray-100 bg-gray-50 p-5 text-sm font-semibold text-blue-950 outline-none focus:border-[#5D3FD3] transition-colors"
+                        class="w-full rounded-2xl border border-gray-100 bg-gray-50 p-5 text-sm font-semibold text-blue-950 outline-none transition-colors"
+                        style="--tw-ring-color: {{ $themeColor }}"
                         placeholder="اكتب إجابتك هنا..."
                     ></textarea>
                 @else
@@ -159,11 +164,12 @@
                             @endphp
                             <label
                                 wire:key="assessment-option-{{ $option->id }}"
-                                class="option-card relative border-2 {{ $isSelected ? 'border-[#5D3FD3] bg-[#F2EEFF]' : 'border-gray-100 bg-white hover:border-[#5D3FD3]/40' }} rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all select-none"
+                                class="option-card relative border-2 {{ $isSelected ? '' : 'border-gray-100 bg-white' }} rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all select-none"
+                                style="{{ $isSelected ? 'border-color: '.$themeColor.'; background-color: '.$themeSoftColor : '' }}"
                             >
                                 <input type="radio" wire:model.live="answers.{{ $currentQuestion->id }}" value="{{ $option->id }}" class="sr-only">
                                 <div class="flex items-center gap-3">
-                                    <span class="badge w-8 h-8 rounded-xl {{ $isSelected ? 'bg-[#5D3FD3] text-white' : 'bg-gray-100 text-gray-400' }} flex items-center justify-center font-black text-xs transition-all">
+                                    <span class="badge w-8 h-8 rounded-xl {{ $isSelected ? 'text-white' : 'bg-gray-100 text-gray-400' }} flex items-center justify-center font-black text-xs transition-all" style="{{ $isSelected ? 'background-color: '.$themeColor : '' }}">
                                         {{ $optionLabels[$optionIndex] ?? $optionIndex + 1 }}
                                     </span>
                                     <span class="text-sm font-black text-blue-950">{{ $option->title }}</span>
@@ -185,7 +191,10 @@
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2 border-t border-gray-50">
                     <button
                         type="submit"
-                        class="order-2 sm:order-1 w-full sm:w-auto bg-[#5D3FD3] hover:bg-[#4c32b3] text-white px-8 py-3 rounded-xl text-xs font-black transition-all"
+                        class="order-2 sm:order-1 w-full sm:w-auto text-white px-8 py-3 rounded-xl text-xs font-black transition-all"
+                        style="background-color: {{ $themeColor }}"
+                        onmouseover="this.style.backgroundColor='{{ $themeHoverColor }}'"
+                        onmouseout="this.style.backgroundColor='{{ $themeColor }}'"
                     >
                         <span wire:loading.remove wire:target="submit">إنهاء {{ $isExam ? 'الاختبار' : 'الواجب' }}</span>
                         <span wire:loading wire:target="submit">جاري التسليم...</span>

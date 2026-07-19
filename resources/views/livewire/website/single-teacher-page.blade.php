@@ -33,10 +33,7 @@
     $themeTextLight = $isStandaloneTeacher ? 'text-amber-50' : 'text-purple-100';
     $themeTextMuted = $isStandaloneTeacher ? 'text-amber-100' : 'text-purple-200';
     $themeSoftBg = $isStandaloneTeacher ? 'bg-amber-50' : 'bg-purple-50';
-    $lessonItemIsOpen = fn ($item): bool => filled($item)
-        && $item->is_active
-        && (blank($item->starts_at) || $item->starts_at->lte(now()))
-        && (blank($item->ends_at) || $item->ends_at->gte(now()));
+    $lessonItemIsOpen = fn ($item): bool => filled($item) && $item->isCurrentlyOpen();
     $lessonItemAvailabilityText = function ($item): string {
         if (blank($item)) {
             return 'مغلق';

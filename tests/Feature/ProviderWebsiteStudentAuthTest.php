@@ -1429,6 +1429,280 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('لا يوجد كورس منشأ', false);
     }
 
+    public function test_standalone_teacher_assessment_pages_use_teacher_template_flow(): void
+    {
+        $provider = $this->provider('mona-physics', ProviderType::StandaloneTeacher);
+        $provider->owner()->update([
+            'first_name' => 'Mona',
+            'last_name' => 'Physics',
+        ]);
+        Account::query()->create([
+            'provider_id' => $provider->id,
+            'owner_user_id' => $provider->owner_user_id,
+            'type' => AccountType::StandaloneTeacher,
+            'is_active' => true,
+            'approved_at' => now(),
+        ]);
+
+        $studentUser = User::factory()->create();
+        $this->studentAccount($provider, $studentUser);
+
+        $stage = EducationStage::query()->create(['name' => 'Secondary', 'sort_order' => 1]);
+        $grade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
+        $this->studentProfile($studentUser, $grade);
+        $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
+        $subject = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Physics', 'ar' => 'الفيزياء'],
+        ]);
+        $accountSubject = AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $grade->id,
+                'subject_id' => $subject->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+        $course = Course::query()->create([
+            'provider_id' => $provider->id,
+            'account_subject_id' => $accountSubject->id,
+            'academy_teacher_id' => null,
+            'title' => ['en' => 'Physics Course', 'ar' => 'كورس الفيزياء'],
+        ]);
+        $period = CoursePeriod::query()->create([
+            'type' => CoursePeriodType::Term1->value,
+            'name' => ['en' => 'Term 1', 'ar' => 'الترم الأول'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $lesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $period->id,
+            'title' => ['en' => 'Motion', 'ar' => 'الحركة'],
+            'is_active' => true,
+        ]);
+        $question = Question::query()->create([
+            'lesson_id' => $lesson->id,
+            'title' => 'What is force?',
+            'type' => QuestionType::Mcq->value,
+            'difficulty' => QuestionDifficulty::Easy->value,
+            'sort_order' => 1,
+        ]);
+        $correctOption = QuestionOption::query()->create([
+            'question_id' => $question->id,
+            'title' => 'Mass times acceleration',
+            'is_correct' => true,
+            'sort_order' => 1,
+        ]);
+        QuestionOption::query()->create([
+            'question_id' => $question->id,
+            'title' => 'Distance over time',
+            'is_correct' => false,
+            'sort_order' => 2,
+        ]);
+
+        $assignment = Assignment::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Physics Homework', 'ar' => 'واجب الفيزياء'],
+            'duration_minutes' => 15,
+            'num_of_attempts' => 2,
+            'question_ids' => [$question->id],
+        ]);
+        $assignmentItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'assignment_id' => $assignment->id,
+            'type' => LessonTypeEnum::Assignments->value,
+            'title' => ['en' => 'Homework Item', 'ar' => 'عنصر الواجب'],
+            'is_active' => true,
+            'is_free' => true,
+        ]);
+        $expiredAssignment = Assignment::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Expired Physics Homework', 'ar' => 'واجب فيزياء منتهي'],
+            'duration_minutes' => 15,
+            'num_of_attempts' => 2,
+            'question_ids' => [$question->id],
+        ]);
+        $expiredAssignmentItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'assignment_id' => $expiredAssignment->id,
+            'type' => LessonTypeEnum::Assignments->value,
+            'title' => ['en' => 'Expired Homework Item', 'ar' => 'عنصر واجب منتهي'],
+            'starts_at' => now()->subHours(2),
+            'ends_at' => now()->subHour(),
+            'is_active' => true,
+            'is_free' => true,
+            'sort_order' => 2,
+        ]);
+
+        $exam = Exam::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Physics Quiz', 'ar' => 'اختبار الفيزياء'],
+            'duration_minutes' => 10,
+            'max_degree' => 10,
+            'num_of_models' => 1,
+            'num_of_attempts' => 2,
+            'lesson_ids' => [$lesson->id],
+        ]);
+        ExamModel::query()->create([
+            'exam_id' => $exam->id,
+            'model_number' => 1,
+            'question_ids' => [
+                ['id' => $question->id, 'max_score' => 10],
+            ],
+        ]);
+        $examItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'exam_id' => $exam->id,
+            'type' => LessonTypeEnum::Exams->value,
+            'title' => ['en' => 'Quiz Item', 'ar' => 'عنصر الاختبار'],
+            'is_active' => true,
+            'is_free' => true,
+        ]);
+        $expiredExam = Exam::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Expired Physics Quiz', 'ar' => 'اختبار فيزياء منتهي'],
+            'duration_minutes' => 10,
+            'max_degree' => 10,
+            'num_of_models' => 1,
+            'num_of_attempts' => 2,
+            'lesson_ids' => [$lesson->id],
+        ]);
+        ExamModel::query()->create([
+            'exam_id' => $expiredExam->id,
+            'model_number' => 1,
+            'question_ids' => [
+                ['id' => $question->id, 'max_score' => 10],
+            ],
+        ]);
+        $expiredExamItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'exam_id' => $expiredExam->id,
+            'type' => LessonTypeEnum::Exams->value,
+            'title' => ['en' => 'Expired Quiz Item', 'ar' => 'عنصر اختبار منتهي'],
+            'starts_at' => now()->subHours(2),
+            'ends_at' => now()->subHour(),
+            'is_active' => true,
+            'is_free' => true,
+            'sort_order' => 3,
+        ]);
+
+        $baseUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/single_teacher?subject='.$accountSubject->id)
+            ->assertOk()
+            ->assertSee('عنصر واجب منتهي', false)
+            ->assertSee('عنصر اختبار منتهي', false)
+            ->assertSee('انتهى في', false)
+            ->assertDontSee('href="/lesson?item='.$expiredAssignmentItem->id.'"', false)
+            ->assertDontSee('href="/lesson?item='.$expiredExamItem->id.'"', false);
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/home_work?assignment='.$assignment->id.'&item='.$assignmentItem->id)
+            ->assertOk()
+            ->assertSeeLivewire(AssessmentPage::class)
+            ->assertSee('#FEB008', false)
+            ->assertSee('إنهاء الواجب', false);
+
+        Livewire::actingAs($studentUser)
+            ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'assignment'])
+            ->set('assignmentId', $assignment->id)
+            ->set('itemId', $assignmentItem->id)
+            ->set('answers', [
+                $question->id => $correctOption->id,
+            ])
+            ->call('submit');
+
+        $assignmentAttempt = StudentAttempt::query()
+            ->where('student_user_id', $studentUser->id)
+            ->where('attemptable_type', Assignment::class)
+            ->where('attemptable_id', $assignment->id)
+            ->firstOrFail();
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/home_work?assignment='.$assignment->id.'&item='.$assignmentItem->id)
+            ->assertOk()
+            ->assertSee('/home_work?assignment='.$assignment->id.'&amp;item='.$assignmentItem->id.'&amp;retry=1', false)
+            ->assertSee('إعادة الواجب', false);
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/home_work_done?attempt='.$assignmentAttempt->id)
+            ->assertOk()
+            ->assertSeeLivewire(AttemptResultPage::class)
+            ->assertSee('#FEB008', false)
+            ->assertSee('href="/single_teacher?subject='.$accountSubject->id.'"', false)
+            ->assertSee('/home_work_done?attempt='.$assignmentAttempt->id.'&amp;review=1', false);
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/home_work_done?attempt='.$assignmentAttempt->id.'&review=1')
+            ->assertOk()
+            ->assertSeeLivewire(AttemptResultPage::class)
+            ->assertSee('#FEB008', false)
+            ->assertSee('href="/single_teacher?subject='.$accountSubject->id.'"', false)
+            ->assertSee('What is force?', false)
+            ->assertDontSee('أحسنت! لقد أنهيت الواجب', false);
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/home_work?assignment='.$expiredAssignment->id.'&item='.$expiredAssignmentItem->id)
+            ->assertOk()
+            ->assertSeeLivewire(AssessmentPage::class)
+            ->assertSee('الواجب مغلق حالياً', false)
+            ->assertDontSee('إنهاء الواجب', false);
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/quiz?exam='.$exam->id.'&item='.$examItem->id)
+            ->assertOk()
+            ->assertSeeLivewire(AssessmentPage::class)
+            ->assertSee('#FEB008', false)
+            ->assertSee('إنهاء الاختبار', false);
+
+        Livewire::actingAs($studentUser)
+            ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'exam'])
+            ->set('examId', $exam->id)
+            ->set('itemId', $examItem->id)
+            ->set('answers', [
+                $question->id => $correctOption->id,
+            ])
+            ->call('submit');
+
+        $examAttempt = StudentAttempt::query()
+            ->where('student_user_id', $studentUser->id)
+            ->where('attemptable_type', Exam::class)
+            ->where('attemptable_id', $exam->id)
+            ->firstOrFail();
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/quiz_done?attempt='.$examAttempt->id)
+            ->assertOk()
+            ->assertSeeLivewire(AttemptResultPage::class)
+            ->assertSee('#FEB008', false)
+            ->assertSee('href="/single_teacher?subject='.$accountSubject->id.'"', false)
+            ->assertSee('/quiz_review?attempt='.$examAttempt->id, false);
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/quiz_review?attempt='.$examAttempt->id)
+            ->assertOk()
+            ->assertSeeLivewire(AttemptResultPage::class)
+            ->assertSee('#FEB008', false)
+            ->assertSee('href="/single_teacher?subject='.$accountSubject->id.'"', false)
+            ->assertSee('What is force?', false)
+            ->assertDontSee('أحسنت! لقد اجتزت الاختبار', false);
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/quiz?exam='.$expiredExam->id.'&item='.$expiredExamItem->id)
+            ->assertOk()
+            ->assertSeeLivewire(AssessmentPage::class)
+            ->assertSee('الاختبار مغلق حالياً', false)
+            ->assertDontSee('إنهاء الاختبار', false);
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/quiz?exam='.$exam->id.'&item='.$examItem->id)
+            ->assertOk()
+            ->assertSee('/quiz?exam='.$exam->id.'&amp;item='.$examItem->id.'&amp;retry=1', false)
+            ->assertSee('إعادة الامتحان', false);
+    }
+
     public function test_home_cta_links_guests_to_login(): void
     {
         $provider = $this->provider();

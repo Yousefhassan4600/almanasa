@@ -20,7 +20,10 @@
     $teacherName = $isStandaloneTeacher
         ? ($course?->provider?->owner?->name ?: 'المعلم')
         : ($teacher?->teacher?->owner?->name ?: 'المعلم');
-    $activeColor = '#5D3FD3';
+    $activeColor = $isStandaloneTeacher ? '#FEB008' : '#5D3FD3';
+    $activeHoverColor = $isStandaloneTeacher ? '#E59B00' : '#4c32b3';
+    $activeSoftColor = $isStandaloneTeacher ? '#FFF7E6' : '#F2EEFF';
+    $activeMutedTextColor = $isStandaloneTeacher ? '#FDE68A' : '#DDD6FE';
     $lessonItemType = $lessonItem?->type instanceof \App\Enums\LessonTypeEnum ? $lessonItem->type->value : (string) $lessonItem?->type;
     $lessonAssignments = collect([$lessonItem?->assignment])->filter();
     $lessonExams = collect([$lessonItem?->exam])->filter();
@@ -51,10 +54,7 @@
         filled($lesson?->ends_at) && $lesson->ends_at->isPast() => 'انتهت مدة إتاحة هذا الدرس في '.$lesson->ends_at->format('Y-m-d H:i'),
         default => 'هذا الدرس مغلق حالياً.',
     };
-    $lessonItemIsOpen = fn ($item): bool => filled($item)
-        && $item->is_active
-        && (blank($item->starts_at) || $item->starts_at->lte(now()))
-        && (blank($item->ends_at) || $item->ends_at->gte(now()));
+    $lessonItemIsOpen = fn ($item): bool => filled($item) && $item->isCurrentlyOpen();
     $lessonItemAvailabilityText = function ($item, string $fallback = 'العنصر غير متاح حالياً.'): string {
         if (blank($item)) {
             return $fallback;
@@ -89,16 +89,16 @@
         @if (! $lessonItem)
             <div class="rounded-3xl bg-slate-50 border border-slate-100 p-8 text-center">
                 <p class="text-sm font-bold text-blue-950">لم يتم العثور على عنصر الدرس المطلوب.</p>
-                <a href="/subjects" class="inline-flex mt-4 text-[#5D3FD3] text-sm font-bold">العودة للمواد</a>
+                <a href="/subjects" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $activeColor }}">العودة للمواد</a>
             </div>
         @else
             <nav class="flex flex-wrap items-center gap-1.5 text-xs text-gray-400 mb-6 font-bold">
-                <a href="/" class="hover:text-[#5D3FD3]">الرئيسية</a>
+                <a href="/" style="--active-color: {{ $activeColor }}" class="hover:text-[var(--active-color)]">الرئيسية</a>
                 <span>/</span>
-                <a href="/subjects" class="hover:text-[#5D3FD3]">المواد</a>
+                <a href="/subjects" style="--active-color: {{ $activeColor }}" class="hover:text-[var(--active-color)]">المواد</a>
                 @if ($subjectName)
                     <span>/</span>
-                    <a href="/teachers?subject={{ $accountSubject?->id }}" class="hover:text-[#5D3FD3]">{{ $subjectName }}</a>
+                    <a href="/teachers?subject={{ $accountSubject?->id }}" style="--active-color: {{ $activeColor }}" class="hover:text-[var(--active-color)]">{{ $subjectName }}</a>
                 @endif
                 @if ($lessonTitle)
                     <span>/</span>
@@ -146,17 +146,17 @@
                                 <span class="text-gray-700">{{ $lessonItem->duration_minutes ? $lessonItem->duration_minutes.' دقيقة' : 'غير محددة' }}</span>
                             </div>
                             <div class="flex items-center gap-3 flex-1 sm:max-w-md">
-                                <span class="text-xs font-black text-[#5D3FD3]">0%</span>
-                                <div class="w-full bg-purple-100 h-2 rounded-full overflow-hidden">
-                                    <div class="bg-[#6342E8] h-full rounded-full" style="width: 0%"></div>
+                                <span class="text-xs font-black" style="color: {{ $activeColor }}">0%</span>
+                                <div class="w-full h-2 rounded-full overflow-hidden" style="background-color: {{ $activeSoftColor }}">
+                                    <div class="h-full rounded-full" style="width: 0%; background-color: {{ $activeColor }}"></div>
                                 </div>
                                 <span class="text-xs font-bold text-gray-400 whitespace-nowrap">تقدم المشاهدة الفعلي</span>
                             </div>
                         </div>
                     @elseif ($contentType === 'assignment')
-                        <div class="bg-[#F1F3FF] border-r-[6px] border-[#5D3FD3] rounded-[24px] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
+                        <div class="border-r-[6px] rounded-[24px] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm" style="background-color: {{ $activeSoftColor }}; border-color: {{ $activeColor }}">
                             <div class="flex items-center gap-4 text-right">
-                                <div class="w-12 h-12 rounded-2xl bg-[#5D3FD3] text-white flex items-center justify-center text-lg shrink-0">
+                                <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center text-lg shrink-0" style="background-color: {{ $activeColor }}">
                                     <i class="fa-regular fa-clipboard"></i>
                                 </div>
                                 <div>
@@ -171,7 +171,7 @@
                             </div>
                             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                                 @foreach ($lessonAssignments as $assignment)
-                                    <a href="/home_work?assignment={{ $assignment->id }}&item={{ $lessonItem->id }}" class="w-full sm:w-auto bg-[#5D3FD3] hover:bg-[#4c32b3] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
+                                    <a href="/home_work?assignment={{ $assignment->id }}&item={{ $lessonItem->id }}" class="w-full sm:w-auto text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center" style="background-color: {{ $activeColor }}" onmouseover="this.style.backgroundColor='{{ $activeHoverColor }}'" onmouseout="this.style.backgroundColor='{{ $activeColor }}'">
                                         {{ $assignment->getTranslation('title', 'ar', false) ?: $assignment->title }}
                                     </a>
                                 @endforeach
@@ -272,9 +272,9 @@
 
                 <aside class="lg:col-span-4 space-y-4">
                     <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                        <div class="bg-[#5D3FD3] text-white p-5 text-right space-y-1">
+                        <div class="text-white p-5 text-right space-y-1" style="background-color: {{ $activeColor }}">
                             <h3 class="text-base font-black tracking-wide">قائمة محتوى الدرس</h3>
-                            <p class="text-purple-200 text-xs font-medium">{{ $lessonTitle ?: $courseTitle }}</p>
+                            <p class="text-xs font-medium" style="color: {{ $activeMutedTextColor }}">{{ $lessonTitle ?: $courseTitle }}</p>
                         </div>
 
                         <div class="p-2 space-y-1.5 max-h-[520px] overflow-y-auto">
@@ -306,18 +306,19 @@
                                     };
                                     $isActive = $playlistItem->is($lessonItem);
                                     $playlistIsLocked = ! $lessonIsOpen || ! $playlistItem->is_free || ! $playlistItemIsOpen;
-                                    $playlistClass = 'p-3.5 flex items-center justify-between rounded-2xl transition-all '.($isActive ? 'bg-purple-50/70 border border-purple-100 text-[#5D3FD3]' : 'bg-white hover:bg-gray-50 border border-transparent text-gray-600');
+                                    $playlistClass = 'p-3.5 flex items-center justify-between rounded-2xl transition-all '.($isActive ? 'border' : 'bg-white hover:bg-gray-50 border border-transparent text-gray-600');
+                                    $playlistActiveStyle = $isActive ? 'background-color: '.$activeSoftColor.'; border-color: '.$activeColor.'33; color: '.$activeColor : '';
                                 @endphp
 
                                 @if ($playlistIsLocked)
-                                    <div wire:key="lesson-playlist-item-{{ $playlistItem->id }}" class="{{ $playlistClass }}">
+                                    <div wire:key="lesson-playlist-item-{{ $playlistItem->id }}" class="{{ $playlistClass }}" style="{{ $playlistActiveStyle }}">
                                         <div class="flex items-center gap-3">
-                                            <span class="w-7 h-7 rounded-lg {{ $isActive ? 'bg-purple-100 text-[#5D3FD3]' : 'bg-gray-100 text-gray-400' }} flex items-center justify-center text-xs shrink-0">
+                                            <span class="w-7 h-7 rounded-lg {{ $isActive ? '' : 'bg-gray-100 text-gray-400' }} flex items-center justify-center text-xs shrink-0" style="{{ $isActive ? 'background-color: '.$activeColor.'1A; color: '.$activeColor : '' }}">
                                                 <i class="{{ $playlistIcon }}"></i>
                                             </span>
                                             <div class="text-right">
-                                                <h4 class="text-xs font-bold {{ $isActive ? 'text-[#5D3FD3]' : 'text-blue-950' }}">{{ $playlistTitle }}</h4>
-                                                <span class="text-[10px] {{ $isActive ? 'text-purple-400' : 'text-gray-400' }} block mt-0.5">
+                                                <h4 class="text-xs font-bold {{ $isActive ? '' : 'text-blue-950' }}" style="{{ $isActive ? 'color: '.$activeColor : '' }}">{{ $playlistTitle }}</h4>
+                                                <span class="text-[10px] {{ $isActive ? '' : 'text-gray-400' }} block mt-0.5" style="{{ $isActive ? 'color: '.$activeColor : '' }}">
                                                     {{ ! $lessonIsOpen ? 'غير متاح الآن' : ($playlistAvailabilityText ?: ($playlistItem->duration_minutes ? $playlistItem->duration_minutes.' دقيقة' : 'مغلق')) }}
                                                 </span>
                                             </div>
@@ -330,14 +331,15 @@
                                         @if ($playlistIsLink) target="_blank" rel="noopener noreferrer" @endif
                                         wire:key="lesson-playlist-item-{{ $playlistItem->id }}"
                                         class="{{ $playlistClass }}"
+                                        style="{{ $playlistActiveStyle }}"
                                     >
                                         <div class="flex items-center gap-3">
-                                            <span class="w-7 h-7 rounded-lg {{ $isActive ? 'bg-purple-100 text-[#5D3FD3]' : 'bg-gray-100 text-gray-400' }} flex items-center justify-center text-xs shrink-0">
+                                            <span class="w-7 h-7 rounded-lg {{ $isActive ? '' : 'bg-gray-100 text-gray-400' }} flex items-center justify-center text-xs shrink-0" style="{{ $isActive ? 'background-color: '.$activeColor.'1A; color: '.$activeColor : '' }}">
                                                 <i class="{{ $playlistIcon }}"></i>
                                             </span>
                                             <div class="text-right">
-                                                <h4 class="text-xs font-bold {{ $isActive ? 'text-[#5D3FD3]' : 'text-blue-950' }}">{{ $playlistTitle }}</h4>
-                                                <span class="text-[10px] {{ $isActive ? 'text-purple-400' : 'text-gray-400' }} block mt-0.5">
+                                                <h4 class="text-xs font-bold {{ $isActive ? '' : 'text-blue-950' }}" style="{{ $isActive ? 'color: '.$activeColor : '' }}">{{ $playlistTitle }}</h4>
+                                                <span class="text-[10px] {{ $isActive ? '' : 'text-gray-400' }} block mt-0.5" style="{{ $isActive ? 'color: '.$activeColor : '' }}">
                                                     {{ $playlistItem->duration_minutes ? $playlistItem->duration_minutes.' دقيقة' : 'مجاني' }}
                                                 </span>
                                             </div>
@@ -346,7 +348,7 @@
                                 @endif
                             @endforeach
 
-                            <a href="/packages" class="w-full border border-purple-200 text-[#5D3FD3] hover:bg-purple-50 font-bold text-sm py-3.5 rounded-xl transition-colors bg-transparent flex items-center justify-center gap-2">
+                            <a href="/packages" class="w-full border font-bold text-sm py-3.5 rounded-xl transition-colors bg-transparent flex items-center justify-center gap-2" style="border-color: {{ $activeColor }}33; color: {{ $activeColor }}" onmouseover="this.style.backgroundColor='{{ $activeSoftColor }}'" onmouseout="this.style.backgroundColor='transparent'">
                                 <i class="fa-solid fa-bolt text-xs"></i>
                                 اشترك الآن
                             </a>
@@ -357,9 +359,9 @@
                         <div class="text-right space-y-1">
                             <h4 class="text-xs font-black text-blue-950">واجهتك مشكلة؟</h4>
                             <p class="text-[11px] text-gray-400 font-medium">تواصل مع الدعم الفني لحل أي مشكلة تقنية في المشاهدة.</p>
-                            <a href="#" class="text-[11px] font-bold text-[#5D3FD3] inline-block pt-1 hover:underline">مركز المساعدة ←</a>
+                            <a href="#" class="text-[11px] font-bold inline-block pt-1 hover:underline" style="color: {{ $activeColor }}">مركز المساعدة ←</a>
                         </div>
-                        <span class="w-8 h-8 rounded-full bg-purple-100 text-[#5D3FD3] flex items-center justify-center text-xs">
+                        <span class="w-8 h-8 rounded-full flex items-center justify-center text-xs" style="background-color: {{ $activeColor }}1A; color: {{ $activeColor }}">
                             <i class="fa-regular fa-circle-question"></i>
                         </span>
                     </div>

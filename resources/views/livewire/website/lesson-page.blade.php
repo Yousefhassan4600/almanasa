@@ -52,11 +52,16 @@
         default => 'هذا الدرس مغلق حالياً.',
     };
     $lessonItemIsOpen = fn ($item): bool => filled($item)
+        && $item->is_active
         && (blank($item->starts_at) || $item->starts_at->lte(now()))
         && (blank($item->ends_at) || $item->ends_at->gte(now()));
     $lessonItemAvailabilityText = function ($item, string $fallback = 'العنصر غير متاح حالياً.'): string {
         if (blank($item)) {
             return $fallback;
+        }
+
+        if (! $item->is_active) {
+            return 'غير مفعل حالياً';
         }
 
         if (filled($item->starts_at) && $item->starts_at->isFuture()) {
@@ -69,6 +74,8 @@
 
         return $fallback;
     };
+    $activeLessonItemIsOpen = $lessonItemIsOpen($lessonItem);
+    $activeLessonItemAvailabilityText = $lessonItemAvailabilityText($lessonItem);
     $attemptLimit = $attempts['limit'] ?? null;
     $usedAttempts = $attempts['used'] ?? 0;
     $remainingAttempts = $attempts['remaining'] ?? null;
@@ -111,6 +118,15 @@
                             <h1 class="text-xl sm:text-2xl font-black text-blue-950">{{ $itemTitle }}</h1>
                             <p class="text-sm text-gray-500 font-semibold mt-3">{{ $lessonAvailabilityText }}</p>
                             <p class="text-xs text-gray-400 font-medium mt-2">العنصر ظاهر في قائمة الدروس، لكن المحتوى لا يمكن فتحه خارج فترة الإتاحة.</p>
+                        </div>
+                    @elseif (! $activeLessonItemIsOpen)
+                        <div class="bg-slate-50 border border-slate-100 rounded-[24px] p-8 text-center shadow-sm">
+                            <div class="w-16 h-16 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-4 text-xl">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
+                            <h1 class="text-xl sm:text-2xl font-black text-blue-950">{{ $itemTitle }}</h1>
+                            <p class="text-sm text-gray-500 font-semibold mt-3">{{ $activeLessonItemAvailabilityText }}</p>
+                            <p class="text-xs text-gray-400 font-medium mt-2">العنصر ظاهر في قائمة الدروس، لكن المحتوى لا يمكن فتحه خارج فترة الإتاحة أو أثناء إيقافه.</p>
                         </div>
                     @elseif ($contentType === 'video')
                         <div class="relative bg-black rounded-3xl overflow-hidden aspect-video shadow-lg">
@@ -277,9 +293,9 @@
                                         filled($playlistItem->file_url) => 'file',
                                         default => 'video',
                                     };
-                                    $playlistExamIsOpen = $playlistType !== 'exam' || $lessonItemIsOpen($playlistItem);
-                                    $playlistAvailabilityText = $playlistType === 'exam' && ! $playlistExamIsOpen
-                                        ? $lessonItemAvailabilityText($playlistItem, 'الاختبار مغلق حالياً.')
+                                    $playlistItemIsOpen = $lessonItemIsOpen($playlistItem);
+                                    $playlistAvailabilityText = ! $playlistItemIsOpen
+                                        ? $lessonItemAvailabilityText($playlistItem)
                                         : null;
                                     $playlistIcon = match ($playlistType) {
                                         'assignment' => 'fa-regular fa-clipboard',
@@ -289,7 +305,7 @@
                                         default => 'fa-solid fa-play',
                                     };
                                     $isActive = $playlistItem->is($lessonItem);
-                                    $playlistIsLocked = ! $lessonIsOpen || ! $playlistItem->is_free || ! $playlistExamIsOpen;
+                                    $playlistIsLocked = ! $lessonIsOpen || ! $playlistItem->is_free || ! $playlistItemIsOpen;
                                     $playlistClass = 'p-3.5 flex items-center justify-between rounded-2xl transition-all '.($isActive ? 'bg-purple-50/70 border border-purple-100 text-[#5D3FD3]' : 'bg-white hover:bg-gray-50 border border-transparent text-gray-600');
                                 @endphp
 

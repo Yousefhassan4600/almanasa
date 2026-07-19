@@ -126,7 +126,6 @@ class SingleTeacherPage extends Component
                         'coursePeriod:id,type,name,sort_order',
                         'items' => fn ($query) => $query
                             ->with('exam:id,course_id,title')
-                            ->where('is_active', true)
                             ->oldest('sort_order')
                             ->oldest('id'),
                     ])

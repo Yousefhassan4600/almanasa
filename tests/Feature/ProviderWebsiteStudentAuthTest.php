@@ -609,6 +609,25 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'is_active' => true,
             'is_free' => true,
         ]);
+        $inactiveItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Inactive Video', 'ar' => 'فيديو غير مفعل'],
+            'video_url' => 'https://videos.example.test/inactive',
+            'sort_order' => 2,
+            'is_active' => false,
+            'is_free' => true,
+        ]);
+        $futureActiveLessonItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Future Active Lesson Video', 'ar' => 'فيديو مستقبلي داخل حصة مفتوحة'],
+            'video_url' => 'https://videos.example.test/future-active-lesson',
+            'starts_at' => now()->addDay(),
+            'sort_order' => 3,
+            'is_active' => true,
+            'is_free' => true,
+        ]);
         $futureLesson = Lesson::query()->create([
             'course_id' => $course->id,
             'course_period_id' => $termOnePeriod->id,
@@ -658,7 +677,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'title' => ['en' => 'Expired Exam Item', 'ar' => 'اختبار منتهي'],
             'starts_at' => now()->subHours(2),
             'ends_at' => now()->subHour(),
-            'sort_order' => 2,
+            'sort_order' => 4,
             'is_active' => true,
             'is_free' => true,
         ]);
@@ -671,6 +690,9 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('الأعداد الحقيقية', false)
             ->assertSee('مقدمة في الأعداد الحقيقية', false)
             ->assertSee('180', false)
+            ->assertSee('فيديو غير مفعل', false)
+            ->assertSee('غير مفعل حالياً', false)
+            ->assertSee('فيديو مستقبلي داخل حصة مفتوحة', false)
             ->assertSee('حصة مستقبلية', false)
             ->assertSee('فيديو مستقبلي', false)
             ->assertSee('حصة منتهية', false)
@@ -678,6 +700,8 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('اختبار منتهي', false)
             ->assertSee('انتهى في', false)
             ->assertSee('غير متاح الآن', false)
+            ->assertDontSee('href="/lesson?item='.$inactiveItem->id.'"', false)
+            ->assertDontSee('href="/lesson?item='.$futureActiveLessonItem->id.'"', false)
             ->assertDontSee('href="/lesson?item='.$futureItem->id.'"', false)
             ->assertDontSee('href="/lesson?item='.$expiredItem->id.'"', false)
             ->assertDontSee('href="/lesson?item='.$expiredExamItem->id.'"', false)
@@ -771,6 +795,27 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'is_active' => true,
             'is_free' => true,
         ]);
+        $inactiveItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Inactive Lesson Item', 'ar' => 'عنصر غير مفعل'],
+            'video_url' => 'https://videos.example.test/inactive-video',
+            'duration_minutes' => 15,
+            'sort_order' => 4,
+            'is_active' => false,
+            'is_free' => true,
+        ]);
+        $futureActiveLessonItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Future Lesson Item', 'ar' => 'عنصر مستقبلي داخل الدرس'],
+            'video_url' => 'https://videos.example.test/future-item-video',
+            'duration_minutes' => 20,
+            'starts_at' => now()->addDay(),
+            'sort_order' => 5,
+            'is_active' => true,
+            'is_free' => true,
+        ]);
         $futureLesson = Lesson::query()->create([
             'course_id' => $course->id,
             'course_period_id' => $period->id,
@@ -805,7 +850,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'duration_minutes' => 20,
             'starts_at' => now()->subHours(2),
             'ends_at' => now()->subHour(),
-            'sort_order' => 4,
+            'sort_order' => 6,
             'is_active' => true,
             'is_free' => true,
         ]);
@@ -828,6 +873,24 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('عدد المحاولات: 0 / 2', false)
             ->assertSee('متبقي 2', false)
             ->assertSee('href="/home_work?assignment='.$assignment->id.'&item='.$assignmentItem->id.'"', false);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$inactiveItem->id)
+            ->assertOk()
+            ->assertSeeLivewire(LessonPage::class)
+            ->assertSee('عنصر غير مفعل', false)
+            ->assertSee('غير مفعل حالياً', false)
+            ->assertSee('العنصر ظاهر في قائمة الدروس', false)
+            ->assertDontSee('https://videos.example.test/inactive-video', false);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$futureActiveLessonItem->id)
+            ->assertOk()
+            ->assertSeeLivewire(LessonPage::class)
+            ->assertSee('عنصر مستقبلي داخل الدرس', false)
+            ->assertSee('يفتح في', false)
+            ->assertSee('العنصر ظاهر في قائمة الدروس', false)
+            ->assertDontSee('https://videos.example.test/future-item-video', false);
 
         $this->actingAs($user)
             ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$futureItem->id)

@@ -34,11 +34,16 @@
     $themeTextMuted = $isStandaloneTeacher ? 'text-amber-100' : 'text-purple-200';
     $themeSoftBg = $isStandaloneTeacher ? 'bg-amber-50' : 'bg-purple-50';
     $lessonItemIsOpen = fn ($item): bool => filled($item)
+        && $item->is_active
         && (blank($item->starts_at) || $item->starts_at->lte(now()))
         && (blank($item->ends_at) || $item->ends_at->gte(now()));
     $lessonItemAvailabilityText = function ($item): string {
         if (blank($item)) {
             return 'مغلق';
+        }
+
+        if (! $item->is_active) {
+            return 'غير مفعل حالياً';
         }
 
         if (filled($item->starts_at) && $item->starts_at->isFuture()) {
@@ -195,11 +200,11 @@
                                                                         filled($item->file_url) => 'fa-regular fa-file-pdf',
                                                                         default => 'fa-regular fa-circle-play',
                                                                     };
-                                                                    $itemExamIsOpen = $itemType !== LessonTypeEnum::Exams->value || $lessonItemIsOpen($item);
-                                                                    $itemAvailabilityText = $itemType === LessonTypeEnum::Exams->value && ! $itemExamIsOpen
+                                                                    $itemIsOpen = $lessonItemIsOpen($item);
+                                                                    $itemAvailabilityText = ! $itemIsOpen
                                                                         ? $lessonItemAvailabilityText($item)
                                                                         : null;
-                                                                    $isLocked = ! $lessonIsOpen || ! $item->is_free || ! $itemExamIsOpen;
+                                                                    $isLocked = ! $lessonIsOpen || ! $item->is_free || ! $itemIsOpen;
                                                                 @endphp
 
                                                                 <div class="p-3.5 flex items-center justify-between text-xs {{ $isLocked ? 'opacity-75' : '' }}" wire:key="lesson-item-{{ $item->id }}">

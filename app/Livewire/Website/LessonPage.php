@@ -56,12 +56,10 @@ class LessonPage extends Component
                         'course.accountSubject.gradeSubject.subject.track:id,name',
                         'items' => fn ($query) => $query
                             ->with('exam:id,course_id,title,duration_minutes')
-                            ->where('is_active', true)
                             ->oldest('sort_order')
                             ->oldest('id'),
                     ]),
             ])
-            ->where('is_active', true)
             ->whereHas(
                 'lesson.course',
                 fn (Builder $query): Builder => $query->whereBelongsTo($provider),

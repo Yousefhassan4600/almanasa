@@ -260,6 +260,10 @@ class AssessmentPage extends Component
             return blank($this->itemId);
         }
 
+        if (! $lessonItem->is_active) {
+            return false;
+        }
+
         if (filled($lessonItem->starts_at) && $lessonItem->starts_at->isFuture()) {
             return false;
         }
@@ -274,7 +278,6 @@ class AssessmentPage extends Component
     private function assessmentLessonItem(Provider $provider, Assignment|Exam $assessment): ?LessonItem
     {
         return LessonItem::query()
-            ->where('is_active', true)
             ->whereHas(
                 'lesson.course',
                 fn (Builder $query): Builder => $query->whereBelongsTo($provider),

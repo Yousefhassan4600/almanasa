@@ -8,6 +8,10 @@ use App\Enums\LessonTypeEnum;
 use App\Enums\ProviderSubscriptionStatus;
 use App\Enums\ProviderType;
 use App\Enums\PurchaseUnitType;
+use App\Enums\QuestionDifficulty;
+use App\Enums\QuestionType;
+use App\Livewire\Website\AssessmentPage;
+use App\Livewire\Website\AttemptResultPage;
 use App\Livewire\Website\AuthControls;
 use App\Livewire\Website\HomeCta;
 use App\Livewire\Website\HomeSubjects;
@@ -21,6 +25,7 @@ use App\Models\AcademyTeacher;
 use App\Models\AcademyTeacherGradeSubject;
 use App\Models\Account;
 use App\Models\AccountSubject;
+use App\Models\Assignment;
 use App\Models\Banner;
 use App\Models\City;
 use App\Models\Country;
@@ -29,6 +34,8 @@ use App\Models\CourseOutcome;
 use App\Models\CoursePeriod;
 use App\Models\CoursePrice;
 use App\Models\EducationStage;
+use App\Models\Exam;
+use App\Models\ExamModel;
 use App\Models\Grade;
 use App\Models\GradeSubject;
 use App\Models\Lesson;
@@ -38,6 +45,9 @@ use App\Models\ProviderPlan;
 use App\Models\ProviderPlanOption;
 use App\Models\ProviderSubscription;
 use App\Models\PurchaseUnit;
+use App\Models\Question;
+use App\Models\QuestionOption;
+use App\Models\StudentAttempt;
 use App\Models\StudentProfile;
 use App\Models\Subject;
 use App\Models\Track;
@@ -599,6 +609,59 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'is_active' => true,
             'is_free' => true,
         ]);
+        $futureLesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $termOnePeriod->id,
+            'title' => ['en' => 'Future Lesson', 'ar' => 'حصة مستقبلية'],
+            'starts_at' => now()->addDay(),
+            'sort_order' => 2,
+            'is_active' => true,
+        ]);
+        $futureItem = LessonItem::query()->create([
+            'lesson_id' => $futureLesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Future Video', 'ar' => 'فيديو مستقبلي'],
+            'video_url' => 'https://videos.example.test/future',
+            'sort_order' => 1,
+            'is_active' => true,
+            'is_free' => true,
+        ]);
+        $expiredLesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $termOnePeriod->id,
+            'title' => ['en' => 'Expired Lesson', 'ar' => 'حصة منتهية'],
+            'ends_at' => now()->subMinute(),
+            'sort_order' => 3,
+            'is_active' => true,
+        ]);
+        $expiredItem = LessonItem::query()->create([
+            'lesson_id' => $expiredLesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Expired Video', 'ar' => 'فيديو منتهي'],
+            'video_url' => 'https://videos.example.test/expired',
+            'sort_order' => 1,
+            'is_active' => true,
+            'is_free' => true,
+        ]);
+        $expiredExam = Exam::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Expired Exam', 'ar' => 'اختبار منتهي'],
+            'duration_minutes' => 15,
+            'max_degree' => 10,
+            'num_of_models' => 1,
+            'lesson_ids' => [$lesson->id],
+        ]);
+        $expiredExamItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'exam_id' => $expiredExam->id,
+            'type' => LessonTypeEnum::Exams->value,
+            'title' => ['en' => 'Expired Exam Item', 'ar' => 'اختبار منتهي'],
+            'starts_at' => now()->subHours(2),
+            'ends_at' => now()->subHour(),
+            'sort_order' => 2,
+            'is_active' => true,
+            'is_free' => true,
+        ]);
 
         $this->actingAs($user)
             ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/single_teacher?teacher='.$teacher->id.'&subject='.$accountSubject->id)
@@ -608,6 +671,16 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('الأعداد الحقيقية', false)
             ->assertSee('مقدمة في الأعداد الحقيقية', false)
             ->assertSee('180', false)
+            ->assertSee('حصة مستقبلية', false)
+            ->assertSee('فيديو مستقبلي', false)
+            ->assertSee('حصة منتهية', false)
+            ->assertSee('فيديو منتهي', false)
+            ->assertSee('اختبار منتهي', false)
+            ->assertSee('انتهى في', false)
+            ->assertSee('غير متاح الآن', false)
+            ->assertDontSee('href="/lesson?item='.$futureItem->id.'"', false)
+            ->assertDontSee('href="/lesson?item='.$expiredItem->id.'"', false)
+            ->assertDontSee('href="/lesson?item='.$expiredExamItem->id.'"', false)
             ->assertDontSee('المراجعات النهائية', false);
     }
 
@@ -681,6 +754,61 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'is_active' => true,
             'is_free' => false,
         ]);
+        $assignment = Assignment::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Algebra Homework', 'ar' => 'واجب الجبر'],
+            'duration_minutes' => 30,
+            'num_of_attempts' => 2,
+            'question_ids' => [],
+        ]);
+        $assignmentItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'assignment_id' => $assignment->id,
+            'type' => LessonTypeEnum::Assignments->value,
+            'title' => ['en' => 'Homework Item', 'ar' => 'عنصر واجب الجبر'],
+            'duration_minutes' => 30,
+            'sort_order' => 3,
+            'is_active' => true,
+            'is_free' => true,
+        ]);
+        $futureLesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $period->id,
+            'title' => ['en' => 'Future Algebra', 'ar' => 'جبر مستقبلي'],
+            'starts_at' => now()->addDay(),
+            'sort_order' => 2,
+            'is_active' => true,
+        ]);
+        $futureItem = LessonItem::query()->create([
+            'lesson_id' => $futureLesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Unavailable Video', 'ar' => 'فيديو غير متاح الآن'],
+            'video_url' => 'https://videos.example.test/unavailable',
+            'duration_minutes' => 20,
+            'sort_order' => 1,
+            'is_active' => true,
+            'is_free' => true,
+        ]);
+        $expiredExam = Exam::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Expired Exam', 'ar' => 'اختبار منتهي'],
+            'duration_minutes' => 20,
+            'max_degree' => 10,
+            'num_of_models' => 1,
+            'lesson_ids' => [$lesson->id],
+        ]);
+        $expiredExamItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'exam_id' => $expiredExam->id,
+            'type' => LessonTypeEnum::Exams->value,
+            'title' => ['en' => 'Expired Exam Item', 'ar' => 'عنصر اختبار منتهي'],
+            'duration_minutes' => 20,
+            'starts_at' => now()->subHours(2),
+            'ends_at' => now()->subHour(),
+            'sort_order' => 4,
+            'is_active' => true,
+            'is_free' => true,
+        ]);
 
         $this->actingAs($user)
             ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$firstItem->id)
@@ -691,6 +819,478 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('الشرح الثاني من قاعدة البيانات', false)
             ->assertSee('https://videos.example.test/database-video', false)
             ->assertDontSee('الشرح الأول: المفاهيم الأساسية', false);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$assignmentItem->id)
+            ->assertOk()
+            ->assertSeeLivewire(LessonPage::class)
+            ->assertSee('عنصر واجب الجبر', false)
+            ->assertSee('عدد المحاولات: 0 / 2', false)
+            ->assertSee('متبقي 2', false)
+            ->assertSee('href="/home_work?assignment='.$assignment->id.'&item='.$assignmentItem->id.'"', false);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$futureItem->id)
+            ->assertOk()
+            ->assertSeeLivewire(LessonPage::class)
+            ->assertSee('فيديو غير متاح الآن', false)
+            ->assertSee('هذا الدرس سيفتح في', false)
+            ->assertSee('العنصر ظاهر في قائمة الدروس', false)
+            ->assertDontSee('https://videos.example.test/unavailable', false);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$expiredExamItem->id)
+            ->assertOk()
+            ->assertSeeLivewire(LessonPage::class)
+            ->assertSee('اختبار منتهي', false)
+            ->assertSee('انتهى في', false)
+            ->assertDontSee('href="/quiz?exam='.$expiredExam->id.'"', false);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$expiredExam->id)
+            ->assertOk()
+            ->assertSeeLivewire(AssessmentPage::class)
+            ->assertSee('الاختبار مغلق حالياً', false)
+            ->assertDontSee('إنهاء الاختبار', false);
+    }
+
+    public function test_student_can_submit_assignment_and_exam_attempts_from_website(): void
+    {
+        $provider = $this->provider();
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+
+        $stage = EducationStage::query()->create(['name' => 'Secondary', 'sort_order' => 1]);
+        $grade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
+        $this->studentProfile($user, $grade);
+        $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
+        $subject = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Physics', 'ar' => 'الفيزياء'],
+        ]);
+        $accountSubject = AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $grade->id,
+                'subject_id' => $subject->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+        $teacherUser = User::factory()->create(['first_name' => 'Mona', 'last_name' => 'Teacher']);
+        $teacherAccount = $this->teacherAccount($provider, $teacherUser);
+        $teacher = AcademyTeacher::query()->create([
+            'provider_id' => $provider->id,
+            'teacher_account_id' => $teacherAccount->id,
+            'is_active' => true,
+        ]);
+        $course = Course::query()->create([
+            'provider_id' => $provider->id,
+            'account_subject_id' => $accountSubject->id,
+            'academy_teacher_id' => $teacher->id,
+            'title' => ['en' => 'Physics Course', 'ar' => 'كورس الفيزياء'],
+        ]);
+        $period = CoursePeriod::query()->create([
+            'type' => CoursePeriodType::Term1->value,
+            'name' => ['en' => 'Term 1', 'ar' => 'الترم الأول'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $lesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $period->id,
+            'title' => ['en' => 'Motion', 'ar' => 'الحركة'],
+            'is_active' => true,
+        ]);
+        $mcqQuestion = Question::query()->create([
+            'lesson_id' => $lesson->id,
+            'title' => 'What is velocity?',
+            'type' => QuestionType::Mcq->value,
+            'difficulty' => QuestionDifficulty::Easy->value,
+            'sort_order' => 1,
+        ]);
+        $correctOption = QuestionOption::query()->create([
+            'question_id' => $mcqQuestion->id,
+            'title' => 'Displacement over time',
+            'is_correct' => true,
+            'sort_order' => 1,
+        ]);
+        QuestionOption::query()->create([
+            'question_id' => $mcqQuestion->id,
+            'title' => 'Mass over time',
+            'is_correct' => false,
+            'sort_order' => 2,
+        ]);
+        $statementQuestion = Question::query()->create([
+            'lesson_id' => $lesson->id,
+            'title' => 'Explain acceleration.',
+            'type' => QuestionType::Statement->value,
+            'difficulty' => QuestionDifficulty::Medium->value,
+            'sort_order' => 2,
+        ]);
+
+        $assignment = Assignment::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Motion Homework', 'ar' => 'واجب الحركة'],
+            'description' => ['en' => 'Answer these questions.', 'ar' => 'أجب عن هذه الأسئلة.'],
+            'duration_minutes' => 30,
+            'question_ids' => [$mcqQuestion->id, $statementQuestion->id],
+        ]);
+        $exam = Exam::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Motion Quiz', 'ar' => 'اختبار الحركة'],
+            'duration_minutes' => 20,
+            'max_degree' => 10,
+            'num_of_models' => 1,
+            'lesson_ids' => [$lesson->id],
+        ]);
+        $examModel = ExamModel::query()->create([
+            'exam_id' => $exam->id,
+            'model_number' => 1,
+            'question_ids' => [
+                ['id' => $mcqQuestion->id, 'max_score' => 10],
+            ],
+        ]);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/home_work?assignment='.$assignment->id)
+            ->assertOk()
+            ->assertSeeLivewire(AssessmentPage::class)
+            ->assertSee('What is velocity?', false)
+            ->assertSee('الوقت المتبقي', false)
+            ->assertSee('التقدم: 0 / 2 سؤال', false)
+            ->assertSee('السؤال 1', false)
+            ->assertSee('إنهاء الواجب', false);
+
+        $startedAssignmentAttempt = StudentAttempt::query()
+            ->with(['studentAnswers', 'currentStatus.type'])
+            ->where('student_user_id', $user->id)
+            ->where('attemptable_type', Assignment::class)
+            ->where('attemptable_id', $assignment->id)
+            ->firstOrFail();
+
+        $this->assertSame('in_progress', $startedAssignmentAttempt->currentStatus?->type?->slug);
+        $this->assertCount(2, $startedAssignmentAttempt->studentAnswers);
+        $this->assertNull($startedAssignmentAttempt->studentAnswers->first()?->question_option_id);
+        $this->assertNull($startedAssignmentAttempt->studentAnswers->first()?->answer_text);
+        $this->assertNull($startedAssignmentAttempt->studentAnswers->first()?->score);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$exam->id)
+            ->assertOk()
+            ->assertSeeLivewire(AssessmentPage::class)
+            ->assertSee('What is velocity?', false)
+            ->assertSee('تنبيه: في حال الخروج من الصفحة قبل التسليم', false)
+            ->assertSee('إنهاء الاختبار', false);
+
+        $startedExamAttempt = StudentAttempt::query()
+            ->with(['studentAnswers', 'currentStatus.type'])
+            ->where('student_user_id', $user->id)
+            ->where('attemptable_type', Exam::class)
+            ->where('attemptable_id', $exam->id)
+            ->firstOrFail();
+
+        $this->assertSame('in_progress', $startedExamAttempt->currentStatus?->type?->slug);
+        $this->assertSame(10.0, (float) $startedExamAttempt->max_score);
+        $this->assertCount(1, $startedExamAttempt->studentAnswers);
+        $this->assertNull($startedExamAttempt->studentAnswers->first()?->question_option_id);
+        $this->assertNull($startedExamAttempt->studentAnswers->first()?->answer_text);
+        $this->assertNull($startedExamAttempt->studentAnswers->first()?->score);
+
+        Livewire::actingAs($user)
+            ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'assignment'])
+            ->set('assignmentId', $assignment->id)
+            ->set('answers', [
+                $mcqQuestion->id => $correctOption->id,
+                $statementQuestion->id => 'Acceleration is velocity change over time.',
+            ])
+            ->call('submit');
+
+        $assignmentAttempt = StudentAttempt::query()
+            ->with(['studentAnswers', 'currentStatus.type'])
+            ->where('student_user_id', $user->id)
+            ->where('attemptable_type', Assignment::class)
+            ->where('attemptable_id', $assignment->id)
+            ->firstOrFail();
+
+        $this->assertSame('submitted', $assignmentAttempt->currentStatus?->type?->slug);
+        $this->assertCount(2, $assignmentAttempt->studentAnswers);
+        $this->assertTrue((bool) $assignmentAttempt->studentAnswers->firstWhere('question_id', $mcqQuestion->id)?->is_correct);
+        $this->assertNull($assignmentAttempt->studentAnswers->firstWhere('question_id', $statementQuestion->id)?->score);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/home_work_done?attempt='.$assignmentAttempt->id)
+            ->assertOk()
+            ->assertSeeLivewire(AttemptResultPage::class)
+            ->assertSee('في انتظار التصحيح اليدوي', false)
+            ->assertSee('تم تسليم الواجب', false)
+            ->assertSee('/home_work_done?attempt='.$assignmentAttempt->id.'&amp;review=1', false)
+            ->assertDontSee('Acceleration is velocity change over time.', false);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/home_work_done?attempt='.$assignmentAttempt->id.'&review=1')
+            ->assertOk()
+            ->assertSeeLivewire(AttemptResultPage::class)
+            ->assertSee('العودة للمادة', false)
+            ->assertSee('Acceleration is velocity change over time.', false);
+
+        $twoAttemptAssignment = Assignment::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Two Attempt Homework', 'ar' => 'واجب بمحاولتين'],
+            'duration_minutes' => 30,
+            'num_of_attempts' => 2,
+            'question_ids' => [$mcqQuestion->id],
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'assignment'])
+            ->set('assignmentId', $twoAttemptAssignment->id)
+            ->set('answers', [
+                $mcqQuestion->id => $correctOption->id,
+            ])
+            ->call('submit');
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/home_work?assignment='.$twoAttemptAssignment->id)
+            ->assertOk()
+            ->assertSee('تم تسليم الواجب من قبل', false)
+            ->assertSee('إعادة الواجب', false)
+            ->assertSee('/home_work?assignment='.$twoAttemptAssignment->id.'&amp;retry=1', false)
+            ->assertDontSee('What is velocity?', false);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/home_work?assignment='.$twoAttemptAssignment->id.'&retry=1')
+            ->assertOk()
+            ->assertSeeLivewire(AssessmentPage::class)
+            ->assertSee('What is velocity?', false);
+
+        Livewire::actingAs($user)
+            ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'assignment'])
+            ->set('assignmentId', $twoAttemptAssignment->id)
+            ->set('answers', [
+                $mcqQuestion->id => $correctOption->id,
+            ])
+            ->call('submit');
+
+        $secondLimitedAssignmentAttempt = StudentAttempt::query()
+            ->where('student_user_id', $user->id)
+            ->where('attemptable_type', Assignment::class)
+            ->where('attemptable_id', $twoAttemptAssignment->id)
+            ->where('attempt_number', 2)
+            ->firstOrFail();
+
+        $this->assertSame(2, StudentAttempt::query()
+            ->where('student_user_id', $user->id)
+            ->where('attemptable_type', Assignment::class)
+            ->where('attemptable_id', $twoAttemptAssignment->id)
+            ->count());
+
+        Livewire::actingAs($user)
+            ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'assignment'])
+            ->set('assignmentId', $twoAttemptAssignment->id)
+            ->call('submit')
+            ->assertRedirect('/home_work_done?attempt='.$secondLimitedAssignmentAttempt->id);
+
+        $this->assertSame(2, StudentAttempt::query()
+            ->where('student_user_id', $user->id)
+            ->where('attemptable_type', Assignment::class)
+            ->where('attemptable_id', $twoAttemptAssignment->id)
+            ->count());
+
+        Livewire::actingAs($user)
+            ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'exam'])
+            ->set('examId', $exam->id)
+            ->set('answers', [
+                $mcqQuestion->id => $correctOption->id,
+            ])
+            ->call('submit');
+
+        $examAttempt = StudentAttempt::query()
+            ->with(['studentAnswers', 'currentStatus.type'])
+            ->where('student_user_id', $user->id)
+            ->where('attemptable_type', Exam::class)
+            ->where('attemptable_id', $exam->id)
+            ->firstOrFail();
+
+        $this->assertTrue($examAttempt->examModel()->is($examModel));
+        $this->assertSame('graded', $examAttempt->currentStatus?->type?->slug);
+        $this->assertSame(10.0, (float) $examAttempt->studentAnswers->first()?->score);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz_done?attempt='.$examAttempt->id)
+            ->assertOk()
+            ->assertSeeLivewire(AttemptResultPage::class)
+            ->assertSee('تم التصحيح', false)
+            ->assertSee('أحسنت! لقد اجتزت الاختبار', false)
+            ->assertSee('1/1', false)
+            ->assertSee('مراجعة الإجابات الصحيحة', false)
+            ->assertSee('/quiz_review?attempt='.$examAttempt->id, false)
+            ->assertDontSee('What is velocity?', false);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz_review?attempt='.$examAttempt->id)
+            ->assertOk()
+            ->assertSeeLivewire(AttemptResultPage::class)
+            ->assertDontSee('أحسنت! لقد اجتزت الاختبار', false)
+            ->assertDontSee('1/1', false)
+            ->assertSee('العودة للمادة', false)
+            ->assertSee('/single_teacher?teacher='.$teacher->id.'&amp;subject='.$accountSubject->id, false)
+            ->assertSee('What is velocity?', false)
+            ->assertSee('Displacement over time', false)
+            ->assertSee('10.00 / 10.00', false);
+
+        $twoAttemptExam = Exam::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Two Attempt Quiz', 'ar' => 'اختبار بمحاولتين'],
+            'duration_minutes' => 20,
+            'num_of_attempts' => 2,
+            'max_degree' => 10,
+            'num_of_models' => 1,
+            'lesson_ids' => [$lesson->id],
+        ]);
+        ExamModel::query()->create([
+            'exam_id' => $twoAttemptExam->id,
+            'model_number' => 1,
+            'question_ids' => [
+                ['id' => $mcqQuestion->id, 'max_score' => 10],
+            ],
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'exam'])
+            ->set('examId', $twoAttemptExam->id)
+            ->set('answers', [
+                $mcqQuestion->id => $correctOption->id,
+            ])
+            ->call('submit');
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$twoAttemptExam->id)
+            ->assertOk()
+            ->assertSee('تم تسليم الاختبار من قبل', false)
+            ->assertSee('إعادة الامتحان', false)
+            ->assertSee('/quiz?exam='.$twoAttemptExam->id.'&amp;retry=1', false)
+            ->assertDontSee('What is velocity?', false);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$twoAttemptExam->id.'&retry=1')
+            ->assertOk()
+            ->assertSeeLivewire(AssessmentPage::class)
+            ->assertSee('What is velocity?', false);
+
+        Livewire::actingAs($user)
+            ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'exam'])
+            ->set('examId', $twoAttemptExam->id)
+            ->set('answers', [
+                $mcqQuestion->id => $correctOption->id,
+            ])
+            ->call('submit');
+
+        $secondLimitedAttempt = StudentAttempt::query()
+            ->where('student_user_id', $user->id)
+            ->where('attemptable_type', Exam::class)
+            ->where('attemptable_id', $twoAttemptExam->id)
+            ->where('attempt_number', 2)
+            ->firstOrFail();
+
+        $this->assertSame(2, StudentAttempt::query()
+            ->where('student_user_id', $user->id)
+            ->where('attemptable_type', Exam::class)
+            ->where('attemptable_id', $twoAttemptExam->id)
+            ->count());
+
+        Livewire::actingAs($user)
+            ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'exam'])
+            ->set('examId', $twoAttemptExam->id)
+            ->call('submit')
+            ->assertRedirect('/quiz_done?attempt='.$secondLimitedAttempt->id);
+
+        $this->assertSame(2, StudentAttempt::query()
+            ->where('student_user_id', $user->id)
+            ->where('attemptable_type', Exam::class)
+            ->where('attemptable_id', $twoAttemptExam->id)
+            ->count());
+
+        $timeoutExam = Exam::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Timeout Quiz', 'ar' => 'اختبار انتهاء الوقت'],
+            'duration_minutes' => 1,
+            'max_degree' => 20,
+            'num_of_models' => 1,
+            'lesson_ids' => [$lesson->id],
+        ]);
+        ExamModel::query()->create([
+            'exam_id' => $timeoutExam->id,
+            'model_number' => 1,
+            'question_ids' => [
+                ['id' => $mcqQuestion->id, 'max_score' => 10],
+                ['id' => $statementQuestion->id, 'max_score' => 10],
+            ],
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'exam'])
+            ->set('examId', $timeoutExam->id)
+            ->call('submit', true);
+
+        $timeoutAttempt = StudentAttempt::query()
+            ->with(['studentAnswers', 'currentStatus.type'])
+            ->where('student_user_id', $user->id)
+            ->where('attemptable_type', Exam::class)
+            ->where('attemptable_id', $timeoutExam->id)
+            ->firstOrFail();
+
+        $this->assertSame('graded', $timeoutAttempt->currentStatus?->type?->slug);
+        $this->assertCount(2, $timeoutAttempt->studentAnswers);
+        $this->assertSame(0.0, (float) $timeoutAttempt->studentAnswers->sum('score'));
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz_done?attempt='.$timeoutAttempt->id)
+            ->assertOk()
+            ->assertSee('0/2', false)
+            ->assertDontSee('0/20', false);
+
+        $returnedExam = Exam::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Returned Quiz', 'ar' => 'اختبار الرجوع'],
+            'duration_minutes' => 15,
+            'max_degree' => 10,
+            'num_of_models' => 1,
+            'lesson_ids' => [$lesson->id],
+        ]);
+        ExamModel::query()->create([
+            'exam_id' => $returnedExam->id,
+            'model_number' => 1,
+            'question_ids' => [
+                ['id' => $mcqQuestion->id, 'max_score' => 10],
+            ],
+        ]);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$returnedExam->id)
+            ->assertOk()
+            ->assertSeeLivewire(AssessmentPage::class)
+            ->assertSee('What is velocity?', false);
+
+        $returnedStartedAttempt = StudentAttempt::query()
+            ->with(['studentAnswers', 'currentStatus.type'])
+            ->where('student_user_id', $user->id)
+            ->where('attemptable_type', Exam::class)
+            ->where('attemptable_id', $returnedExam->id)
+            ->firstOrFail();
+
+        $this->assertSame('in_progress', $returnedStartedAttempt->currentStatus?->type?->slug);
+        $this->assertNull($returnedStartedAttempt->studentAnswers->first()?->question_option_id);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$returnedExam->id)
+            ->assertOk()
+            ->assertSee('تم تسليم الاختبار من قبل', false);
+
+        $returnedFinalAttempt = $returnedStartedAttempt->refresh()->load(['studentAnswers', 'currentStatus.type']);
+
+        $this->assertSame('graded', $returnedFinalAttempt->currentStatus?->type?->slug);
+        $this->assertNull($returnedFinalAttempt->studentAnswers->first()?->question_option_id);
+        $this->assertSame(0.0, (float) $returnedFinalAttempt->studentAnswers->sum('score'));
     }
 
     public function test_standalone_teacher_website_uses_provider_teacher_without_academy_teacher(): void

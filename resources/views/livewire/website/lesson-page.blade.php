@@ -1,5 +1,7 @@
 @php
     use App\Enums\ProviderType;
+    use App\Enums\LessonTypeEnum;
+    use Illuminate\Support\Str;
 
     $lesson = $lessonItem?->lesson;
     $course = $lesson?->course;
@@ -20,12 +22,17 @@
         : ($teacher?->teacher?->owner?->name ?: 'المعلم');
     $activeColor = '#5D3FD3';
     $lessonItemType = $lessonItem?->type instanceof \App\Enums\LessonTypeEnum ? $lessonItem->type->value : (string) $lessonItem?->type;
-    $lessonAssignments = $lessonItem?->assignments ?? collect();
-    $lessonExams = $lessonItem?->exams ?? collect();
+    $lessonAssignments = collect([$lessonItem?->assignment])->filter();
+    $lessonExams = collect([$lessonItem?->exam])->filter();
+
+    $linkUrl = filled($lessonItem?->link_url)
+        ? (Str::startsWith($lessonItem->link_url, ['http://', 'https://']) ? $lessonItem->link_url : url($lessonItem->link_url))
+        : null;
 
     $contentType = match (true) {
-        $lessonItemType === \App\Enums\LessonTypeEnum::Assignments->value => 'assignment',
-        $lessonItemType === \App\Enums\LessonTypeEnum::Exams->value => 'exam',
+        $lessonItemType === LessonTypeEnum::Assignments->value => 'assignment',
+        $lessonItemType === LessonTypeEnum::Exams->value => 'exam',
+        $lessonItemType === LessonTypeEnum::Link->value && filled($linkUrl) => 'link',
         filled($lessonItem?->file_url) => 'file',
         default => 'video',
     };
@@ -33,9 +40,41 @@
     $contentIcon = match ($contentType) {
         'assignment' => 'fa-regular fa-clipboard',
         'exam' => 'fa-regular fa-circle-question',
+        'link' => 'fa-solid fa-link',
         'file' => 'fa-regular fa-file-pdf',
         default => 'fa-regular fa-circle-play',
     };
+    $lessonIsOpen = $lesson?->isCurrentlyOpen() ?? false;
+    $lessonAvailabilityText = match (true) {
+        $lessonIsOpen => null,
+        filled($lesson?->starts_at) && $lesson->starts_at->isFuture() => 'هذا الدرس سيفتح في '.$lesson->starts_at->format('Y-m-d H:i'),
+        filled($lesson?->ends_at) && $lesson->ends_at->isPast() => 'انتهت مدة إتاحة هذا الدرس في '.$lesson->ends_at->format('Y-m-d H:i'),
+        default => 'هذا الدرس مغلق حالياً.',
+    };
+    $lessonItemIsOpen = fn ($item): bool => filled($item)
+        && (blank($item->starts_at) || $item->starts_at->lte(now()))
+        && (blank($item->ends_at) || $item->ends_at->gte(now()));
+    $lessonItemAvailabilityText = function ($item, string $fallback = 'العنصر غير متاح حالياً.'): string {
+        if (blank($item)) {
+            return $fallback;
+        }
+
+        if (filled($item->starts_at) && $item->starts_at->isFuture()) {
+            return 'يفتح في '.$item->starts_at->format('Y-m-d H:i');
+        }
+
+        if (filled($item->ends_at) && $item->ends_at->isPast()) {
+            return 'انتهى في '.$item->ends_at->format('Y-m-d H:i');
+        }
+
+        return $fallback;
+    };
+    $attemptLimit = $attempts['limit'] ?? null;
+    $usedAttempts = $attempts['used'] ?? 0;
+    $remainingAttempts = $attempts['remaining'] ?? null;
+    $attemptsText = $attemptLimit === null
+        ? 'غير محدود'
+        : $usedAttempts.' / '.$attemptLimit.($remainingAttempts === 0 ? ' — انتهت المحاولات' : ' — متبقي '.$remainingAttempts);
 @endphp
 
 <div class="bg-white" dir="rtl">
@@ -64,7 +103,16 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 <div class="lg:col-span-8 space-y-5">
-                    @if ($contentType === 'video')
+                    @if (! $lessonIsOpen)
+                        <div class="bg-slate-50 border border-slate-100 rounded-[24px] p-8 text-center shadow-sm">
+                            <div class="w-16 h-16 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-4 text-xl">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
+                            <h1 class="text-xl sm:text-2xl font-black text-blue-950">{{ $itemTitle }}</h1>
+                            <p class="text-sm text-gray-500 font-semibold mt-3">{{ $lessonAvailabilityText }}</p>
+                            <p class="text-xs text-gray-400 font-medium mt-2">العنصر ظاهر في قائمة الدروس، لكن المحتوى لا يمكن فتحه خارج فترة الإتاحة.</p>
+                        </div>
+                    @elseif ($contentType === 'video')
                         <div class="relative bg-black rounded-3xl overflow-hidden aspect-video shadow-lg">
                             @if (filled($lessonItem->video_url))
                                 <video class="w-full h-full" src="{{ $lessonItem->video_url }}" controls controlsList="nodownload"></video>
@@ -100,11 +148,14 @@
                                     <span class="text-xs text-gray-400 block mt-1 font-semibold">
                                         مدة الحل: {{ $lessonAssignments->max('duration_minutes') ?? $lessonItem->duration_minutes ?? '—' }} دقيقة
                                     </span>
+                                    <span class="text-xs text-gray-400 block mt-1 font-semibold">
+                                        عدد المحاولات: {{ $attemptsText }}
+                                    </span>
                                 </div>
                             </div>
                             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                                 @foreach ($lessonAssignments as $assignment)
-                                    <a href="/home_work?assignment={{ $assignment->id }}" class="w-full sm:w-auto bg-[#5D3FD3] hover:bg-[#4c32b3] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
+                                    <a href="/home_work?assignment={{ $assignment->id }}&item={{ $lessonItem->id }}" class="w-full sm:w-auto bg-[#5D3FD3] hover:bg-[#4c32b3] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
                                         {{ $assignment->getTranslation('title', 'ar', false) ?: $assignment->title }}
                                     </a>
                                 @endforeach
@@ -121,15 +172,44 @@
                                     <span class="text-xs text-gray-400 block mt-1 font-semibold">
                                         مدة الاختبار: {{ $lessonExams->max('duration_minutes') ?? $lessonItem->duration_minutes ?? '—' }} دقيقة
                                     </span>
+                                    <span class="text-xs text-gray-400 block mt-1 font-semibold">
+                                        عدد المحاولات: {{ $attemptsText }}
+                                    </span>
                                 </div>
                             </div>
                             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                                 @foreach ($lessonExams as $exam)
-                                    <a href="/quiz?exam={{ $exam->id }}" class="w-full sm:w-auto bg-[#E11D48] hover:bg-[#be123c] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
-                                        {{ $exam->getTranslation('title', 'ar', false) ?: $exam->title }}
-                                    </a>
+                                    @php
+                                        $currentExamIsOpen = $lessonItemIsOpen($lessonItem);
+                                    @endphp
+
+                                    @if ($currentExamIsOpen)
+                                        <a href="/quiz?exam={{ $exam->id }}&item={{ $lessonItem->id }}" class="w-full sm:w-auto bg-[#E11D48] hover:bg-[#be123c] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
+                                            {{ $exam->getTranslation('title', 'ar', false) ?: $exam->title }}
+                                        </a>
+                                    @else
+                                        <div class="w-full sm:w-auto bg-gray-100 text-gray-400 text-sm font-bold py-3 px-8 rounded-xl text-center cursor-not-allowed border border-gray-200">
+                                            <span class="block">{{ $exam->getTranslation('title', 'ar', false) ?: $exam->title }}</span>
+                                            <span class="block text-[10px] mt-1 font-semibold">{{ $lessonItemAvailabilityText($lessonItem, 'الاختبار مغلق حالياً.') }}</span>
+                                        </div>
+                                    @endif
                                 @endforeach
                             </div>
+                        </div>
+                    @elseif ($contentType === 'link')
+                        <div class="bg-[#EFF6FF] border-r-[6px] border-[#2563EB] rounded-[24px] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
+                            <div class="flex items-center gap-4 text-right">
+                                <div class="w-12 h-12 rounded-2xl bg-[#2563EB] text-white flex items-center justify-center text-lg shrink-0">
+                                    <i class="fa-solid fa-link"></i>
+                                </div>
+                                <div>
+                                    <h1 class="text-xl sm:text-2xl font-black text-gray-800">{{ $itemTitle }}</h1>
+                                    <span class="text-xs text-gray-400 block mt-1 font-semibold">رابط خارجي للدرس</span>
+                                </div>
+                            </div>
+                            <a href="{{ $linkUrl }}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto bg-[#2563EB] hover:bg-[#1d4ed8] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
+                                فتح الرابط
+                            </a>
                         </div>
                     @else
                         <div class="bg-[#FCF6ED] border-r-[6px] border-[#D97706] rounded-[24px] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
@@ -185,42 +265,69 @@
                             @foreach ($lessonItems as $playlistItem)
                                 @php
                                     $playlistTitle = $playlistItem->getTranslation('title', 'ar', false) ?: $playlistItem->title;
-                                    $playlistItemType = $playlistItem->type instanceof \App\Enums\LessonTypeEnum ? $playlistItem->type->value : (string) $playlistItem->type;
+                                    $playlistItemType = $playlistItem->type instanceof LessonTypeEnum ? $playlistItem->type->value : (string) $playlistItem->type;
+                                    $playlistIsLink = $playlistItemType === LessonTypeEnum::Link->value && filled($playlistItem->link_url);
+                                    $playlistUrl = $playlistIsLink
+                                        ? (Str::startsWith($playlistItem->link_url, ['http://', 'https://']) ? $playlistItem->link_url : url($playlistItem->link_url))
+                                        : "/lesson?item={$playlistItem->id}";
                                     $playlistType = match (true) {
-                                        $playlistItemType === \App\Enums\LessonTypeEnum::Assignments->value => 'assignment',
-                                        $playlistItemType === \App\Enums\LessonTypeEnum::Exams->value => 'exam',
+                                        $playlistItemType === LessonTypeEnum::Assignments->value => 'assignment',
+                                        $playlistItemType === LessonTypeEnum::Exams->value => 'exam',
+                                        $playlistIsLink => 'link',
                                         filled($playlistItem->file_url) => 'file',
                                         default => 'video',
                                     };
+                                    $playlistExamIsOpen = $playlistType !== 'exam' || $lessonItemIsOpen($playlistItem);
+                                    $playlistAvailabilityText = $playlistType === 'exam' && ! $playlistExamIsOpen
+                                        ? $lessonItemAvailabilityText($playlistItem, 'الاختبار مغلق حالياً.')
+                                        : null;
                                     $playlistIcon = match ($playlistType) {
                                         'assignment' => 'fa-regular fa-clipboard',
                                         'exam' => 'fa-regular fa-circle-question',
+                                        'link' => 'fa-solid fa-link',
                                         'file' => 'fa-regular fa-file-pdf',
                                         default => 'fa-solid fa-play',
                                     };
                                     $isActive = $playlistItem->is($lessonItem);
+                                    $playlistIsLocked = ! $lessonIsOpen || ! $playlistItem->is_free || ! $playlistExamIsOpen;
+                                    $playlistClass = 'p-3.5 flex items-center justify-between rounded-2xl transition-all '.($isActive ? 'bg-purple-50/70 border border-purple-100 text-[#5D3FD3]' : 'bg-white hover:bg-gray-50 border border-transparent text-gray-600');
                                 @endphp
 
-                                <a
-                                    href="/lesson?item={{ $playlistItem->id }}"
-                                    wire:key="lesson-playlist-item-{{ $playlistItem->id }}"
-                                    class="p-3.5 flex items-center justify-between rounded-2xl transition-all {{ $isActive ? 'bg-purple-50/70 border border-purple-100 text-[#5D3FD3]' : 'bg-white hover:bg-gray-50 border border-transparent text-gray-600' }}"
-                                >
-                                    <div class="flex items-center gap-3">
-                                        <span class="w-7 h-7 rounded-lg {{ $isActive ? 'bg-purple-100 text-[#5D3FD3]' : 'bg-gray-100 text-gray-400' }} flex items-center justify-center text-xs shrink-0">
-                                            <i class="{{ $playlistIcon }}"></i>
-                                        </span>
-                                        <div class="text-right">
-                                            <h4 class="text-xs font-bold {{ $isActive ? 'text-[#5D3FD3]' : 'text-blue-950' }}">{{ $playlistTitle }}</h4>
-                                            <span class="text-[10px] {{ $isActive ? 'text-purple-400' : 'text-gray-400' }} block mt-0.5">
-                                                {{ $playlistItem->duration_minutes ? $playlistItem->duration_minutes.' دقيقة' : ($playlistItem->is_free ? 'مجاني' : 'مغلق') }}
+                                @if ($playlistIsLocked)
+                                    <div wire:key="lesson-playlist-item-{{ $playlistItem->id }}" class="{{ $playlistClass }}">
+                                        <div class="flex items-center gap-3">
+                                            <span class="w-7 h-7 rounded-lg {{ $isActive ? 'bg-purple-100 text-[#5D3FD3]' : 'bg-gray-100 text-gray-400' }} flex items-center justify-center text-xs shrink-0">
+                                                <i class="{{ $playlistIcon }}"></i>
                                             </span>
+                                            <div class="text-right">
+                                                <h4 class="text-xs font-bold {{ $isActive ? 'text-[#5D3FD3]' : 'text-blue-950' }}">{{ $playlistTitle }}</h4>
+                                                <span class="text-[10px] {{ $isActive ? 'text-purple-400' : 'text-gray-400' }} block mt-0.5">
+                                                    {{ ! $lessonIsOpen ? 'غير متاح الآن' : ($playlistAvailabilityText ?: ($playlistItem->duration_minutes ? $playlistItem->duration_minutes.' دقيقة' : 'مغلق')) }}
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    @if (! $playlistItem->is_free)
                                         <i class="fa-solid fa-lock text-gray-300 text-xs"></i>
-                                    @endif
-                                </a>
+                                    </div>
+                                @else
+                                    <a
+                                        href="{{ $playlistUrl }}"
+                                        @if ($playlistIsLink) target="_blank" rel="noopener noreferrer" @endif
+                                        wire:key="lesson-playlist-item-{{ $playlistItem->id }}"
+                                        class="{{ $playlistClass }}"
+                                    >
+                                        <div class="flex items-center gap-3">
+                                            <span class="w-7 h-7 rounded-lg {{ $isActive ? 'bg-purple-100 text-[#5D3FD3]' : 'bg-gray-100 text-gray-400' }} flex items-center justify-center text-xs shrink-0">
+                                                <i class="{{ $playlistIcon }}"></i>
+                                            </span>
+                                            <div class="text-right">
+                                                <h4 class="text-xs font-bold {{ $isActive ? 'text-[#5D3FD3]' : 'text-blue-950' }}">{{ $playlistTitle }}</h4>
+                                                <span class="text-[10px] {{ $isActive ? 'text-purple-400' : 'text-gray-400' }} block mt-0.5">
+                                                    {{ $playlistItem->duration_minutes ? $playlistItem->duration_minutes.' دقيقة' : 'مجاني' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                @endif
                             @endforeach
 
                             <a href="/packages" class="w-full border border-purple-200 text-[#5D3FD3] hover:bg-purple-50 font-bold text-sm py-3.5 rounded-xl transition-colors bg-transparent flex items-center justify-center gap-2">

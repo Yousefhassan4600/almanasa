@@ -1,6 +1,8 @@
 @php
     use App\Enums\ProviderType;
     use App\Enums\CoursePeriodType;
+    use App\Enums\LessonTypeEnum;
+    use Illuminate\Support\Str;
 
     $isStandaloneTeacher = $provider?->type === ProviderType::StandaloneTeacher;
     $subject = $accountSubject?->gradeSubject?->subject;
@@ -31,6 +33,24 @@
     $themeTextLight = $isStandaloneTeacher ? 'text-amber-50' : 'text-purple-100';
     $themeTextMuted = $isStandaloneTeacher ? 'text-amber-100' : 'text-purple-200';
     $themeSoftBg = $isStandaloneTeacher ? 'bg-amber-50' : 'bg-purple-50';
+    $lessonItemIsOpen = fn ($item): bool => filled($item)
+        && (blank($item->starts_at) || $item->starts_at->lte(now()))
+        && (blank($item->ends_at) || $item->ends_at->gte(now()));
+    $lessonItemAvailabilityText = function ($item): string {
+        if (blank($item)) {
+            return 'مغلق';
+        }
+
+        if (filled($item->starts_at) && $item->starts_at->isFuture()) {
+            return 'يفتح في '.$item->starts_at->format('Y-m-d H:i');
+        }
+
+        if (filled($item->ends_at) && $item->ends_at->isPast()) {
+            return 'انتهى في '.$item->ends_at->format('Y-m-d H:i');
+        }
+
+        return 'مغلق';
+    };
 @endphp
 
 <div class="bg-white" dir="rtl">
@@ -128,17 +148,30 @@
                                             @php
                                                 $lessonTitle = $lesson->getTranslation('title', 'ar', false) ?: $lesson->title;
                                                 $lessonItems = $lesson->items;
+                                                $lessonIsOpen = $lesson->isCurrentlyOpen();
+                                                $lessonAvailabilityText = match (true) {
+                                                    $lessonIsOpen => null,
+                                                    filled($lesson->starts_at) && $lesson->starts_at->isFuture() => 'تفتح في '.$lesson->starts_at->format('Y-m-d H:i'),
+                                                    filled($lesson->ends_at) && $lesson->ends_at->isPast() => 'انتهت في '.$lesson->ends_at->format('Y-m-d H:i'),
+                                                    default => 'مغلقة الآن',
+                                                };
                                             @endphp
 
-                                            <details class="group bg-gray-50/50 rounded-2xl border border-gray-100 overflow-hidden" wire:key="lesson-{{ $lesson->id }}">
+                                            <details class="group bg-gray-50/50 rounded-2xl border {{ $lessonIsOpen ? 'border-gray-100' : 'border-gray-200 opacity-80' }} overflow-hidden" wire:key="lesson-{{ $lesson->id }}">
                                                 <summary class="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors select-none list-none">
                                                     <div class="flex items-center gap-3">
-                                                        <span class="w-8 h-8 rounded-xl {{ $themeSoftBg }} flex items-center justify-center text-sm" style="color: {{ $themeColor }}">
-                                                            <i class="fa-solid fa-book-open"></i>
+                                                        <span class="w-8 h-8 rounded-xl {{ $lessonIsOpen ? $themeSoftBg : 'bg-gray-100' }} flex items-center justify-center text-sm" style="{{ $lessonIsOpen ? 'color: '.$themeColor : '' }}">
+                                                            <i class="fa-solid {{ $lessonIsOpen ? 'fa-book-open' : 'fa-lock' }}"></i>
                                                         </span>
                                                         <div class="text-right">
                                                             <h4 class="text-sm font-bold text-blue-950">{{ $lessonTitle }}</h4>
-                                                            <span class="text-[10px] text-gray-400 block mt-0.5">{{ $lessonItems->count() }} عناصر</span>
+                                                            <span class="text-[10px] text-gray-400 block mt-0.5">
+                                                                {{ $lessonItems->count() }} عناصر
+                                                                @if ($lessonAvailabilityText)
+                                                                    <span class="mx-1">•</span>
+                                                                    <span class="text-rose-500">{{ $lessonAvailabilityText }}</span>
+                                                                @endif
+                                                            </span>
                                                         </div>
                                                     </div>
                                                     <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-300 group-open:rotate-180"></i>
@@ -150,24 +183,43 @@
                                                             @foreach ($lessonItems as $item)
                                                                 @php
                                                                     $itemTitle = $item->getTranslation('title', 'ar', false) ?: $item->title;
-                                                                    $itemType = $item->type instanceof \App\Enums\LessonTypeEnum ? $item->type->value : (string) $item->type;
+                                                                    $itemType = $item->type instanceof LessonTypeEnum ? $item->type->value : (string) $item->type;
+                                                                    $isLink = $itemType === LessonTypeEnum::Link->value && filled($item->link_url);
+                                                                    $itemUrl = $isLink
+                                                                        ? (Str::startsWith($item->link_url, ['http://', 'https://']) ? $item->link_url : url($item->link_url))
+                                                                        : "/lesson?item={$item->id}";
                                                                     $icon = match (true) {
-                                                                        $itemType === \App\Enums\LessonTypeEnum::Assignments->value => 'fa-regular fa-clipboard',
-                                                                        $itemType === \App\Enums\LessonTypeEnum::Exams->value => 'fa-regular fa-circle-question',
+                                                                        $itemType === LessonTypeEnum::Assignments->value => 'fa-regular fa-clipboard',
+                                                                        $itemType === LessonTypeEnum::Exams->value => 'fa-regular fa-circle-question',
+                                                                        $isLink => 'fa-solid fa-link',
                                                                         filled($item->file_url) => 'fa-regular fa-file-pdf',
                                                                         default => 'fa-regular fa-circle-play',
                                                                     };
-                                                                    $isLocked = ! $item->is_free;
+                                                                    $itemExamIsOpen = $itemType !== LessonTypeEnum::Exams->value || $lessonItemIsOpen($item);
+                                                                    $itemAvailabilityText = $itemType === LessonTypeEnum::Exams->value && ! $itemExamIsOpen
+                                                                        ? $lessonItemAvailabilityText($item)
+                                                                        : null;
+                                                                    $isLocked = ! $lessonIsOpen || ! $item->is_free || ! $itemExamIsOpen;
                                                                 @endphp
 
                                                                 <div class="p-3.5 flex items-center justify-between text-xs {{ $isLocked ? 'opacity-75' : '' }}" wire:key="lesson-item-{{ $item->id }}">
                                                                     <div class="flex items-center gap-3">
                                                                         <i class="{{ $icon }} text-gray-400 text-sm"></i>
-                                                                        @if ($item->is_free)
-                                                                            <a href="/lesson?item={{ $item->id }}" class="font-semibold text-gray-700" style="--theme-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--theme-color')" onmouseout="this.style.color=''">{{ $itemTitle }}</a>
+                                                                        @if (! $isLocked)
+                                                                            <a
+                                                                                href="{{ $itemUrl }}"
+                                                                                @if ($isLink) target="_blank" rel="noopener noreferrer" @endif
+                                                                                class="font-semibold text-gray-700"
+                                                                                style="--theme-color: {{ $themeColor }}"
+                                                                                onmouseover="this.style.color=this.style.getPropertyValue('--theme-color')"
+                                                                                onmouseout="this.style.color=''"
+                                                                            >
+                                                                                {{ $itemTitle }}
+                                                                            </a>
                                                                             <span class="bg-emerald-50 text-emerald-600 text-[9px] font-bold px-2 py-0.5 rounded">مجاني</span>
                                                                         @else
                                                                             <span class="font-medium text-gray-600">{{ $itemTitle }}</span>
+                                                                            <span class="bg-gray-100 text-gray-500 text-[9px] font-bold px-2 py-0.5 rounded">{{ ! $lessonIsOpen ? 'غير متاح الآن' : ($itemAvailabilityText ?: 'مغلق') }}</span>
                                                                         @endif
                                                                     </div>
                                                                     @if ($isLocked)

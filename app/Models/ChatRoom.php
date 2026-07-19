@@ -3,14 +3,24 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ChatRoom extends Model
 {
     use FiltersByTenant;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'provider_id',
+        'course_id',
+        'lesson_id',
+        'title',
+        'is_active',
+        'deleted_by',
+    ];
 
     protected function casts(): array
     {

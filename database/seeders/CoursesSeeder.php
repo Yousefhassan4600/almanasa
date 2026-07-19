@@ -31,12 +31,12 @@ class CoursesSeeder extends BaseSeeder
         $academyProvider = Provider::query()->where('slug', 'future-stars-academy')->firstOrFail();
         $academyMathCoverage = AccountSubject::query()
             ->where('provider_id', $academyProvider->id)
-            ->whereHas('gradeSubject.subject', fn($query) => $query->where('name->en', 'Mathematics'))
+            ->whereHas('gradeSubject.subject', fn ($query) => $query->where('name->en', 'Mathematics'))
             ->firstOrFail();
 
         $academyTeacherAssignment = AcademyTeacher::query()
             ->where('provider_id', $academyProvider->id)
-            ->whereHas('teacher.owner', fn($query) => $query->where('phone', '01000000002'))
+            ->whereHas('teacher.owner', fn ($query) => $query->where('phone', '01000000002'))
             ->firstOrFail();
 
         $lessonPurchaseUnit = PurchaseUnit::query()->where('type', PurchaseUnitType::Lesson->value)->firstOrFail();
@@ -65,7 +65,7 @@ class CoursesSeeder extends BaseSeeder
         ]);
 
         $this->coursePrices($academyCourse, $lessonPurchaseUnit, $monthPurchaseUnit);
-        $this->providerCode($academyProvider, $monthPurchaseUnit);
+        $this->providerCode($academyProvider, $academyCourse, $monthPurchaseUnit);
         $this->courseOutcomes($academyCourse);
         $this->lessonContent($academyCourse, $termOnePeriod);
     }
@@ -89,12 +89,13 @@ class CoursesSeeder extends BaseSeeder
         ]);
     }
 
-    private function providerCode(Provider $provider, PurchaseUnit $monthPurchaseUnit): void
+    private function providerCode(Provider $provider, Course $course, PurchaseUnit $monthPurchaseUnit): void
     {
         ProviderCode::query()->updateOrCreate([
             'provider_id' => $provider->id,
             'code' => 'FUTURE-STARS-MONTH',
         ], [
+            'course_id' => $course->id,
             'purchase_unit_id' => $monthPurchaseUnit->id,
             'expiry_date' => now()->addMonth()->toDateString(),
             'num_of_uses' => 100,
@@ -325,7 +326,7 @@ class CoursesSeeder extends BaseSeeder
             : round($maxDegree / count($questionIds), 2);
 
         return collect($questionIds)
-            ->map(fn(int $questionId): array => [
+            ->map(fn (int $questionId): array => [
                 'id' => $questionId,
                 'max_score' => $maxScore,
             ])

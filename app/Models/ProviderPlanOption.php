@@ -2,13 +2,23 @@
 
 namespace App\Models;
 
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProviderPlanOption extends Model
 {
-    protected $guarded = [];
+    use SoftDeletes, SoftDeletesWithUser;
+
+    protected $fillable = [
+        'provider_plan_id',
+        'billing_period_days',
+        'price',
+        'sort_order',
+        'deleted_by',
+    ];
 
     protected function casts(): array
     {

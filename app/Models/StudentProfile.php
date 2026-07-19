@@ -4,15 +4,29 @@ namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
 use App\Enums\Gender;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StudentProfile extends Model
 {
     use FiltersByTenant;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'user_id',
+        'email',
+        'avatar',
+        'gender',
+        'country_id',
+        'city_id',
+        'education_stage_id',
+        'grade_id',
+        'school_name',
+        'deleted_by',
+    ];
 
     protected array $tenantRelations = [
         'user',

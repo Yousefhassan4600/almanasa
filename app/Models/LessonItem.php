@@ -4,15 +4,35 @@ namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
 use App\Enums\LessonTypeEnum;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
 class LessonItem extends Model
 {
     use FiltersByTenant, HasTranslations;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'lesson_id',
+        'assignment_id',
+        'exam_id',
+        'type',
+        'title',
+        'description',
+        'video_url',
+        'file_url',
+        'link_url',
+        'duration_minutes',
+        'starts_at',
+        'ends_at',
+        'is_active',
+        'is_free',
+        'sort_order',
+        'deleted_by',
+    ];
 
     protected array $tenantRelations = [
         'lesson',

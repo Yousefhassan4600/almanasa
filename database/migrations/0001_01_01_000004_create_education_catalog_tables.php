@@ -12,6 +12,8 @@ return new class extends Migration
             $table->id();
             $table->text('name');
             $table->integer('sort_order')->default(0);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -20,6 +22,8 @@ return new class extends Migration
             $table->foreignId('education_stage_id')->constrained('education_stages')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('name');
             $table->integer('sort_order')->default(0);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -28,6 +32,8 @@ return new class extends Migration
             $table->text('name');
             $table->string('code')->nullable()->unique();
             $table->integer('sort_order')->default(0);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -38,6 +44,8 @@ return new class extends Migration
             $table->string('icon')->nullable();
             $table->string('image')->nullable();
             $table->text('description')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -45,6 +53,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('grade_id')->constrained('grades')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('subject_id')->constrained('subjects')->cascadeOnUpdate()->restrictOnDelete();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->unique([
                 0 => 'grade_id',

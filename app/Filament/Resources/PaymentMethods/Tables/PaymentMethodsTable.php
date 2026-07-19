@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PaymentMethods\Tables;
 
 use App\Filament\Base\BaseTable;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -25,14 +26,17 @@ class PaymentMethodsTable extends BaseTable
                 ->label('Slug')
                 ->searchable()
                 ->sortable(),
+            IconColumn::make('is_bank')
+                ->label('Is Bank')
+                ->boolean(),
+            IconColumn::make('is_code')
+                ->label('Is Code')
+                ->boolean(),
+            IconColumn::make('require_proof')
+                ->label('Require Proof')
+                ->boolean(),
             ToggleColumn::make('is_active')
                 ->label('Is Active'),
-            ToggleColumn::make('is_bank')
-                ->label('Is Bank'),
-            ToggleColumn::make('require_proof')
-                ->label('Require Proof'),
-            ToggleColumn::make('is_code')
-                ->label('Is Code'),
         ];
     }
 
@@ -44,5 +48,15 @@ class PaymentMethodsTable extends BaseTable
     protected function getDefaultOrder(): ?string
     {
         return 'asc';
+    }
+
+    public function hasViewAction(): bool
+    {
+        return false;
+    }
+
+    public function hasEditAction(): bool
+    {
+        return false;
     }
 }

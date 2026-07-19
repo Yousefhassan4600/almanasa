@@ -43,6 +43,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->boolean('use_custom_domain')->default(false);
             $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->index('type');
         });
@@ -57,6 +58,8 @@ return new class extends Migration
             $table->text('features')->nullable();
             $table->boolean('is_active')->default(true);
             $table->unsignedInteger('sort_order')->default(0);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->index(['is_active', 'sort_order']);
         });
@@ -67,6 +70,8 @@ return new class extends Migration
             $table->unsignedInteger('billing_period_days');
             $table->decimal('price', 10, 2)->default(0);
             $table->unsignedInteger('sort_order')->default(0);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->unique(['provider_plan_id', 'billing_period_days'], 'ppo_plan_period_unique');
             $table->index(['provider_plan_id', 'sort_order']);
@@ -81,6 +86,8 @@ return new class extends Migration
             $table->timestamp('starts_at')->nullable();
             $table->timestamp('ends_at')->nullable();
             $table->json('metadata')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->index(['provider_id', 'status']);
             $table->index(['status', 'ends_at']);

@@ -7,7 +7,6 @@ use App\Filament\Clusters\EducationCatalog;
 use App\Filament\Resources\AttemptStatusTypes\Tables\AttemptStatusTypesTable;
 use App\Models\AttemptStatusType;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class AttemptStatusTypeResource extends BaseResource
 {
@@ -15,7 +14,7 @@ class AttemptStatusTypeResource extends BaseResource
 
     protected static ?string $cluster = EducationCatalog::class;
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 6;
 
     public static function table(Table $table): Table
     {

@@ -4,15 +4,27 @@ namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
 use App\Enums\ProviderSubscriptionStatus;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProviderSubscription extends Model
 {
     use FiltersByTenant;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'provider_id',
+        'provider_plan_option_id',
+        'status',
+        'amount',
+        'starts_at',
+        'ends_at',
+        'metadata',
+        'deleted_by',
+    ];
 
     protected function casts(): array
     {

@@ -3,24 +3,51 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
-use App\Enums\SubscriptionStatus;
+use App\Enums\PurchaseType;
+use App\Models\Traits\SoftDeletesWithUser;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Subscription extends Model
 {
     use FiltersByTenant;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'student_user_id',
+        'provider_id',
+        'course_id',
+        'order_item_id',
+        'purchase_unit_id',
+        'purchase_type',
+        'starts_at',
+        'ends_at',
+        'deleted_by',
+    ];
+
+    protected $attributes = [
+        'purchase_type' => 'single_course',
+    ];
+
+    protected $appends = [
+        'is_active',
+    ];
 
     protected function casts(): array
     {
         return [
-            'status' => SubscriptionStatus::class,
+            'purchase_type' => PurchaseType::class,
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
-            'auto_renew' => 'boolean',
         ];
+    }
+
+    protected function isActive(): Attribute
+    {
+        return Attribute::get(fn (): bool => (! $this->starts_at || $this->starts_at->lte(now()))
+            && (! $this->ends_at || $this->ends_at->gte(now())));
     }
 
     public function student(): BelongsTo
@@ -33,13 +60,18 @@ class Subscription extends Model
         return $this->belongsTo(Provider::class, 'provider_id');
     }
 
-    public function package(): BelongsTo
-    {
-        return $this->belongsTo(Package::class, 'package_id');
-    }
-
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class, 'course_id');
+    }
+
+    public function orderItem(): BelongsTo
+    {
+        return $this->belongsTo(OrderItem::class, 'order_item_id');
+    }
+
+    public function purchaseUnit(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseUnit::class, 'purchase_unit_id');
     }
 }

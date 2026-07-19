@@ -3,14 +3,25 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ChatMessage extends Model
 {
     use FiltersByTenant;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'chat_room_id',
+        'sender_user_id',
+        'message',
+        'file_url',
+        'file_name',
+        'file_size',
+        'deleted_by',
+    ];
 
     protected array $tenantRelations = [
         'chat_room',

@@ -11,6 +11,7 @@ use App\Filament\Resources\Students\RelationManagers\CourseReviewsRelationManage
 use App\Filament\Resources\Students\RelationManagers\LessonProgressesRelationManager;
 use App\Filament\Resources\Students\RelationManagers\ParentStudentsRelationManager;
 use App\Filament\Resources\Students\RelationManagers\StudentAttemptsRelationManager;
+use App\Filament\Resources\Students\RelationManagers\SubscriptionsRelationManager;
 use App\Filament\Resources\Students\Schemas\StudentForm;
 use App\Filament\Resources\Students\Tables\StudentsTable;
 use App\Models\Account;
@@ -57,6 +58,7 @@ class StudentResource extends BaseResource
     public static function getRelations(): array
     {
         return [
+            SubscriptionsRelationManager::class,
             ParentStudentsRelationManager::class,
             StudentAttemptsRelationManager::class,
             LessonProgressesRelationManager::class,

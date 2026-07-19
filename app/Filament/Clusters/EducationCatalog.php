@@ -14,7 +14,7 @@ class EducationCatalog extends Cluster
         return 'Project Data';
     }
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     public static function getNavigationLabel(): string
     {

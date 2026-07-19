@@ -2,15 +2,24 @@
 
 namespace App\Models;
 
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
 class AttemptStatusType extends Model
 {
     use HasTranslations;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'sort_order',
+        'name',
+        'slug',
+        'is_active',
+        'deleted_by',
+    ];
 
     public array $translatable = [
         'name',

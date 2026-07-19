@@ -3,14 +3,25 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LessonProgressStatus extends Model
 {
     use FiltersByTenant;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'lesson_progress_id',
+        'lesson_progress_status_type_id',
+        'created_by_user_id',
+        'is_current',
+        'notes',
+        'status_at',
+        'deleted_by',
+    ];
 
     protected array $tenantRelations = [
         'lessonProgress',

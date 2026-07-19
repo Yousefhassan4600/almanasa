@@ -1,6 +1,9 @@
 @php
     use App\Enums\PurchaseUnitType;
 
+    $themeColor = $isStandaloneTeacher ? '#FEB008' : '#5D3FD3';
+    $themeSoftClass = $isStandaloneTeacher ? 'bg-amber-50/80' : 'bg-purple-50/60';
+    $subjectHeroImage = $isStandaloneTeacher ? '/teacher/assets/images/book.png' : '/academy/assets/images/book.png';
     $subject = $accountSubject?->gradeSubject?->subject;
     $grade = $accountSubject?->gradeSubject?->grade;
     $stage = $grade?->educationStage;
@@ -11,7 +14,7 @@
 
 <div>
     <section
-        class="bg-gradient-to-br from-purple-50/60 to-indigo-50/40 py-12 md:py-20 overflow-hidden"
+        class="{{ $themeSoftClass }} py-12 md:py-20 overflow-hidden"
         dir="rtl"
     >
         <div class="max-w-7xl mx-auto px-4 md:px-8">
@@ -20,7 +23,8 @@
                     <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2.5">
                         @if ($stage)
                             <span
-                                class="bg-[#5D3FD3] text-white text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm shadow-[#5D3FD3]/10"
+                                class="text-white text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm"
+                                style="background-color: {{ $themeColor }}"
                             >
                                 <i class="fa-solid fa-graduation-cap text-[10px]"></i>
                                 {{ $stage->name }}
@@ -29,7 +33,8 @@
 
                         @if ($trackName)
                             <span
-                                class="bg-[#5D3FD3]/10 text-[#5D3FD3] text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1.5"
+                                class="text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1.5"
+                                style="background-color: {{ $themeColor }}1A; color: {{ $themeColor }}"
                             >
                                 <i class="fa-solid fa-book-open text-[10px]"></i>
                                 {{ $trackName }}
@@ -49,14 +54,14 @@
                     </div>
 
                     <p class="text-xs sm:text-sm text-gray-500 leading-relaxed max-w-xl mx-auto lg:mx-0">
-                        {{ $subjectDescription ?: 'اختر المعلم المناسب لهذه المادة من المعلمين المتاحين داخل الأكاديمية.' }}
+                        {{ $subjectDescription ?: ($isStandaloneTeacher ? 'استكشف محتوى هذه المادة مع المعلم مباشرة.' : 'اختر المعلم المناسب لهذه المادة من المعلمين المتاحين داخل الأكاديمية.') }}
                     </p>
                 </div>
 
                 <div class="lg:col-span-5 flex justify-center order-1 lg:order-2">
                     <div class="w-full max-w-[320px] sm:max-w-[400px] lg:max-w-full aspect-square relative flex items-center justify-center">
                         <img
-                            src="/academy/assets/images/book.png"
+                            src="{{ $subjectHeroImage }}"
                             alt="{{ $subjectName }}"
                             class="w-full h-auto object-contain drop-shadow-xl transform hover:scale-102 transition-transform duration-500"
                         />
@@ -86,10 +91,15 @@
                                 ? $monthlyPrices->min()
                                 : $teacherCourses->flatMap->prices->map(fn ($price) => $price->offer_price ?? $price->price)->filter()->min();
                             $weeklyLectures = $teacherCourses->pluck('weekly_lectures_count')->filter()->max();
-                            $teacherName = $teacher->teacher?->owner?->name ?: 'معلم';
-                            $teacherImage = $teacher->image
+                            $teacherName = $isStandaloneTeacher
+                                ? ($teacher->owner?->name ?: $provider->owner?->name ?: 'معلم')
+                                : ($teacher->teacher?->owner?->name ?: 'معلم');
+                            $teacherImage = (! $isStandaloneTeacher && $teacher->image)
                                 ? asset('storage/'.$teacher->image)
                                 : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200';
+                            $teacherUrl = $isStandaloneTeacher
+                                ? "/single_teacher?subject={$accountSubject?->id}"
+                                : "/single_teacher?teacher={$teacher->id}&subject={$accountSubject?->id}";
                         @endphp
 
                         <div
@@ -116,7 +126,7 @@
 
                             <div class="grid grid-cols-2 gap-2 border-t border-b border-gray-50 py-4 mb-5 text-center">
                                 <div class="border-l border-gray-100">
-                                    <span class="block text-sm font-bold text-[#5D3FD3]">
+                                    <span class="block text-sm font-bold" style="color: {{ $themeColor }}">
                                         {{ $monthlyPrice ? number_format((float) $monthlyPrice).' EGP' : '—' }}
                                     </span>
                                     <span class="block text-[10px] text-gray-400 mt-0.5">سعر الاشتراك الشهري</span>
@@ -128,8 +138,9 @@
                             </div>
 
                             <a
-                                href="/single_teacher?teacher={{ $teacher->id }}&subject={{ $accountSubject?->id }}"
-                                class="w-full border border-purple-200 text-[#5D3FD3] hover:bg-purple-50 font-bold text-xs py-3 rounded-xl transition-colors bg-transparent text-center"
+                                href="{{ $teacherUrl }}"
+                                class="w-full border font-bold text-xs py-3 rounded-xl transition-colors bg-transparent text-center"
+                                style="border-color: {{ $themeColor }}66; color: {{ $themeColor }}"
                             >
                                 عرض التفاصيل
                             </a>
@@ -141,7 +152,7 @@
                     <p class="text-sm font-bold text-blue-950">
                         لا يوجد معلمون متاحون لهذه المادة حالياً.
                     </p>
-                    <a href="/subjects" class="inline-flex mt-4 text-[#5D3FD3] text-sm font-bold">
+                    <a href="/subjects" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $themeColor }}">
                         العودة لاختيار مادة أخرى
                     </a>
                 </div>

@@ -15,6 +15,10 @@ Route::domain('{accountSubdomain}.'.config('almanasa.root_domain'))->group(funct
         ->defaults('page', 'profile')
         ->middleware(['auth', 'current.account:website'])
         ->name('provider.website.profile');
+    Route::get('/my_lessons', [AcademySiteController::class, '__invoke'])
+        ->defaults('page', 'my_lessons')
+        ->middleware(['auth', 'current.account:website'])
+        ->name('provider.website.my-lessons');
     Route::post('/logout', [ProviderWebsiteAuthController::class, 'logout'])
         ->middleware('auth')
         ->name('provider.website.logout');

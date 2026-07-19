@@ -44,6 +44,7 @@ class LessonPage extends Component
                     ->with([
                         'coursePeriod:id,type,name,sort_order',
                         'course:id,provider_id,account_subject_id,academy_teacher_id,title',
+                        'course.provider.owner:id,first_name,last_name',
                         'course.academyTeacher.teacher.owner:id,first_name,last_name',
                         'course.accountSubject.gradeSubject.grade:id,education_stage_id,name',
                         'course.accountSubject.gradeSubject.subject:id,track_id,name',

@@ -131,7 +131,7 @@ class AcademySiteController extends Controller
         $html = $this->injectLessonPage($html, $provider, $page);
         $html = $this->injectWebsiteHeader($html, $provider, $page);
         $html = $this->injectHomeHero($html, $page);
-        $html = $this->injectHomeHeroActions($html, $page);
+        $html = $this->injectHomeHeroActions($html, $provider, $page);
         $html = $this->injectHomeSubjects($html, $provider);
         $html = $this->injectHomeCta($html, $provider);
         $html = $this->injectSubjectsPage($html, $provider, $page);
@@ -271,20 +271,26 @@ class AcademySiteController extends Controller
         ) ?? $html;
     }
 
-    private function injectHomeHeroActions(string $html, string $page): string
+    private function injectHomeHeroActions(string $html, Provider $provider, string $page): string
     {
         if ($page !== 'index.html') {
             return $html;
         }
 
-        $exploreUrl = Auth::check() ? '/subjects' : '/login';
+        $isStandaloneTeacher = $provider->type === ProviderType::StandaloneTeacher;
+        $exploreUrl = match (true) {
+            ! Auth::check() => '/login',
+            $isStandaloneTeacher => '/single_teacher',
+            default => '/subjects',
+        };
+        $themeColor = $this->themeColor($provider);
         $startJourney = Auth::check()
             ? ''
-            : '<a href="/login" class="w-full sm:w-auto bg-[#5D3FD3] text-white font-semibold text-lg px-8 py-4 rounded-[12px] shadow-lg shadow-[#5D3FD3]/20 transition-all hover:bg-[#4c32b3] hover:shadow-xl active:scale-95 text-center">ابدأ رحلتك الآن</a>';
+            : '<a href="/login" class="w-full sm:w-auto text-white font-semibold text-lg px-8 py-4 rounded-[12px] shadow-lg transition-all hover:shadow-xl active:scale-95 text-center" style="background-color: '.$themeColor.'">ابدأ رحلتك الآن</a>';
 
         $actions = '<div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">'
             .$startJourney
-            .'<a href="'.$exploreUrl.'" class="w-full sm:w-auto bg-transparent text-[#5D3FD3] border-2 border-[#5D3FD3] font-semibold text-lg px-8 py-4 rounded-[12px] transition-all hover:bg-[#5D3FD3]/5 active:scale-95 text-center">استكشف المواد</a>'
+            .'<a href="'.$exploreUrl.'" class="w-full sm:w-auto bg-transparent border-2 font-semibold text-lg px-8 py-4 rounded-[12px] transition-all active:scale-95 text-center" style="color: '.$themeColor.'; border-color: '.$themeColor.'">استكشف المواد</a>'
             .'</div>';
 
         return preg_replace(

@@ -2,7 +2,10 @@
 
 namespace App\Livewire\Website;
 
+use App\Enums\AccountType;
+use App\Enums\ProviderType;
 use App\Models\AcademyTeacher;
+use App\Models\Account;
 use App\Models\AccountSubject;
 use App\Models\Course;
 use App\Models\Provider;
@@ -28,15 +31,19 @@ class TeachersPage extends Component
 
     public function render(): mixed
     {
-        $provider = Provider::query()->findOrFail($this->providerId);
+        $provider = Provider::query()
+            ->with('owner:id,first_name,last_name')
+            ->findOrFail($this->providerId);
         $gradeId = Auth::user()?->studentProfile()->value('grade_id');
         $accountSubject = $this->selectedAccountSubject($provider, $gradeId);
         $teachers = $accountSubject ? $this->teachers($provider, $accountSubject) : new Collection;
 
         return view('livewire.website.teachers-page', [
+            'provider' => $provider,
             'accountSubject' => $accountSubject,
             'teachers' => $teachers,
             'coursesByTeacher' => $accountSubject ? $this->coursesByTeacher($provider, $accountSubject, $teachers) : collect(),
+            'isStandaloneTeacher' => $provider->type === ProviderType::StandaloneTeacher,
         ]);
     }
 
@@ -72,10 +79,19 @@ class TeachersPage extends Component
     }
 
     /**
-     * @return Collection<int, AcademyTeacher>
+     * @return Collection<int, AcademyTeacher|Account>
      */
     private function teachers(Provider $provider, AccountSubject $accountSubject): Collection
     {
+        if ($provider->type === ProviderType::StandaloneTeacher) {
+            return Account::query()
+                ->with('owner:id,first_name,last_name')
+                ->whereBelongsTo($provider)
+                ->where('type', AccountType::StandaloneTeacher)
+                ->where('is_active', true)
+                ->get();
+        }
+
         return AcademyTeacher::query()
             ->with(['teacher:id,owner_user_id,provider_id,type,is_active', 'teacher.owner:id,first_name,last_name'])
             ->whereBelongsTo($provider)
@@ -90,17 +106,26 @@ class TeachersPage extends Component
     }
 
     /**
-     * @param  Collection<int, AcademyTeacher>  $teachers
+     * @param  Collection<int, AcademyTeacher|Account>  $teachers
      * @return SupportCollection<int, Collection<int, Course>>
      */
     private function coursesByTeacher(Provider $provider, AccountSubject $accountSubject, Collection $teachers): SupportCollection
     {
-        return Course::query()
+        $courses = Course::query()
             ->with(['prices.purchaseUnit'])
             ->whereBelongsTo($provider)
             ->where('account_subject_id', $accountSubject->id)
-            ->whereIn('academy_teacher_id', $teachers->modelKeys())
-            ->get()
-            ->groupBy('academy_teacher_id');
+            ->when(
+                $provider->type === ProviderType::StandaloneTeacher,
+                fn ($query) => $query->whereNull('academy_teacher_id'),
+                fn ($query) => $query->whereIn('academy_teacher_id', $teachers->modelKeys()),
+            )
+            ->get();
+
+        if ($provider->type === ProviderType::StandaloneTeacher) {
+            return $courses->groupBy(fn () => $teachers->first()?->id);
+        }
+
+        return $courses->groupBy('academy_teacher_id');
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\AccountType;
 use App\Enums\CoursePeriodType;
+use App\Enums\LessonTypeEnum;
 use App\Enums\ProviderSubscriptionStatus;
 use App\Enums\ProviderType;
 use App\Enums\PurchaseUnitType;
@@ -103,6 +104,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
 
         $this->get($providerUrl.'/otp')->assertRedirect('/login');
         $this->get($providerUrl.'/register')->assertRedirect('/login');
+        $this->get($providerUrl.'/my_lessons')->assertRedirect('/login');
     }
 
     public function test_provider_branding_banner_and_footer_data_render_on_website(): void
@@ -278,6 +280,20 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('href="/subjects"', false)
             ->assertSee('استكشف المواد', false)
             ->assertDontSee('ابدأ رحلتك الآن', false);
+    }
+
+    public function test_standalone_teacher_home_explore_button_links_to_single_teacher(): void
+    {
+        $provider = $this->provider('mona-physics', ProviderType::StandaloneTeacher);
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+        $this->studentProfile($user);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->assertOk()
+            ->assertSee('href="/single_teacher"', false)
+            ->assertSee('استكشف المواد', false);
     }
 
     public function test_home_subjects_are_filtered_by_student_grade_and_provider(): void
@@ -576,6 +592,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
         LessonItem::query()->create([
             'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
             'title' => ['en' => 'Introduction', 'ar' => 'مقدمة في الأعداد الحقيقية'],
             'video_url' => 'https://videos.example.test/introduction',
             'sort_order' => 1,
@@ -646,6 +663,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
         $firstItem = LessonItem::query()->create([
             'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
             'title' => ['en' => 'First Explanation', 'ar' => 'الشرح الأول من قاعدة البيانات'],
             'video_url' => 'https://videos.example.test/database-video',
             'duration_minutes' => 30,
@@ -655,6 +673,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
         LessonItem::query()->create([
             'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
             'title' => ['en' => 'Second Explanation', 'ar' => 'الشرح الثاني من قاعدة البيانات'],
             'video_url' => 'https://videos.example.test/database-video-two',
             'duration_minutes' => 25,
@@ -672,6 +691,79 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('الشرح الثاني من قاعدة البيانات', false)
             ->assertSee('https://videos.example.test/database-video', false)
             ->assertDontSee('الشرح الأول: المفاهيم الأساسية', false);
+    }
+
+    public function test_standalone_teacher_website_uses_provider_teacher_without_academy_teacher(): void
+    {
+        $provider = $this->provider('mona-physics', ProviderType::StandaloneTeacher);
+        $provider->owner()->update([
+            'first_name' => 'Mona',
+            'last_name' => 'Physics',
+        ]);
+        Account::query()->create([
+            'provider_id' => $provider->id,
+            'owner_user_id' => $provider->owner_user_id,
+            'type' => AccountType::StandaloneTeacher,
+            'is_active' => true,
+            'approved_at' => now(),
+        ]);
+
+        $studentUser = User::factory()->create();
+        $this->studentAccount($provider, $studentUser);
+
+        $stage = EducationStage::query()->create(['name' => 'Secondary', 'sort_order' => 1]);
+        $grade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
+        $this->studentProfile($studentUser, $grade);
+        $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
+        $subject = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Physics', 'ar' => 'الفيزياء'],
+        ]);
+        $emptySubject = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Empty Subject', 'ar' => 'مادة بدون كورس'],
+        ]);
+        AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $grade->id,
+                'subject_id' => $emptySubject->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+        $accountSubject = AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $grade->id,
+                'subject_id' => $subject->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+
+        Course::query()->create([
+            'provider_id' => $provider->id,
+            'account_subject_id' => $accountSubject->id,
+            'academy_teacher_id' => null,
+            'title' => ['en' => 'Physics Course', 'ar' => 'كورس الفيزياء'],
+            'weekly_lectures_count' => 2,
+        ]);
+
+        $baseUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/teachers?subject='.$accountSubject->id)
+            ->assertOk()
+            ->assertSeeLivewire(TeachersPage::class)
+            ->assertSee('Mona Physics', false)
+            ->assertSee('الفيزياء', false);
+
+        $this->actingAs($studentUser)
+            ->get($baseUrl.'/single_teacher')
+            ->assertOk()
+            ->assertSeeLivewire(SingleTeacherPage::class)
+            ->assertSee('Mona Physics', false)
+            ->assertSee('كورس الفيزياء', false)
+            ->assertDontSee('لا يوجد كورس منشأ', false);
     }
 
     public function test_home_cta_links_guests_to_login(): void

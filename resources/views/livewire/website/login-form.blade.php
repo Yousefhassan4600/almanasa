@@ -14,7 +14,7 @@
                 <label class="text-xs font-black text-blue-950 mr-1">رقم الهاتف</label>
                 <div class="relative">
                     <input type="tel" wire:model="phone" placeholder="010XXXXXXXX"
-                        class="w-full bg-[#F3F4F9] text-gray-700 text-sm font-black px-4 py-4 rounded-2xl border-2 border-transparent focus:outline-none transition-all tracking-wider placeholder:tracking-normal text-left placeholder:text-right"
+                        class="w-full bg-[#F3F4F9] text-gray-700 text-sm font-black px-4 py-4 rounded-2xl border-2 border-transparent focus:outline-none transition-all tracking-wider placeholder:tracking-normal text-right placeholder:text-right"
                         dir="ltr">
                     <div class="absolute inset-y-0 left-4 flex items-center text-gray-400 pointer-events-none">
                         <i class="fa-solid fa-phone text-sm"></i>

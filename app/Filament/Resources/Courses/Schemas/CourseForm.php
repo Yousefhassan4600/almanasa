@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources\Courses\Schemas;
 
+use App\Enums\ProviderType;
 use App\Models\AcademyTeacher;
 use App\Models\AccountSubject;
+use App\Models\Provider;
 use App\Models\PurchaseUnit;
 use BackedEnum;
 use Filament\Forms\Components\Contracts\CanDisableOptions;
@@ -15,6 +17,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -30,6 +33,7 @@ class CourseForm
                             ->label('Provider')
                             ->relationship('provider', 'name')
                             ->live()
+                            ->afterStateUpdated(fn (Set $set): mixed => $set('academy_teacher_id', null))
                             ->preload()
                             ->searchable()
                             ->required(),
@@ -56,6 +60,8 @@ class CourseForm
                                     $academyTeacher->id => $academyTeacher->teacher?->owner?->name ?? "Teacher #{$academyTeacher->id}",
                                 ])
                                 ->all())
+                            ->visible(fn (Get $get): bool => self::shouldShowAcademyTeacherField($get('provider_id')))
+                            ->dehydrated(fn (Get $get): bool => self::shouldShowAcademyTeacherField($get('provider_id')))
                             ->searchable()
                             ->preload(),
                         TextInput::make('title.ar')
@@ -196,5 +202,17 @@ class CourseForm
                     ])
                     ->columnSpanFull(),
             ])->columns(6);
+    }
+
+    private static function shouldShowAcademyTeacherField(mixed $providerId): bool
+    {
+        if (blank($providerId)) {
+            return true;
+        }
+
+        return Provider::query()
+            ->whereKey($providerId)
+            ->where('type', '!=', ProviderType::StandaloneTeacher)
+            ->exists();
     }
 }

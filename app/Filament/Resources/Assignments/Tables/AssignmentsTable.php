@@ -30,13 +30,10 @@ class AssignmentsTable extends BaseTable
                 ->badge()
                 ->suffix(' min')
                 ->sortable(),
-            TextColumn::make('starts_at')
-                ->label('Starts At')
-                ->dateTime()
+            TextColumn::make('num_of_attempts')
+                ->label('Number of Attempts')
+                ->badge()
                 ->sortable(),
-            IconColumn::make('is_today_only')
-                ->label('Today Only')
-                ->boolean(),
         ];
     }
 

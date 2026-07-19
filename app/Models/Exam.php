@@ -28,8 +28,6 @@ class Exam extends Model
     {
         return [
             'lesson_ids' => 'array',
-            'starts_at' => 'datetime',
-            'ends_at' => 'datetime',
             'max_degree' => 'decimal:2',
         ];
     }
@@ -56,6 +54,6 @@ class Exam extends Model
         }
 
         return Question::query()
-            ->whereHas('lesson', fn (Builder $query): Builder => $query->where('course_id', $this->course_id));
+            ->whereHas('lesson', fn(Builder $query): Builder => $query->where('course_id', $this->course_id));
     }
 }

@@ -24,12 +24,12 @@ class AssignmentForm
                     ->schema([
                         Select::make('course_id')
                             ->label('Course')
-                            ->options(fn (): array => self::courseOptions())
+                            ->options(fn(): array => self::courseOptions())
                             ->searchable()
                             ->preload()
                             ->live()
                             ->required()
-                            ->afterStateUpdated(fn (Set $set): mixed => $set('lesson_ids', [])),
+                            ->afterStateUpdated(fn(Set $set): mixed => $set('lesson_ids', [])),
                         TextInput::make('title.ar')
                             ->label('Title (Arabic)')
                             ->required(),
@@ -39,7 +39,7 @@ class AssignmentForm
                         Select::make('lesson_ids')
                             ->label('Lessons')
                             ->multiple()
-                            ->options(fn (Get $get): array => self::lessonOptions($get('course_id')))
+                            ->options(fn(Get $get): array => self::lessonOptions($get('course_id')))
                             ->searchable()
                             ->preload()
                             ->helperText('Optional. If selected, assignment questions will be randomized only from these lessons.')
@@ -86,11 +86,10 @@ class AssignmentForm
                             ->numeric()
                             ->integer()
                             ->minValue(0),
-                        DateTimePicker::make('starts_at')
-                            ->label('Starts At'),
-                        Toggle::make('is_today_only')
-                            ->label('Today Only')
-                            ->default(false),
+                        TextInput::make('num_of_attempts')
+                            ->label('Number of Attempts')
+                            ->numeric()
+                            ->integer(),
                     ])
                     ->columns(1),
             ])
@@ -102,7 +101,7 @@ class AssignmentForm
         return Course::query()
             ->with(['provider'])
             ->get()
-            ->mapWithKeys(fn (Course $course): array => [
+            ->mapWithKeys(fn(Course $course): array => [
                 $course->id => collect([$course->title, $course->provider?->name])->filter()->join(' - '),
             ])
             ->all();
@@ -118,7 +117,7 @@ class AssignmentForm
             ->where('course_id', $courseId)
             ->orderBy('sort_order')
             ->get()
-            ->mapWithKeys(fn (Lesson $lesson): array => [
+            ->mapWithKeys(fn(Lesson $lesson): array => [
                 $lesson->id => $lesson->title,
             ])
             ->all();

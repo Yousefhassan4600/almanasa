@@ -32,6 +32,14 @@ class LessonItemsTable extends BaseTable
                 ->label('Duration Minutes')
                 ->badge()
                 ->sortable(),
+            TextColumn::make('starts_at')
+                ->label('Starts At')
+                ->dateTime()
+                ->sortable(),
+            TextColumn::make('ends_at')
+                ->label('Ends At')
+                ->dateTime()
+                ->sortable(),
             ToggleColumn::make('is_active')
                 ->label('Active'),
             ToggleColumn::make('is_free')

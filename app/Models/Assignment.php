@@ -29,8 +29,6 @@ class Assignment extends Model
         return [
             'lesson_ids' => 'array',
             'question_ids' => 'array',
-            'starts_at' => 'datetime',
-            'is_today_only' => 'boolean',
         ];
     }
 

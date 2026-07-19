@@ -29,6 +29,8 @@ class LessonItem extends Model
             'type' => LessonTypeEnum::class,
             'is_active' => 'boolean',
             'is_free' => 'boolean',
+            'starts_at' => 'datetime',
+            'ends_at' => 'datetime',
         ];
     }
 

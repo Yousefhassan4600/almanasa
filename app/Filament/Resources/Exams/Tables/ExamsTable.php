@@ -39,13 +39,9 @@ class ExamsTable extends BaseTable
                 ->suffix(' min')
                 ->badge()
                 ->sortable(),
-            TextColumn::make('starts_at')
-                ->label('Starts At')
-                ->dateTime()
-                ->sortable(),
-            TextColumn::make('ends_at')
-                ->label('Ends At')
-                ->dateTime()
+            TextColumn::make('num_of_attempts')
+                ->label('Number of Attempts')
+                ->badge()
                 ->sortable(),
         ];
     }

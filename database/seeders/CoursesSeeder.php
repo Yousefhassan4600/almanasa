@@ -31,12 +31,12 @@ class CoursesSeeder extends BaseSeeder
         $academyProvider = Provider::query()->where('slug', 'future-stars-academy')->firstOrFail();
         $academyMathCoverage = AccountSubject::query()
             ->where('provider_id', $academyProvider->id)
-            ->whereHas('gradeSubject.subject', fn ($query) => $query->where('name->en', 'Mathematics'))
+            ->whereHas('gradeSubject.subject', fn($query) => $query->where('name->en', 'Mathematics'))
             ->firstOrFail();
 
         $academyTeacherAssignment = AcademyTeacher::query()
             ->where('provider_id', $academyProvider->id)
-            ->whereHas('teacher.owner', fn ($query) => $query->where('phone', '01000000002'))
+            ->whereHas('teacher.owner', fn($query) => $query->where('phone', '01000000002'))
             ->firstOrFail();
 
         $lessonPurchaseUnit = PurchaseUnit::query()->where('type', PurchaseUnitType::Lesson->value)->firstOrFail();
@@ -142,6 +142,8 @@ class CoursesSeeder extends BaseSeeder
             'course_id' => $course->id,
             'course_period_id' => $termOnePeriod->id,
             'sort_order' => 1,
+            'starts_at' => now(),
+            'ends_at' => now()->addWeek(),
         ], [
             'title' => $this->translation(
                 'Lesson 1: Introduction to Real Numbers',
@@ -169,8 +171,6 @@ class CoursesSeeder extends BaseSeeder
             'num_of_medium_questions' => 1,
             'num_of_hard_questions' => 1,
             'duration_minutes' => 30,
-            'starts_at' => now(),
-            'is_today_only' => false,
             'question_ids' => $questionIds,
         ]);
 
@@ -187,8 +187,6 @@ class CoursesSeeder extends BaseSeeder
             'num_of_medium_questions' => 1,
             'num_of_hard_questions' => 1,
             'duration_minutes' => 20,
-            'starts_at' => now(),
-            'ends_at' => now()->addWeek(),
             'max_degree' => 10,
             'num_of_models' => 1,
             'lesson_ids' => [$lesson->id],
@@ -307,11 +305,12 @@ class CoursesSeeder extends BaseSeeder
             $lessonItem = LessonItem::query()->updateOrCreate([
                 'lesson_id' => $lesson->id,
                 'sort_order' => $sortOrder,
+                'starts_at' => now(),
+                'ends_at' => now()->addWeek(),
             ], [
                 ...$item,
                 'is_active' => true,
             ]);
-
         }
     }
 
@@ -326,7 +325,7 @@ class CoursesSeeder extends BaseSeeder
             : round($maxDegree / count($questionIds), 2);
 
         return collect($questionIds)
-            ->map(fn (int $questionId): array => [
+            ->map(fn(int $questionId): array => [
                 'id' => $questionId,
                 'max_score' => $maxScore,
             ])

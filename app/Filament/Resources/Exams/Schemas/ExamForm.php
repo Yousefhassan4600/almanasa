@@ -23,12 +23,12 @@ class ExamForm
                     ->schema([
                         Select::make('course_id')
                             ->label('Course')
-                            ->options(fn (): array => self::courseOptions())
+                            ->options(fn(): array => self::courseOptions())
                             ->searchable()
                             ->preload()
                             ->live()
                             ->required()
-                            ->afterStateUpdated(fn (Set $set): mixed => $set('lesson_ids', [])),
+                            ->afterStateUpdated(fn(Set $set): mixed => $set('lesson_ids', [])),
                         TextInput::make('title.ar')
                             ->label('Title (Arabic)')
                             ->required(),
@@ -38,7 +38,7 @@ class ExamForm
                         Select::make('lesson_ids')
                             ->label('Lessons')
                             ->multiple()
-                            ->options(fn (Get $get): array => self::lessonOptions($get('course_id')))
+                            ->options(fn(Get $get): array => self::lessonOptions($get('course_id')))
                             ->searchable()
                             ->preload()
                             ->helperText('Optional. If selected, exam model questions will be randomized only from these lessons.')
@@ -107,10 +107,12 @@ class ExamForm
                             ])
                             ->columns(3)
                             ->columnSpanFull(),
-                        DateTimePicker::make('starts_at')
-                            ->label('Starts At'),
-                        DateTimePicker::make('ends_at')
-                            ->label('Ends At'),
+                        TextInput::make('num_of_attempts')
+                            ->label('Number of Attempts')
+                            ->numeric()
+                            ->integer()
+                            ->default(1)
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
             ])
@@ -122,7 +124,7 @@ class ExamForm
         return Course::query()
             ->with(['provider'])
             ->get()
-            ->mapWithKeys(fn (Course $course): array => [
+            ->mapWithKeys(fn(Course $course): array => [
                 $course->id => collect([$course->title, $course->provider?->name])->filter()->join(' - '),
             ])
             ->all();
@@ -138,7 +140,7 @@ class ExamForm
             ->where('course_id', $courseId)
             ->orderBy('sort_order')
             ->get()
-            ->mapWithKeys(fn (Lesson $lesson): array => [
+            ->mapWithKeys(fn(Lesson $lesson): array => [
                 $lesson->id => $lesson->title,
             ])
             ->all();

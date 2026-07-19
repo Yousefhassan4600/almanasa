@@ -86,8 +86,7 @@ return new class extends Migration
             $table->unsignedInteger('num_of_medium_questions')->nullable();
             $table->unsignedInteger('num_of_hard_questions')->nullable();
             $table->unsignedInteger('duration_minutes')->nullable();
-            $table->timestamp('starts_at')->nullable();
-            $table->boolean('is_today_only')->default(false);
+            $table->unsignedInteger('num_of_attempts')->nullable();
             $table->json('lesson_ids')->nullable();
             $table->json('question_ids')->nullable();
             $table->timestamps();
@@ -103,8 +102,7 @@ return new class extends Migration
             $table->unsignedInteger('num_of_medium_questions')->nullable();
             $table->unsignedInteger('num_of_hard_questions')->nullable();
             $table->unsignedInteger('duration_minutes')->nullable();
-            $table->timestamp('starts_at')->nullable();
-            $table->timestamp('ends_at')->nullable();
+            $table->unsignedInteger('num_of_attempts')->default(1)->nullable();
             $table->decimal('max_degree', 10, 2)->nullable();
             $table->unsignedInteger('num_of_models')->default(1);
             $table->json('lesson_ids')->nullable();
@@ -132,6 +130,8 @@ return new class extends Migration
             $table->string('file_url')->nullable();
             $table->string('link_url')->nullable();
             $table->integer('duration_minutes')->nullable();
+            $table->timestamp('starts_at')->nullable();
+            $table->timestamp('ends_at')->nullable();
             $table->boolean('is_active')->default(true);
             $table->boolean('is_free')->default(false);
             $table->integer('sort_order')->default(0);

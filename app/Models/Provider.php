@@ -68,9 +68,12 @@ class Provider extends Model
                 return rtrim((string) $domain, '/').'/';
             }
 
-            $scheme = parse_url(config('app.url'), PHP_URL_SCHEME) ?: 'https';
+            $appUrl = config('app.url');
+            $scheme = parse_url($appUrl, PHP_URL_SCHEME) ?: 'https';
+            $port = parse_url($appUrl, PHP_URL_PORT);
+            $port = $port ? ":{$port}" : '';
 
-            return "{$scheme}://".trim((string) $domain, '/').'/';
+            return "{$scheme}://".trim((string) $domain, '/').$port.'/';
         });
     }
 

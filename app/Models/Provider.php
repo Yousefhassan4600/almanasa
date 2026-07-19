@@ -55,6 +55,25 @@ class Provider extends Model
         });
     }
 
+    protected function websiteUrl(): Attribute
+    {
+        return Attribute::get(function (): string {
+            $domain = $this->use_custom_domain && filled($this->custom_domain)
+                ? $this->custom_domain
+                : collect([$this->subdomain, config('almanasa.root_domain')])
+                    ->filter()
+                    ->join('.');
+
+            if (str_starts_with((string) $domain, 'http://') || str_starts_with((string) $domain, 'https://')) {
+                return rtrim((string) $domain, '/').'/';
+            }
+
+            $scheme = parse_url(config('app.url'), PHP_URL_SCHEME) ?: 'https';
+
+            return "{$scheme}://".trim((string) $domain, '/').'/';
+        });
+    }
+
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_user_id');

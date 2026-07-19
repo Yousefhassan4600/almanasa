@@ -52,7 +52,7 @@ class ProvidersTable extends BaseTable
         return [
             Action::make('open_website')
                 ->label('')
-                ->url(fn ($record): string => $record->custom_domain ?? "http://{$record->subdomain}.lvh.me:8000/")
+                ->url(fn ($record): string => $record->website_url)
                 ->openUrlInNewTab()
                 ->icon('heroicon-o-link'),
         ];

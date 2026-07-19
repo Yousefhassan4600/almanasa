@@ -8,4 +8,9 @@ use App\Filament\Resources\Orders\OrderResource;
 class ListOrders extends BaseListRecords
 {
     protected static string $resource = OrderResource::class;
+
+    protected function hasCreateAction(): bool
+    {
+        return false;
+    }
 }

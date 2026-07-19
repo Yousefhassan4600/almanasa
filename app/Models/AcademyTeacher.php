@@ -3,16 +3,26 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AcademyTeacher extends Model
 {
     use FiltersByTenant;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'provider_id',
+        'teacher_account_id',
+        'image',
+        'experience_years',
+        'is_active',
+        'deleted_by',
+    ];
 
     protected function casts(): array
     {

@@ -2,10 +2,11 @@
 
 namespace App\Filament\Resources\Orders\Schemas;
 
-use App\Enums\PaymentStatus;
+use App\Enums\PurchaseType;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 
 class OrderForm
 {
@@ -13,40 +14,44 @@ class OrderForm
     {
         return $schema
             ->components([
-                TextInput::make('provider_id')
-                    ->label('Provider Id')
-                    ->numeric()
+                Select::make('provider_id')
+                    ->label('Provider')
+                    ->relationship('provider', 'name')
+                    ->preload()
+                    ->searchable()
                     ->required(),
-                TextInput::make('student_user_id')
-                    ->label('Student User Id')
-                    ->numeric()
+                Select::make('student_user_id')
+                    ->label('Student')
+                    ->relationship('student', 'phone')
+                    ->preload()
+                    ->searchable()
                     ->required(),
-                TextInput::make('cart_id')
-                    ->label('Cart Id')
-                    ->numeric(),
+                Select::make('cart_id')
+                    ->label('Cart')
+                    ->relationship(
+                        'cart',
+                        'id',
+                        modifyQueryUsing: fn (Builder $query): Builder => $query->withoutTrashed(),
+                    )
+                    ->preload()
+                    ->searchable(),
                 TextInput::make('order_number')
                     ->label('Order Number')
                     ->required(),
+                Select::make('purchase_type')
+                    ->label('Purchase Type')
+                    ->options(PurchaseType::options())
+                    ->default(PurchaseType::SingleCourse->value)
+                    ->required(),
                 TextInput::make('subtotal')
                     ->label('Subtotal')
-                    ->numeric()
-                    ->required(),
-                TextInput::make('tax')
-                    ->label('Tax')
-                    ->numeric()
-                    ->required(),
-                TextInput::make('discount')
-                    ->label('Discount')
                     ->numeric()
                     ->required(),
                 TextInput::make('total')
                     ->label('Total')
                     ->numeric()
                     ->required(),
-                Select::make('status')
-                    ->label('Status')
-                    ->options(PaymentStatus::options())
-                    ->required(),
-            ]);
+            ])
+            ->columns(2);
     }
 }

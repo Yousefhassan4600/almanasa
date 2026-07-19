@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Models\Traits\SoftDeletesWithUser;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -19,9 +20,23 @@ class User extends Authenticatable implements FilamentUser
     use FiltersByTenant;
 
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable;
 
-    protected $guarded = [];
+    use SoftDeletes, SoftDeletesWithUser;
+
+    protected $fillable = [
+        'first_name',
+        'last_name',
+        'phone',
+        'dial_country_code',
+        'password',
+        'otp',
+        'date_of_birth',
+        'verified_at',
+        'is_active',
+        'remember_token',
+        'deleted_by',
+    ];
 
     protected array $tenantRelations = [
         'employees',

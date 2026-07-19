@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
 use App\Enums\AccountType;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,9 +13,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Account extends Model
 {
-    use FiltersByTenant, SoftDeletes;
+    use FiltersByTenant;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'provider_id',
+        'type',
+        'owner_user_id',
+        'is_active',
+        'approved_at',
+        'deleted_by',
+    ];
 
     protected function casts(): array
     {
@@ -77,17 +86,26 @@ class Account extends Model
 
     public function studentAttempts(): HasMany
     {
-        return $this->hasMany(StudentAttempt::class, 'student_user_id', 'owner_user_id');
+        return $this->hasMany(StudentAttempt::class, 'student_user_id', 'owner_user_id')
+            ->whereHas('course', fn ($query) => $query->where('provider_id', $this->provider_id));
     }
 
     public function lessonProgresses(): HasMany
     {
-        return $this->hasMany(LessonProgress::class, 'student_user_id', 'owner_user_id');
+        return $this->hasMany(LessonProgress::class, 'student_user_id', 'owner_user_id')
+            ->whereHas('course', fn ($query) => $query->where('provider_id', $this->provider_id));
     }
 
     public function courseReviews(): HasMany
     {
-        return $this->hasMany(CourseReview::class, 'student_user_id', 'owner_user_id');
+        return $this->hasMany(CourseReview::class, 'student_user_id', 'owner_user_id')
+            ->whereHas('course', fn ($query) => $query->where('provider_id', $this->provider_id));
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class, 'student_user_id', 'owner_user_id')
+            ->where('provider_id', $this->provider_id);
     }
 
     public function canAccessDashboard(): bool

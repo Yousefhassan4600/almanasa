@@ -4,15 +4,26 @@ namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
 use App\Enums\QuestionType;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StudentAnswer extends Model
 {
     use FiltersByTenant;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'student_attempt_id',
+        'question_id',
+        'question_option_id',
+        'answer_text',
+        'is_correct',
+        'score',
+        'deleted_by',
+    ];
 
     protected array $tenantRelations = [
         'student_attempt',

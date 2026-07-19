@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Concerns\FiltersByTenant;
 use App\Enums\CoursePeriodType;
 use App\Enums\ProviderType;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,9 +16,44 @@ use Spatie\Translatable\HasTranslations;
 
 class Provider extends Model
 {
-    use FiltersByTenant, HasTranslations, SoftDeletes;
+    use FiltersByTenant, HasTranslations;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'type',
+        'owner_user_id',
+        'subject_id',
+        'name',
+        'slug',
+        'subdomain',
+        'custom_domain',
+        'logo',
+        'cover_image',
+        'bio',
+        'country_id',
+        'city_id',
+        'address',
+        'contact_phone',
+        'contact_whatsapp',
+        'contact_email',
+        'youtube_link',
+        'facebook_link',
+        'instagram_link',
+        'linkedin_link',
+        'x_link',
+        'snapchat_link',
+        'terms_conditions',
+        'latitude',
+        'longitude',
+        'primary_color',
+        'secondary_color',
+        'pause_website',
+        'current_course_period_type',
+        'completion_watch_percentage',
+        'is_active',
+        'use_custom_domain',
+        'deleted_by',
+    ];
 
     public array $translatable = [
         'bio',

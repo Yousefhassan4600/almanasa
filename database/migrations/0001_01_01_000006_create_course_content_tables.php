@@ -23,6 +23,7 @@ return new class extends Migration
             $table->decimal('teacher_percentage', 10, 2)->default(40);
             $table->decimal('platform_percentage', 10, 2)->default(10);
             $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -31,6 +32,8 @@ return new class extends Migration
             $table->foreignId('course_id')->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('title');
             $table->integer('sort_order')->default(0);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -40,6 +43,8 @@ return new class extends Migration
             $table->text('name')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -49,6 +54,8 @@ return new class extends Migration
             $table->foreignId('purchase_unit_id')->constrained('purchase_units')->cascadeOnUpdate()->restrictOnDelete();
             $table->decimal('price', 10, 2);
             $table->decimal('offer_price', 10, 2)->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->unique(['course_id', 'purchase_unit_id'], 'course_prices_purchase_unit_unique');
         });
@@ -59,6 +66,8 @@ return new class extends Migration
             $table->text('name')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -73,6 +82,8 @@ return new class extends Migration
             $table->unsignedInteger('num_of_video_views')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -89,6 +100,8 @@ return new class extends Migration
             $table->unsignedInteger('num_of_attempts')->nullable();
             $table->json('lesson_ids')->nullable();
             $table->json('question_ids')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -106,6 +119,8 @@ return new class extends Migration
             $table->decimal('max_degree', 10, 2)->nullable();
             $table->unsignedInteger('num_of_models')->default(1);
             $table->json('lesson_ids')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -114,6 +129,8 @@ return new class extends Migration
             $table->foreignId('exam_id')->constrained('exams')->cascadeOnUpdate()->cascadeOnDelete();
             $table->unsignedInteger('model_number');
             $table->json('question_ids')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->unique(['exam_id', 'model_number']);
         });
@@ -135,6 +152,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->boolean('is_free')->default(false);
             $table->integer('sort_order')->default(0);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -146,6 +165,8 @@ return new class extends Migration
             $table->string('type');
             $table->string('difficulty');
             $table->integer('sort_order')->default(0);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->index(['lesson_id', 'type', 'difficulty']);
         });
@@ -157,6 +178,8 @@ return new class extends Migration
             $table->string('media')->nullable();
             $table->boolean('is_correct')->default(false);
             $table->integer('sort_order')->default(0);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

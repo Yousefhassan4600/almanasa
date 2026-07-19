@@ -4,14 +4,24 @@ namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
 use App\Enums\ChatMemberRole;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ChatMember extends Model
 {
     use FiltersByTenant;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'chat_room_id',
+        'user_id',
+        'role',
+        'joined_at',
+        'last_read_at',
+        'deleted_by',
+    ];
 
     protected array $tenantRelations = [
         'chat_room',

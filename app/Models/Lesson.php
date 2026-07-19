@@ -4,17 +4,31 @@ namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
 use App\Enums\CoursePeriodType;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
 class Lesson extends Model
 {
     use FiltersByTenant, HasTranslations;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'course_id',
+        'course_period_id',
+        'title',
+        'description',
+        'starts_at',
+        'ends_at',
+        'num_of_video_views',
+        'sort_order',
+        'is_active',
+        'deleted_by',
+    ];
 
     protected array $tenantRelations = [
         'course',

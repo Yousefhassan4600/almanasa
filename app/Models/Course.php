@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,9 +13,24 @@ use Spatie\Translatable\HasTranslations;
 
 class Course extends Model
 {
-    use FiltersByTenant, HasTranslations, SoftDeletes;
+    use FiltersByTenant, HasTranslations;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'provider_id',
+        'account_subject_id',
+        'academy_teacher_id',
+        'title',
+        'description',
+        'thumbnail',
+        'weekly_lectures_count',
+        'num_of_lessons',
+        'num_of_hours',
+        'academy_percentage',
+        'teacher_percentage',
+        'platform_percentage',
+        'deleted_by',
+    ];
 
     public array $translatable = [
         'title',

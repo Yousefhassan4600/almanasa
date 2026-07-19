@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -10,13 +11,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\ValidationException;
 
 class StudentAttempt extends Model
 {
     use FiltersByTenant;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'student_user_id',
+        'course_id',
+        'exam_model_id',
+        'attemptable_type',
+        'attemptable_id',
+        'attempt_number',
+        'max_score',
+        'deleted_by',
+    ];
 
     protected array $tenantRelations = [
         'course',

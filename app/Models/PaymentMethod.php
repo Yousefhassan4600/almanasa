@@ -2,15 +2,28 @@
 
 namespace App\Models;
 
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
 class PaymentMethod extends Model
 {
     use HasTranslations;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'sort_order',
+        'name',
+        'slug',
+        'image',
+        'is_active',
+        'is_bank',
+        'require_proof',
+        'is_code',
+        'deleted_by',
+    ];
 
     protected $attributes = [
         'sort_order' => 0,

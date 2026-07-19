@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\ProviderCodes\Schemas;
 
+use App\Models\Course;
+use App\Models\Lesson;
 use App\Models\ProviderCode;
 use App\Models\PurchaseUnit;
 use Closure;
@@ -9,6 +11,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -22,22 +25,14 @@ class ProviderCodeForm
                     ->label('Provider')
                     ->relationship('provider', 'name')
                     ->live()
+                    ->afterStateUpdated(function (Set $set): void {
+                        $set('course_id', null);
+                        $set('lesson_id', null);
+                    })
                     ->preload()
                     ->searchable()
-                    ->required(),
-                Select::make('purchase_unit_id')
-                    ->label('Purchase Unit')
-                    ->options(fn (): array => PurchaseUnit::query()
-                        ->where('is_active', true)
-                        ->orderBy('sort_order')
-                        ->get()
-                        ->mapWithKeys(fn (PurchaseUnit $purchaseUnit): array => [
-                            $purchaseUnit->id => $purchaseUnit->name,
-                        ])
-                        ->all())
-                    ->searchable()
-                    ->preload()
-                    ->required(),
+                    ->required()
+                    ->columnSpanFull(),
                 TextInput::make('code')
                     ->label('Code')
                     ->maxLength(255)
@@ -60,16 +55,100 @@ class ProviderCodeForm
                             }
                         },
                     ])
-                    ->required(),
-                DatePicker::make('expiry_date')
-                    ->label('Expiry Date')
-                    ->native(false),
+                    ->required()
+                    ->columnSpanFull(),
+                Select::make('purchase_unit_id')
+                    ->label('Purchase Unit')
+                    ->options(fn (): array => PurchaseUnit::query()
+                        ->where('is_active', true)
+                        ->orderBy('sort_order')
+                        ->get()
+                        ->mapWithKeys(fn (PurchaseUnit $purchaseUnit): array => [
+                            $purchaseUnit->id => $purchaseUnit->name,
+                        ])
+                        ->all())
+                    ->searchable()
+                    ->preload()
+                    ->required()
+                    ->columnSpanFull(),
+                Select::make('course_id')
+                    ->label('Course')
+                    ->options(fn (Get $get): array => blank($get('provider_id'))
+                        ? []
+                        : Course::query()
+                            ->where('provider_id', $get('provider_id'))
+                            ->oldest('id')
+                            ->get()
+                            ->mapWithKeys(fn (Course $course): array => [
+                                $course->id => $course->title,
+                            ])
+                            ->all())
+                    ->live()
+                    ->afterStateUpdated(fn (Set $set) => $set('lesson_id', null))
+                    ->rules([
+                        fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
+                            $providerId = $get('provider_id');
+
+                            if (blank($providerId) || blank($value)) {
+                                return;
+                            }
+
+                            $belongsToProvider = Course::query()
+                                ->whereKey($value)
+                                ->where('provider_id', $providerId)
+                                ->exists();
+
+                            if (! $belongsToProvider) {
+                                $fail('The selected course does not belong to the selected provider.');
+                            }
+                        },
+                    ])
+                    ->disabled(fn (Get $get): bool => blank($get('provider_id')))
+                    ->preload()
+                    ->searchable(),
+                Select::make('lesson_id')
+                    ->label('Lesson')
+                    ->options(fn (Get $get): array => blank($get('course_id'))
+                        ? []
+                        : Lesson::query()
+                            ->where('course_id', $get('course_id'))
+                            ->oldest('sort_order')
+                            ->oldest('id')
+                            ->get()
+                            ->mapWithKeys(fn (Lesson $lesson): array => [
+                                $lesson->id => $lesson->title,
+                            ])
+                            ->all())
+                    ->rules([
+                        fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
+                            $courseId = $get('course_id');
+
+                            if (blank($courseId) || blank($value)) {
+                                return;
+                            }
+
+                            $belongsToCourse = Lesson::query()
+                                ->whereKey($value)
+                                ->where('course_id', $courseId)
+                                ->exists();
+
+                            if (! $belongsToCourse) {
+                                $fail('The selected lesson does not belong to the selected course.');
+                            }
+                        },
+                    ])
+                    ->disabled(fn (Get $get): bool => blank($get('course_id')))
+                    ->preload()
+                    ->searchable(),
                 TextInput::make('num_of_uses')
                     ->label('Number Of Uses')
                     ->numeric()
                     ->default(1)
                     ->minValue(1)
                     ->required(),
+                DatePicker::make('expiry_date')
+                    ->label('Expiry Date')
+                    ->native(false),
             ])
             ->columns(2);
     }

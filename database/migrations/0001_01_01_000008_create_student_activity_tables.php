@@ -14,6 +14,8 @@ return new class extends Migration
             $table->text('name');
             $table->string('slug')->unique();
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -23,6 +25,8 @@ return new class extends Migration
             $table->text('name');
             $table->string('slug')->unique();
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -35,6 +39,8 @@ return new class extends Migration
             $table->unsignedBigInteger('attemptable_id');
             $table->integer('attempt_number')->default(1);
             $table->decimal('max_score', 10, 2)->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->index([
                 0 => 'attemptable_type',
@@ -50,6 +56,8 @@ return new class extends Migration
             $table->boolean('is_current')->default(true);
             $table->text('notes')->nullable();
             $table->timestamp('status_at')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->index([
                 0 => 'student_attempt_id',
@@ -65,6 +73,8 @@ return new class extends Migration
             $table->text('answer_text')->nullable();
             $table->boolean('is_correct')->nullable();
             $table->decimal('score', 10, 2)->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -73,6 +83,8 @@ return new class extends Migration
             $table->foreignId('student_user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('course_id')->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('lesson_id')->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->unique([
                 0 => 'student_user_id',
@@ -88,6 +100,8 @@ return new class extends Migration
             $table->boolean('is_current')->default(true);
             $table->text('notes')->nullable();
             $table->timestamp('status_at')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->index([
                 0 => 'lesson_progress_id',
@@ -102,6 +116,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('rating');
             $table->text('comment')->nullable();
             $table->boolean('is_approved')->default(true);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

@@ -3,17 +3,33 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
 class Assignment extends Model
 {
     use FiltersByTenant, HasTranslations;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'course_id',
+        'title',
+        'description',
+        'num_of_questions',
+        'num_of_easy_questions',
+        'num_of_medium_questions',
+        'num_of_hard_questions',
+        'duration_minutes',
+        'num_of_attempts',
+        'lesson_ids',
+        'question_ids',
+        'deleted_by',
+    ];
 
     protected array $tenantRelations = [
         'course',

@@ -3,10 +3,8 @@
 namespace App\Filament\Resources\Orders;
 
 use App\Filament\Base\BaseResource;
-use App\Filament\Resources\Orders\Schemas\OrderForm;
 use App\Filament\Resources\Orders\Tables\OrdersTable;
 use App\Models\Order;
-use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use UnitEnum;
 
@@ -16,10 +14,7 @@ class OrderResource extends BaseResource
 
     protected static string|UnitEnum|null $navigationGroup = 'Sales & Payments';
 
-    public static function form(Schema $schema): Schema
-    {
-        return OrderForm::configure($schema);
-    }
+    protected static ?int $navigationSort = 3;
 
     public static function table(Table $table): Table
     {
@@ -35,8 +30,6 @@ class OrderResource extends BaseResource
     {
         return [
             'index' => Pages\ListOrders::route('/'),
-            'create' => Pages\CreateOrder::route('/create'),
-            'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
     }
 }

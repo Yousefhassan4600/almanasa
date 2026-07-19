@@ -15,6 +15,8 @@ return new class extends Migration
             $table->foreignId('lesson_id')->nullable()->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('title');
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -25,6 +27,8 @@ return new class extends Migration
             $table->string('role');
             $table->timestamp('joined_at')->nullable();
             $table->timestamp('last_read_at')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->unique([
                 0 => 'chat_room_id',
@@ -40,6 +44,8 @@ return new class extends Migration
             $table->string('file_url')->nullable();
             $table->string('file_name')->nullable();
             $table->string('file_size')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -51,6 +57,8 @@ return new class extends Migration
             $table->text('body')->nullable();
             $table->text('data')->nullable();
             $table->timestamp('read_at')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -61,6 +69,8 @@ return new class extends Migration
             $table->string('subject');
             $table->text('message');
             $table->string('status')->default('open');
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -69,6 +79,8 @@ return new class extends Migration
             $table->foreignId('support_ticket_id')->constrained('support_tickets')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('message');
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -81,6 +93,8 @@ return new class extends Migration
             $table->string('url')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -93,6 +107,8 @@ return new class extends Migration
             $table->integer('rating')->nullable();
             $table->text('message');
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -106,6 +122,8 @@ return new class extends Migration
             $table->string('rank_label')->nullable();
             $table->string('image')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -120,6 +138,8 @@ return new class extends Migration
             $table->text('new_values')->nullable();
             $table->string('ip_address')->nullable();
             $table->text('user_agent')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->index([
                 0 => 'auditable_type',

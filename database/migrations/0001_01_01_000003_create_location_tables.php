@@ -13,6 +13,8 @@ return new class extends Migration
             $table->text('name');
             $table->string('code');
             $table->string('phone_code')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
@@ -20,6 +22,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('country_id')->constrained('countries')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('name');
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

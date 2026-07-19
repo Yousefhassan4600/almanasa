@@ -16,7 +16,27 @@ class ProviderCodeResource extends BaseResource
 
     protected static string|UnitEnum|null $navigationGroup = 'Sales & Payments';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 1;
+
+    public static function getLabel(): string
+    {
+        return 'Codes';
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return 'Codes';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Codes';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Code';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -37,8 +57,6 @@ class ProviderCodeResource extends BaseResource
     {
         return [
             'index' => Pages\ListProviderCodes::route('/'),
-            'create' => Pages\CreateProviderCode::route('/create'),
-            'edit' => Pages\EditProviderCode::route('/{record}/edit'),
         ];
     }
 }

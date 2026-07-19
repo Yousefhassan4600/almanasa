@@ -3,17 +3,34 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
 class Exam extends Model
 {
     use FiltersByTenant, HasTranslations;
+    use SoftDeletes, SoftDeletesWithUser;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'course_id',
+        'title',
+        'description',
+        'num_of_questions',
+        'num_of_easy_questions',
+        'num_of_medium_questions',
+        'num_of_hard_questions',
+        'duration_minutes',
+        'num_of_attempts',
+        'max_degree',
+        'num_of_models',
+        'lesson_ids',
+        'deleted_by',
+    ];
 
     protected array $tenantRelations = [
         'course',
@@ -54,6 +71,6 @@ class Exam extends Model
         }
 
         return Question::query()
-            ->whereHas('lesson', fn(Builder $query): Builder => $query->where('course_id', $this->course_id));
+            ->whereHas('lesson', fn (Builder $query): Builder => $query->where('course_id', $this->course_id));
     }
 }

@@ -1,7 +1,8 @@
 @php
+    $themeColor = $provider->websitePrimaryColor();
     $styles = [
-        'رياضيات' => ['icon' => 'fa-calculator', 'bg' => 'bg-[#F3F0FF]', 'text' => 'text-[#5D3FD3]'],
-        'Mathematics' => ['icon' => 'fa-calculator', 'bg' => 'bg-[#F3F0FF]', 'text' => 'text-[#5D3FD3]'],
+        'رياضيات' => ['icon' => 'fa-calculator', 'bg' => 'bg-gray-100', 'text' => ''],
+        'Mathematics' => ['icon' => 'fa-calculator', 'bg' => 'bg-gray-100', 'text' => ''],
         'علوم' => ['icon' => 'fa-microscope', 'bg' => 'bg-[#E0F2FE]', 'text' => 'text-sky-600'],
         'Science' => ['icon' => 'fa-microscope', 'bg' => 'bg-[#E0F2FE]', 'text' => 'text-sky-600'],
         'فيزياء' => ['icon' => 'fa-atom', 'bg' => 'bg-[#DCFCE7]', 'text' => 'text-green-600'],
@@ -48,6 +49,7 @@
                     >
                         <div
                             class="w-16 h-16 sm:w-20 sm:h-20 {{ $style['bg'] }} rounded-2xl flex items-center justify-center {{ $style['text'] }} text-2xl sm:text-3xl transition-all group-hover:scale-110"
+                            @if (blank($style['text'])) style="color: {{ $themeColor }}" @endif
                         >
                             @if (isset($style['label']))
                                 <span class="text-xl sm:text-2xl font-bold">{{ $style['label'] }}</span>

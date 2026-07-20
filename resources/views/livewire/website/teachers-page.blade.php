@@ -1,7 +1,7 @@
 @php
     use App\Enums\PurchaseUnitType;
 
-    $themeColor = $isStandaloneTeacher ? '#FEB008' : '#5D3FD3';
+    $themeColor = $provider->websitePrimaryColor();
     $themeSoftClass = $isStandaloneTeacher ? 'bg-amber-50/80' : 'bg-purple-50/60';
     $subjectHeroImage = $isStandaloneTeacher ? '/teacher/assets/images/book.png' : '/academy/assets/images/book.png';
     $subject = $accountSubject?->gradeSubject?->subject;
@@ -47,7 +47,7 @@
                             {{ $subjectName }}
                         </h1>
                         {{-- @if ($grade)
-                            <p class="text-sm sm:text-base font-bold text-[#5D3FD3] opacity-90">
+                            <p class="text-sm sm:text-base font-bold opacity-90" style="color: {{ $themeColor }}">
                                 المعلمون المتاحون في {{ $grade->name }}
                             </p>
                         @endif --}}

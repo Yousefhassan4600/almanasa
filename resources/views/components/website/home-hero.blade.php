@@ -5,7 +5,7 @@
 
 @php
     $isTeacher = $provider->type === \App\Enums\ProviderType::StandaloneTeacher;
-    $themeColor = $isTeacher ? '#FEB008' : '#5D3FD3';
+    $themeColor = $provider->websitePrimaryColor();
     $title = $banner?->getTranslation('title', 'ar', false)
         ?: $banner?->getTranslation('title', 'en', false)
         ?: 'تعلم من أفضل المعلمين في جميع المواد الدراسية';

@@ -20,9 +20,9 @@
     $teacherName = $isStandaloneTeacher
         ? ($course?->provider?->owner?->name ?: 'المعلم')
         : ($teacher?->teacher?->owner?->name ?: 'المعلم');
-    $activeColor = $isStandaloneTeacher ? '#FEB008' : '#5D3FD3';
-    $activeHoverColor = $isStandaloneTeacher ? '#E59B00' : '#4c32b3';
-    $activeSoftColor = $isStandaloneTeacher ? '#FFF7E6' : '#F2EEFF';
+    $activeColor = $course?->provider?->websitePrimaryColor() ?? '#5D3FD3';
+    $activeHoverColor = $course?->provider?->websiteSecondaryColor() ?? '#4c32b3';
+    $activeSoftColor = $activeColor.'12';
     $activeMutedTextColor = $isStandaloneTeacher ? '#FDE68A' : '#DDD6FE';
     $lessonItemType = $lessonItem?->type instanceof \App\Enums\LessonTypeEnum ? $lessonItem->type->value : (string) $lessonItem?->type;
     $lessonAssignments = collect([$lessonItem?->assignment])->filter();

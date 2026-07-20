@@ -3,7 +3,8 @@
         <section class="py-16 bg-white" dir="rtl">
             <div class="mx-auto px-4 md:px-8">
                 <div
-                    class="{{ $isTeacher ? 'bg-[#FEB008] shadow-[#FEB008]/10' : 'bg-gradient-to-r from-[#5D3FD3] to-[#4c32b3] shadow-[#5D3FD3]/10' }} rounded-[32px] overflow-hidden relative shadow-xl"
+                    class="rounded-[32px] overflow-hidden relative shadow-xl"
+                    style="background: linear-gradient(90deg, {{ $themeColor }}, {{ $secondaryThemeColor }}); box-shadow: 0 20px 25px -5px color-mix(in srgb, {{ $themeColor }} 10%, transparent), 0 8px 10px -6px color-mix(in srgb, {{ $themeColor }} 10%, transparent);"
                 >
                     <div
                         class="absolute -top-12 -left-12 w-48 h-48 bg-white/5 rounded-full pointer-events-none"
@@ -32,7 +33,8 @@
                             <div class="pt-2">
                                 <a
                                     href="/login"
-                                    class="{{ $isTeacher ? 'bg-[#0058BE] text-white' : 'bg-amber-400 hover:bg-amber-300 text-blue-950' }} inline-flex w-full sm:w-auto font-bold text-base px-8 py-4 rounded-[12px] shadow-lg shadow-amber-400/20 transition-all active:scale-95 justify-center"
+                                    class="inline-flex w-full sm:w-auto font-bold text-base px-8 py-4 rounded-[12px] shadow-lg transition-all active:scale-95 justify-center"
+                                    style="background-color: {{ $secondaryThemeColor }}; color: white;"
                                 >
                                     ابدأ رحلتك الآن
                                 </a>

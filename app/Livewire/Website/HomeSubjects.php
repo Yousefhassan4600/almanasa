@@ -20,6 +20,7 @@ class HomeSubjects extends Component
         $gradeId = Auth::user()?->studentProfile()->value('grade_id');
 
         return view('livewire.website.home-subjects', [
+            'provider' => $provider,
             'subjects' => $this->subjects($provider, $gradeId),
             'hasGradeFilter' => filled($gradeId),
         ]);

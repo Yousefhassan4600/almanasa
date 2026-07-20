@@ -25,11 +25,9 @@
     $termOneLessons = $lessons->filter(fn ($lesson) => $lesson->coursePeriod?->type === CoursePeriodType::Term1);
     $termTwoLessons = $lessons->filter(fn ($lesson) => $lesson->coursePeriod?->type === CoursePeriodType::Term2);
     $yearlyLessons = $lessons->filter(fn ($lesson) => $lesson->coursePeriod?->type === CoursePeriodType::Yearly || blank($lesson->coursePeriod));
-    $themeColor = $isStandaloneTeacher ? '#FEB008' : '#5D3FD3';
-    $themeColorDark = $isStandaloneTeacher ? '#E59B00' : '#4c32b3';
-    $themeGradient = $isStandaloneTeacher
-        ? 'background: linear-gradient(270deg, #FEB008 0%, #F59E0B 100%)'
-        : 'background: linear-gradient(270deg, #5D3FD3 0%, #7048F4 100%)';
+    $themeColor = $provider?->websitePrimaryColor() ?? '#5D3FD3';
+    $themeColorDark = $provider?->websiteSecondaryColor() ?? '#4c32b3';
+    $themeGradient = "background: linear-gradient(270deg, {$themeColor} 0%, {$themeColorDark} 100%)";
     $themeTextLight = $isStandaloneTeacher ? 'text-amber-50' : 'text-purple-100';
     $themeTextMuted = $isStandaloneTeacher ? 'text-amber-100' : 'text-purple-200';
     $themeSoftBg = $isStandaloneTeacher ? 'bg-amber-50' : 'bg-purple-50';

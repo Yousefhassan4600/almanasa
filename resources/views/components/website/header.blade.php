@@ -5,8 +5,7 @@
 ])
 
 @php
-    $isTeacher = $provider->type === \App\Enums\ProviderType::StandaloneTeacher;
-    $themeColor = $isTeacher ? '#FEB008' : '#5D3FD3';
+    $themeColor = $provider->websitePrimaryColor();
     $activePage = \Illuminate\Support\Str::beforeLast($page, '.html');
     $providerLogo = filled($provider->logo) ? (filter_var($provider->logo, FILTER_VALIDATE_URL) ? $provider->logo : asset('storage/'.$provider->logo)) : null;
 

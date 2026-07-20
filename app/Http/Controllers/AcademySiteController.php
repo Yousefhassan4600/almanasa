@@ -160,6 +160,7 @@ class AcademySiteController extends Controller
 
         $html = $this->injectWebsiteFooter($html);
         $html = $this->canonicalizePageUrls($html);
+        $html = $this->applyWebsiteTheme($html, $provider);
         $html = $this->injectLivewireAssets($html);
 
         $homeBanner = $page === 'index.html'
@@ -222,7 +223,49 @@ class AcademySiteController extends Controller
 
     private function themeColor(Provider $provider): string
     {
-        return $provider->type === ProviderType::StandaloneTeacher ? '#FEB008' : '#5D3FD3';
+        return $provider->websitePrimaryColor();
+    }
+
+    private function secondaryThemeColor(Provider $provider): string
+    {
+        return $provider->websiteSecondaryColor();
+    }
+
+    private function applyWebsiteTheme(string $html, Provider $provider): string
+    {
+        $primaryColor = $this->themeColor($provider);
+        $secondaryColor = $this->secondaryThemeColor($provider);
+
+        $html = str_replace(
+            [
+                '#5D3FD3',
+                '#FEB008',
+                '#4c32b3',
+                '#4a32b0',
+                '#F59E0B',
+                '#E59B00',
+            ],
+            [
+                $primaryColor,
+                $primaryColor,
+                $secondaryColor,
+                $secondaryColor,
+                $secondaryColor,
+                $secondaryColor,
+            ],
+            $html,
+        );
+
+        $themeStyle = <<<HTML
+    <style>
+        :root {
+            --website-primary-color: {$primaryColor};
+            --website-secondary-color: {$secondaryColor};
+        }
+    </style>
+HTML;
+
+        return str_replace('</head>', $themeStyle."\n    </head>", $html);
     }
 
     private function injectWebsiteHeader(string $html, Provider $provider, string $page): string

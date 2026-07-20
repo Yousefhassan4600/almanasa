@@ -6,9 +6,9 @@
     $title = $assessment?->getTranslation('title', 'ar', false) ?: $assessment?->title;
     $isExam = $assessment instanceof Exam;
     $isStandaloneTeacher = $provider?->type === ProviderType::StandaloneTeacher;
-    $themeColor = $isStandaloneTeacher ? '#FEB008' : '#5D3FD3';
-    $themeHoverColor = $isStandaloneTeacher ? '#E59B00' : '#4c32b3';
-    $themeSoftColor = $isStandaloneTeacher ? '#FFF7E6' : '#F2EEFF';
+    $themeColor = $provider?->websitePrimaryColor() ?? '#5D3FD3';
+    $themeHoverColor = $provider?->websiteSecondaryColor() ?? '#4c32b3';
+    $themeSoftColor = $themeColor.'12';
     $label = $isExam ? 'الاختبار' : 'الواجب';
     $duration = $assessment?->duration_minutes;
     $questionCount = $questions->count();
@@ -27,7 +27,7 @@
         @if (! $assessment)
             <div class="w-full max-w-4xl bg-white rounded-[2rem] border border-gray-100 p-8 text-center shadow-sm">
                 <p class="text-sm font-bold text-blue-950">لم يتم العثور على {{ $label }} المطلوب.</p>
-                <a href="/my_lessons" class="inline-flex mt-4 text-sm font-bold text-[#5D3FD3]">العودة لدروسي</a>
+                <a href="/my_lessons" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $themeColor }}">العودة لدروسي</a>
             </div>
         @elseif ($existingAttempt)
             <div class="w-full max-w-4xl bg-white rounded-[2rem] border border-gray-100 p-8 text-center shadow-sm">

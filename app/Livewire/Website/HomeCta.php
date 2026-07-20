@@ -23,6 +23,8 @@ class HomeCta extends Component
                 ? config('almanasa.teacher_template_asset_path')
                 : config('almanasa.academy_template_asset_path'),
             'isTeacher' => $provider->type === ProviderType::StandaloneTeacher,
+            'themeColor' => $provider->websitePrimaryColor(),
+            'secondaryThemeColor' => $provider->websiteSecondaryColor(),
         ]);
     }
 }

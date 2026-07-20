@@ -113,6 +113,31 @@ class Provider extends Model
         });
     }
 
+    public function websitePrimaryColor(): string
+    {
+        return $this->validHexColor($this->primary_color)
+            ?? match ($this->type) {
+                ProviderType::StandaloneTeacher => '#FEB008',
+                default => '#5D3FD3',
+            };
+    }
+
+    public function websiteSecondaryColor(): string
+    {
+        return $this->validHexColor($this->secondary_color) ?? '#4c32b3';
+    }
+
+    private function validHexColor(?string $color): ?string
+    {
+        if (blank($color)) {
+            return null;
+        }
+
+        $color = trim($color);
+
+        return preg_match('/^#[0-9A-Fa-f]{6}$/', $color) === 1 ? $color : null;
+    }
+
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_user_id');

@@ -3,8 +3,7 @@
 ])
 
 @php
-    $isTeacher = $provider->type === \App\Enums\ProviderType::StandaloneTeacher;
-    $themeColor = $isTeacher ? '#FEB008' : '#5D3FD3';
+    $themeColor = $provider->websitePrimaryColor();
     $providerLogo = filled($provider->logo) ? (filter_var($provider->logo, FILTER_VALIDATE_URL) ? $provider->logo : asset('storage/'.$provider->logo)) : null;
     $providerBio = $provider->getTranslation('bio', 'ar', false)
         ?: $provider->getTranslation('bio', 'en', false)

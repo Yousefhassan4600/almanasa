@@ -170,6 +170,6 @@ class LoginForm extends Component
 
     private function themeColor(): string
     {
-        return $this->provider()->type->value === 'standalone_teacher' ? '#FEB008' : '#5D3FD3';
+        return $this->provider()->websitePrimaryColor();
     }
 }

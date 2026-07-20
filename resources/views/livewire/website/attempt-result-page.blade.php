@@ -5,9 +5,9 @@
     $title = $assessment?->getTranslation('title', 'ar', false) ?: $assessment?->title;
     $isExam = $assessmentType === 'exam';
     $isStandaloneTeacher = $provider?->type === ProviderType::StandaloneTeacher;
-    $themeColor = $isStandaloneTeacher ? '#FEB008' : '#5D3FD3';
-    $themeHoverColor = $isStandaloneTeacher ? '#E59B00' : '#4a32b0';
-    $themeSoftColor = $isStandaloneTeacher ? '#FFF7E6' : '#F2EEFF';
+    $themeColor = $provider?->websitePrimaryColor() ?? '#5D3FD3';
+    $themeHoverColor = $provider?->websiteSecondaryColor() ?? '#4a32b0';
+    $themeSoftColor = $themeColor.'12';
     $label = $isExam ? 'الاختبار' : 'الواجب';
     $statusSlug = $attempt?->currentStatus?->type?->slug;
     $hasPendingManualAnswers = $attempt?->studentAnswers?->contains(fn ($answer) => $answer->requires_manual_grading && $answer->score === null) ?? false;
@@ -68,9 +68,9 @@
     <section class="max-w-5xl mx-auto px-4 md:px-8 py-8">
         @if (! $isExam)
             <nav class="flex flex-wrap items-center gap-1.5 text-xs text-gray-400 mb-6 font-bold">
-                <a href="/" class="hover:text-[#5D3FD3]">الرئيسية</a>
+                <a href="/" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">الرئيسية</a>
                 <span>/</span>
-                <a href="/my_lessons" class="hover:text-[#5D3FD3]">دروسي</a>
+                <a href="/my_lessons" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">دروسي</a>
                 <span>/</span>
                 <span class="text-gray-600">نتيجة {{ $label }}</span>
             </nav>

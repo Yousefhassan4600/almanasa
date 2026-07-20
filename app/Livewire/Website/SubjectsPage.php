@@ -26,6 +26,7 @@ class SubjectsPage extends Component
         $gradeId = $profile?->grade_id;
 
         return view('livewire.website.subjects-page', [
+            'provider' => $provider,
             'subjects' => $this->subjects($provider, $gradeId),
             'gradeName' => $profile?->grade?->name,
             'stageName' => $profile?->grade?->educationStage?->name,

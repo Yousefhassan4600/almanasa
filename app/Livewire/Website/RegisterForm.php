@@ -136,8 +136,6 @@ class RegisterForm extends Component
 
     private function themeColor(): string
     {
-        $provider = Provider::query()->findOrFail($this->providerId);
-
-        return $provider->type->value === 'standalone_teacher' ? '#FEB008' : '#5D3FD3';
+        return Provider::query()->findOrFail($this->providerId)->websitePrimaryColor();
     }
 }

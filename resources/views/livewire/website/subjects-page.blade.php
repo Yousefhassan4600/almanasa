@@ -1,4 +1,6 @@
 @php
+    $themeColor = $provider->websitePrimaryColor();
+    $secondaryThemeColor = $provider->websiteSecondaryColor();
     $styles = [
         'رياضيات' => ['icon' => 'fa-calculator', 'bg' => 'bg-blue-50', 'text' => 'text-blue-600'],
         'Mathematics' => ['icon' => 'fa-calculator', 'bg' => 'bg-blue-50', 'text' => 'text-blue-600'],
@@ -21,7 +23,7 @@
             }
         }
 
-        return ['icon' => 'fa-book-open', 'bg' => 'bg-purple-50', 'text' => 'text-[#5D3FD3]'];
+        return ['icon' => 'fa-book-open', 'bg' => 'bg-purple-50', 'text' => ''];
     };
 
     $displayGrade = $gradeName ?: 'كل الصفوف';
@@ -30,7 +32,8 @@
 <div>
     <section class="relative bg-white pb-12" dir="rtl">
         <div
-            class="bg-gradient-to-r from-[#5D3FD3] to-[#4c32b3] pt-16 pb-24 px-4 md:px-8 text-center text-white relative overflow-hidden"
+            class="pt-16 pb-24 px-4 md:px-8 text-center text-white relative overflow-hidden"
+            style="background: linear-gradient(90deg, {{ $themeColor }}, {{ $secondaryThemeColor }});"
         >
             <div class="absolute left-10 bottom-6 w-24 h-24 opacity-20 hidden lg:block">
                 <i class="fa-solid fa-flask-vial text-7xl"></i>
@@ -71,7 +74,7 @@
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-10">
                 <div>
                     <h2 class="text-xl sm:text-2xl font-extrabold text-blue-950">
-                        المواد المتاحة في <span class="text-[#5D3FD3]">{{ $displayGrade }}</span>
+                        المواد المتاحة في <span style="color: {{ $themeColor }}">{{ $displayGrade }}</span>
                     </h2>
                     @if ($stageName)
                         <p class="text-xs text-gray-400 mt-2">{{ $stageName }}</p>
@@ -105,13 +108,14 @@
                             wire:key="subject-card-{{ $accountSubject->id }}"
                             class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between relative group"
                         >
-                            <button class="absolute top-4 left-4 text-gray-400 hover:text-[#5D3FD3] transition-colors">
+                            <button class="absolute top-4 left-4 text-gray-400 transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">
                                 <i class="fa-regular fa-bookmark text-sm"></i>
                             </button>
 
                             <div class="flex flex-col items-center text-center mt-2">
                                 <div
                                     class="w-14 h-14 rounded-full {{ $style['bg'] }} {{ $style['text'] }} flex items-center justify-center text-xl font-bold mb-4"
+                                    @if (blank($style['text'])) style="color: {{ $themeColor }}" @endif
                                 >
                                     <i class="fa-solid {{ $subject?->icon ?: $style['icon'] }}"></i>
                                 </div>
@@ -134,7 +138,10 @@
 
                             <a
                                 href="/teachers?subject={{ $accountSubject->id }}"
-                                class="w-full border text-center border-gray-200 text-gray-600 hover:text-[#5D3FD3] hover:border-[#5D3FD3] font-bold text-xs py-3 rounded-xl transition-colors bg-transparent"
+                                class="w-full border text-center border-gray-200 text-gray-600 font-bold text-xs py-3 rounded-xl transition-colors bg-transparent"
+                                style="--hover-color: {{ $themeColor }}"
+                                onmouseover="this.style.color=this.style.getPropertyValue('--hover-color'); this.style.borderColor=this.style.getPropertyValue('--hover-color')"
+                                onmouseout="this.style.color=''; this.style.borderColor=''"
                             >
                                 عرض المدرسين <i class="fa-solid fa-chevron-left text-[9px] mr-1"></i>
                             </a>

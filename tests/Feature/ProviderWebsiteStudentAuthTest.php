@@ -356,6 +356,13 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'is_active' => true,
         ]);
 
+        $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->assertOk()
+            ->assertDontSee('href="/teachers?subject=', false)
+            ->assertDontSee('الرياضيات', false)
+            ->assertDontSee('الفيزياء', false)
+            ->assertDontSee('المزيد', false);
+
         $this->actingAs($user)
             ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
             ->assertOk()

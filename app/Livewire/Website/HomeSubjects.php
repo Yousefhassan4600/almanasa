@@ -17,12 +17,23 @@ class HomeSubjects extends Component
     public function render(): mixed
     {
         $provider = Provider::query()->findOrFail($this->providerId);
+
+        if (! Auth::check()) {
+            return view('livewire.website.home-subjects', [
+                'provider' => $provider,
+                'subjects' => new Collection,
+                'hasGradeFilter' => false,
+                'isAuthenticated' => false,
+            ]);
+        }
+
         $gradeId = Auth::user()?->studentProfile()->value('grade_id');
 
         return view('livewire.website.home-subjects', [
             'provider' => $provider,
             'subjects' => $this->subjects($provider, $gradeId),
             'hasGradeFilter' => filled($gradeId),
+            'isAuthenticated' => true,
         ]);
     }
 

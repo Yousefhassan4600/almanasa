@@ -98,35 +98,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('testimonials', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('provider_id')->nullable()->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('name');
-            $table->string('role')->nullable();
-            $table->integer('rating')->nullable();
-            $table->text('message');
-            $table->boolean('is_active')->default(true);
-            $table->softDeletes();
-            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamps();
-        });
-
-        Schema::create('honor_board_entries', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('provider_id')->nullable()->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('student_user_id')->nullable()->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
-            $table->text('name');
-            $table->string('grade_name')->nullable();
-            $table->decimal('score_percentage', 10, 2)->nullable();
-            $table->string('rank_label')->nullable();
-            $table->string('image')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->softDeletes();
-            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamps();
-        });
-
         Schema::create('audit_logs', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('provider_id')->nullable()->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
@@ -151,10 +122,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('audit_logs');
-
-        Schema::dropIfExists('honor_board_entries');
-
-        Schema::dropIfExists('testimonials');
 
         Schema::dropIfExists('banners');
 

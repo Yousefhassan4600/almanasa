@@ -25,6 +25,7 @@ class ChatMember extends Model
 
     protected array $tenantRelations = [
         'chat_room',
+        'chatRoom',
     ];
 
     protected function casts(): array
@@ -37,6 +38,11 @@ class ChatMember extends Model
     }
 
     public function chat_room(): BelongsTo
+    {
+        return $this->belongsTo(ChatRoom::class, 'chat_room_id');
+    }
+
+    public function chatRoom(): BelongsTo
     {
         return $this->belongsTo(ChatRoom::class, 'chat_room_id');
     }

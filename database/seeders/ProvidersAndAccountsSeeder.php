@@ -11,11 +11,14 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\Grade;
 use App\Models\GradeSubject;
+use App\Models\Provider;
 use App\Models\ProviderPlan;
 use App\Models\ProviderPlanOption;
 use App\Models\StudentProfile;
 use App\Models\Subject;
 use App\Models\Track;
+use App\Models\User;
+use Illuminate\Support\Collection;
 
 class ProvidersAndAccountsSeeder extends BaseSeeder
 {
@@ -27,14 +30,15 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
             ->where('name->en', 'Cairo')
             ->firstOrFail();
 
-        $secondaryOneMath = $this->gradeSubject('Secondary', 10, 'Mathematics', 'scientific_math');
-        $secondaryOnePhysics = $this->gradeSubject('Secondary', 10, 'Physics', 'scientific');
+        $secondaryOnePhysics = $this->gradeSubject('Secondary Stage', 10, 'Physics', 'scientific');
 
         $saasOwner = $this->user('01000000000', 'Almanasa', 'Owner');
         $academyOwner = $this->user('01000000001', 'Academy', 'Owner');
         $secondAcademyOwner = $this->user('01000000006', 'Science', 'Owner');
         $academyTeacherUser = $this->user('01000000002', 'Ahmed', 'Teacher');
+        $academyTeacherAssistantUser = $this->user('01000000007', 'Laila', 'Teacher');
         $standaloneTeacherUser = $this->user('01000000003', 'Mona', 'Teacher');
+        $scienceTeacherUser = $this->user('01000000008', 'Youssef', 'Teacher');
         $studentUser = $this->user('01000000004', 'Omar', 'Student');
         $parentUser = $this->user('01000000005', 'Sara', 'Parent');
 
@@ -84,8 +88,10 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
             $this->role($academyAccount, $roleName, $academyAccount);
         }
 
-        $academyMathCoverage = $this->accountSubject($academyProvider->id, $secondaryOneMath->id);
-        $academyPhysicsCoverage = $this->accountSubject($academyProvider->id, $secondaryOnePhysics->id);
+        $academyCoverages = $this->syncProviderCoverage(
+            providerId: $academyProvider->id,
+            gradeSubjects: GradeSubject::query()->with(['grade', 'subject.track'])->get(),
+        );
 
         $secondAcademyProvider = $this->provider(
             type: ProviderType::Academy,
@@ -120,38 +126,24 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
             $this->role($secondAcademyAccount, $roleName, $secondAcademyAccount);
         }
 
-        $secondAcademyPhysicsCoverage = $this->accountSubject($secondAcademyProvider->id, $secondaryOnePhysics->id);
-
-        $academyTeacherAccount = $this->account(
-            type: AccountType::AcademyTeacher,
-            owner: $academyTeacherUser,
-            provider: $academyProvider,
+        $secondAcademyCoverages = $this->syncProviderCoverage(
+            providerId: $secondAcademyProvider->id,
+            gradeSubjects: $this->secondaryGradeSubjects(),
         );
 
-        $academyTeacherAssignment = AcademyTeacher::query()->firstOrCreate([
-            'provider_id' => $academyProvider->id,
-            'teacher_account_id' => $academyTeacherAccount->id,
-        ], [
-            'is_active' => true,
+        $academyTeachers = $this->academyTeachers($academyProvider->id, [
+            $academyTeacherUser,
+            $academyTeacherAssistantUser,
         ]);
 
-        $this->teacherGradeSubject($academyTeacherAssignment->id, $academyMathCoverage->id);
-        $this->teacherGradeSubject($academyTeacherAssignment->id, $academyPhysicsCoverage->id);
+        $this->assignTeachersToCoverages($academyTeachers, $academyCoverages);
 
-        $secondAcademyTeacherAccount = $this->account(
-            type: AccountType::AcademyTeacher,
-            owner: $academyTeacherUser,
-            provider: $secondAcademyProvider,
-        );
-
-        $secondAcademyTeacherAssignment = AcademyTeacher::query()->firstOrCreate([
-            'provider_id' => $secondAcademyProvider->id,
-            'teacher_account_id' => $secondAcademyTeacherAccount->id,
-        ], [
-            'is_active' => true,
+        $secondAcademyTeachers = $this->academyTeachers($secondAcademyProvider->id, [
+            $academyTeacherUser,
+            $scienceTeacherUser,
         ]);
 
-        $this->teacherGradeSubject($secondAcademyTeacherAssignment->id, $secondAcademyPhysicsCoverage->id);
+        $this->assignTeachersToCoverages($secondAcademyTeachers, $secondAcademyCoverages);
 
         $standaloneTeacherProvider = $this->provider(
             type: ProviderType::StandaloneTeacher,
@@ -188,7 +180,10 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
             $this->role($standaloneTeacherAccount, $roleName, $standaloneTeacherAccount);
         }
 
-        $this->accountSubject($standaloneTeacherProvider->id, $secondaryOnePhysics->id);
+        $this->syncProviderCoverage(
+            providerId: $standaloneTeacherProvider->id,
+            gradeSubjects: $this->physicsSecondaryGradeSubjects(),
+        );
 
         $this->account(
             type: AccountType::Student,
@@ -203,8 +198,8 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
             'gender' => 'male',
             'country_id' => $egypt->id,
             'city_id' => $cairo->id,
-            'education_stage_id' => $secondaryOneMath->grade->education_stage_id,
-            'grade_id' => $secondaryOneMath->grade_id,
+            'education_stage_id' => $secondaryOnePhysics->grade->education_stage_id,
+            'grade_id' => $secondaryOnePhysics->grade_id,
             'school_name' => 'Future Stars Secondary School',
         ]);
 
@@ -277,21 +272,123 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
 
     private function accountSubject(int $providerId, int $gradeSubjectId): AccountSubject
     {
-        return AccountSubject::query()->firstOrCreate([
+        /** @var AccountSubject $accountSubject */
+        $accountSubject = AccountSubject::query()->withTrashed()->firstOrNew([
             'provider_id' => $providerId,
             'grade_subject_id' => $gradeSubjectId,
-        ], [
+        ]);
+
+        $accountSubject->fill([
             'is_active' => true,
         ]);
+
+        $accountSubject->restore();
+        $accountSubject->save();
+
+        return $accountSubject;
     }
 
     private function teacherGradeSubject(int $academyTeacherId, int $accountSubjectId): void
     {
-        AcademyTeacherGradeSubject::query()->firstOrCreate([
+        /** @var AcademyTeacherGradeSubject $assignment */
+        $assignment = AcademyTeacherGradeSubject::query()->withTrashed()->firstOrNew([
             'academy_teacher_id' => $academyTeacherId,
             'account_subject_id' => $accountSubjectId,
-        ], [
+        ]);
+
+        $assignment->fill([
             'is_active' => true,
         ]);
+
+        $assignment->restore();
+        $assignment->save();
+    }
+
+    /**
+     * @param  Collection<int, GradeSubject>  $gradeSubjects
+     * @return Collection<int, AccountSubject>
+     */
+    private function syncProviderCoverage(int $providerId, Collection $gradeSubjects): Collection
+    {
+        $gradeSubjectIds = $gradeSubjects
+            ->pluck('id')
+            ->map(fn (int|string $id): int => (int) $id)
+            ->values();
+
+        $coverages = $gradeSubjectIds
+            ->map(fn (int $gradeSubjectId): AccountSubject => $this->accountSubject($providerId, $gradeSubjectId));
+
+        AccountSubject::query()
+            ->where('provider_id', $providerId)
+            ->whereNotIn('grade_subject_id', $gradeSubjectIds)
+            ->get()
+            ->each(function (AccountSubject $accountSubject): void {
+                $accountSubject->teacherAssignments()->delete();
+                $accountSubject->courses()->delete();
+                $accountSubject->delete();
+            });
+
+        return $coverages;
+    }
+
+    /**
+     * @return Collection<int, GradeSubject>
+     */
+    private function secondaryGradeSubjects(): Collection
+    {
+        return GradeSubject::query()
+            ->whereHas('grade', fn ($query) => $query->whereIn('sort_order', [10, 11, 12]))
+            ->with(['grade', 'subject.track'])
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, GradeSubject>
+     */
+    private function physicsSecondaryGradeSubjects(): Collection
+    {
+        return GradeSubject::query()
+            ->whereHas('grade', fn ($query) => $query->whereIn('sort_order', [10, 11, 12]))
+            ->whereHas('subject', function ($query): void {
+                $query
+                    ->where('name->en', 'Physics')
+                    ->whereHas('track', fn ($query) => $query->where('code', 'scientific'));
+            })
+            ->with(['grade', 'subject.track'])
+            ->get();
+    }
+
+    /**
+     * @param  array<int, User>  $users
+     * @return Collection<int, AcademyTeacher>
+     */
+    private function academyTeachers(int $providerId, array $users): Collection
+    {
+        return collect($users)
+            ->map(function ($user) use ($providerId): AcademyTeacher {
+                $account = $this->account(
+                    type: AccountType::AcademyTeacher,
+                    owner: $user,
+                    provider: Provider::query()->findOrFail($providerId),
+                );
+
+                return AcademyTeacher::query()->updateOrCreate([
+                    'provider_id' => $providerId,
+                    'teacher_account_id' => $account->id,
+                ], [
+                    'is_active' => true,
+                ]);
+            });
+    }
+
+    /**
+     * @param  Collection<int, AcademyTeacher>  $academyTeachers
+     * @param  Collection<int, AccountSubject>  $coverages
+     */
+    private function assignTeachersToCoverages(Collection $academyTeachers, Collection $coverages): void
+    {
+        $academyTeachers->each(function (AcademyTeacher $academyTeacher) use ($coverages): void {
+            $coverages->each(fn (AccountSubject $coverage) => $this->teacherGradeSubject($academyTeacher->id, $coverage->id));
+        });
     }
 }

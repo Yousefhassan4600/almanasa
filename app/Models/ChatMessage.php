@@ -25,9 +25,15 @@ class ChatMessage extends Model
 
     protected array $tenantRelations = [
         'chat_room',
+        'chatRoom',
     ];
 
     public function chat_room(): BelongsTo
+    {
+        return $this->belongsTo(ChatRoom::class, 'chat_room_id');
+    }
+
+    public function chatRoom(): BelongsTo
     {
         return $this->belongsTo(ChatRoom::class, 'chat_room_id');
     }

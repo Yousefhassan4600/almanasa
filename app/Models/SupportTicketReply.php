@@ -22,9 +22,15 @@ class SupportTicketReply extends Model
 
     protected array $tenantRelations = [
         'support_ticket',
+        'supportTicket',
     ];
 
     public function support_ticket(): BelongsTo
+    {
+        return $this->belongsTo(SupportTicket::class, 'support_ticket_id');
+    }
+
+    public function supportTicket(): BelongsTo
     {
         return $this->belongsTo(SupportTicket::class, 'support_ticket_id');
     }

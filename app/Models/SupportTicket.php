@@ -6,6 +6,7 @@ use App\Concerns\FiltersByTenant;
 use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SupportTicket extends Model
@@ -30,5 +31,10 @@ class SupportTicket extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function replies(): HasMany
+    {
+        return $this->hasMany(SupportTicketReply::class, 'support_ticket_id');
     }
 }

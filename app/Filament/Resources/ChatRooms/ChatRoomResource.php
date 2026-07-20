@@ -16,6 +16,8 @@ class ChatRoomResource extends BaseResource
 
     protected static string|UnitEnum|null $navigationGroup = 'Communication & Website';
 
+    protected static ?int $navigationSort = 1;
+
     public static function form(Schema $schema): Schema
     {
         return ChatRoomForm::configure($schema);
@@ -28,7 +30,10 @@ class ChatRoomResource extends BaseResource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            RelationManagers\MembersRelationManager::class,
+            RelationManagers\MessagesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

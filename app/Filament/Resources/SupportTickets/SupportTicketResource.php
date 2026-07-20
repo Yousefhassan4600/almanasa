@@ -16,6 +16,8 @@ class SupportTicketResource extends BaseResource
 
     protected static string|UnitEnum|null $navigationGroup = 'Communication & Website';
 
+    protected static ?int $navigationSort = 2;
+
     public static function form(Schema $schema): Schema
     {
         return SupportTicketForm::configure($schema);
@@ -28,7 +30,9 @@ class SupportTicketResource extends BaseResource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            RelationManagers\RepliesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

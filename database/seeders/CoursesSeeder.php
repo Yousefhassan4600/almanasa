@@ -28,46 +28,98 @@ class CoursesSeeder extends BaseSeeder
 {
     public function run(): void
     {
-        $academyProvider = Provider::query()->where('slug', 'future-stars-academy')->firstOrFail();
-        $academyMathCoverage = AccountSubject::query()
-            ->where('provider_id', $academyProvider->id)
-            ->whereHas('gradeSubject.subject', fn ($query) => $query->where('name->en', 'Mathematics'))
-            ->firstOrFail();
-
-        $academyTeacherAssignment = AcademyTeacher::query()
-            ->where('provider_id', $academyProvider->id)
-            ->whereHas('teacher.owner', fn ($query) => $query->where('phone', '01000000002'))
-            ->firstOrFail();
-
         $lessonPurchaseUnit = PurchaseUnit::query()->where('type', PurchaseUnitType::Lesson->value)->firstOrFail();
         $monthPurchaseUnit = PurchaseUnit::query()->where('type', PurchaseUnitType::Month->value)->firstOrFail();
         $termOnePeriod = CoursePeriod::query()->where('type', CoursePeriodType::Term1->value)->firstOrFail();
 
-        $academyCourse = Course::query()->updateOrCreate([
-            'provider_id' => $academyProvider->id,
-            'account_subject_id' => $academyMathCoverage->id,
-            'academy_teacher_id' => $academyTeacherAssignment->id,
+        Provider::query()
+            ->whereIn('slug', [
+                'future-stars-academy',
+                'mona-physics-platform',
+                'science-gate-academy',
+            ])
+            ->get()
+            ->each(fn (Provider $provider) => $this->providerCourses(
+                provider: $provider,
+                lessonPurchaseUnit: $lessonPurchaseUnit,
+                monthPurchaseUnit: $monthPurchaseUnit,
+                termOnePeriod: $termOnePeriod,
+            ));
+    }
+
+    private function providerCourses(
+        Provider $provider,
+        PurchaseUnit $lessonPurchaseUnit,
+        PurchaseUnit $monthPurchaseUnit,
+        CoursePeriod $termOnePeriod,
+    ): void {
+        $provider->load([
+            'accountSubjects.gradeSubject.grade.educationStage',
+            'accountSubjects.gradeSubject.subject.track',
+            'accountSubjects.teacherAssignments.academyTeacher.teacher.owner',
+        ]);
+
+        $provider->accountSubjects->each(function (AccountSubject $accountSubject) use ($provider, $lessonPurchaseUnit, $monthPurchaseUnit, $termOnePeriod): void {
+            $teacherAssignments = $accountSubject->teacherAssignments
+                ->filter(fn ($assignment): bool => filled($assignment->academy_teacher_id));
+
+            if ($teacherAssignments->isEmpty()) {
+                $this->course(
+                    provider: $provider,
+                    accountSubject: $accountSubject,
+                    academyTeacher: null,
+                    lessonPurchaseUnit: $lessonPurchaseUnit,
+                    monthPurchaseUnit: $monthPurchaseUnit,
+                    termOnePeriod: $termOnePeriod,
+                );
+
+                return;
+            }
+
+            $teacherAssignments->each(fn ($assignment) => $this->course(
+                provider: $provider,
+                accountSubject: $accountSubject,
+                academyTeacher: $assignment->academyTeacher,
+                lessonPurchaseUnit: $lessonPurchaseUnit,
+                monthPurchaseUnit: $monthPurchaseUnit,
+                termOnePeriod: $termOnePeriod,
+            ));
+        });
+    }
+
+    private function course(
+        Provider $provider,
+        AccountSubject $accountSubject,
+        ?AcademyTeacher $academyTeacher,
+        PurchaseUnit $lessonPurchaseUnit,
+        PurchaseUnit $monthPurchaseUnit,
+        CoursePeriod $termOnePeriod,
+    ): Course {
+        $course = Course::query()->updateOrCreate([
+            'provider_id' => $provider->id,
+            'account_subject_id' => $accountSubject->id,
+            'academy_teacher_id' => $academyTeacher?->id,
         ], [
-            'title' => $this->translation(
-                'Welcome to the Mathematics Course',
-                'أهلاً بك في كورس الرياضيات'
-            ),
-            'description' => $this->translation(
-                'Secondary 1 scientific mathematics course with recorded lessons, practice, assignments, and exams.',
-                'كورس رياضيات للصف الأول الثانوي علمي رياضة يحتوي على دروس مسجلة وتدريبات وواجبات وامتحانات.'
-            ),
+            'title' => $this->courseTitle($provider, $accountSubject, $academyTeacher),
+            'description' => $this->courseDescription($provider, $accountSubject, $academyTeacher),
             'weekly_lectures_count' => 2,
             'num_of_lessons' => 65,
             'num_of_hours' => 12,
-            'academy_percentage' => 50,
-            'teacher_percentage' => 40,
+            'academy_percentage' => $academyTeacher ? 50 : 0,
+            'teacher_percentage' => $academyTeacher ? 40 : 90,
             'platform_percentage' => 10,
         ]);
 
-        $this->coursePrices($academyCourse, $lessonPurchaseUnit, $monthPurchaseUnit);
-        $this->providerCode($academyProvider, $academyCourse, $monthPurchaseUnit);
-        $this->courseOutcomes($academyCourse);
-        $this->lessonContent($academyCourse, $termOnePeriod);
+        $this->coursePrices($course, $lessonPurchaseUnit, $monthPurchaseUnit);
+
+        if ($this->isDefaultCommerceCourse($provider, $accountSubject, $academyTeacher)) {
+            $this->providerCode($provider, $course, $monthPurchaseUnit);
+        }
+
+        $this->courseOutcomes($course);
+        $this->lessonContent($course, $termOnePeriod);
+
+        return $course;
     }
 
     private function coursePrices(Course $course, PurchaseUnit $lessonPurchaseUnit, PurchaseUnit $monthPurchaseUnit): void
@@ -100,6 +152,73 @@ class CoursesSeeder extends BaseSeeder
             'expiry_date' => now()->addMonth()->toDateString(),
             'num_of_uses' => 100,
         ]);
+    }
+
+    private function courseTitle(Provider $provider, AccountSubject $accountSubject, ?AcademyTeacher $academyTeacher): array
+    {
+        if ($this->isDefaultCommerceCourse($provider, $accountSubject, $academyTeacher)) {
+            return $this->translation(
+                'Welcome to the Mathematics Course',
+                'أهلاً بك في كورس الرياضيات'
+            );
+        }
+
+        $grade = $accountSubject->gradeSubject?->grade;
+        $subject = $accountSubject->gradeSubject?->subject;
+        $teacherName = $academyTeacher?->teacher?->owner?->name;
+
+        $englishParts = array_filter([
+            $grade?->getTranslation('name', 'en'),
+            $subject?->getTranslation('name', 'en'),
+            $subject?->track?->getTranslation('name', 'en'),
+            $teacherName,
+        ]);
+
+        $arabicParts = array_filter([
+            $grade?->getTranslation('name', 'ar'),
+            $subject?->getTranslation('name', 'ar'),
+            $subject?->track?->getTranslation('name', 'ar'),
+            $teacherName,
+        ]);
+
+        return $this->translation(
+            implode(' - ', $englishParts).' Course',
+            'كورس '.implode(' - ', $arabicParts),
+        );
+    }
+
+    private function courseDescription(Provider $provider, AccountSubject $accountSubject, ?AcademyTeacher $academyTeacher): array
+    {
+        $grade = $accountSubject->gradeSubject?->grade;
+        $subject = $accountSubject->gradeSubject?->subject;
+        $teacherName = $academyTeacher?->teacher?->owner?->name;
+
+        return $this->translation(
+            collect([
+                $provider->name,
+                $grade?->getTranslation('name', 'en'),
+                $subject?->getTranslation('name', 'en'),
+                $subject?->track?->getTranslation('name', 'en'),
+                $teacherName ? "with {$teacherName}" : null,
+            ])->filter()->join(' - ').' course with lessons, assignments, exams, and practice questions.',
+            collect([
+                'كورس',
+                $provider->name,
+                $grade?->getTranslation('name', 'ar'),
+                $subject?->getTranslation('name', 'ar'),
+                $subject?->track?->getTranslation('name', 'ar'),
+                $teacherName ? "مع {$teacherName}" : null,
+            ])->filter()->join(' - ').' يحتوي على حصص وواجبات وامتحانات وتدريبات.',
+        );
+    }
+
+    private function isDefaultCommerceCourse(Provider $provider, AccountSubject $accountSubject, ?AcademyTeacher $academyTeacher): bool
+    {
+        return $provider->slug === 'future-stars-academy'
+            && $academyTeacher?->teacher?->owner?->phone === '01000000002'
+            && $accountSubject->gradeSubject?->grade?->sort_order === 10
+            && $accountSubject->gradeSubject?->subject?->getTranslation('name', 'en') === 'Mathematics'
+            && $accountSubject->gradeSubject?->subject?->track?->code === 'general';
     }
 
     private function courseOutcomes(Course $course): void
@@ -143,9 +262,9 @@ class CoursesSeeder extends BaseSeeder
             'course_id' => $course->id,
             'course_period_id' => $termOnePeriod->id,
             'sort_order' => 1,
+        ], [
             'starts_at' => now(),
             'ends_at' => now()->addWeek(),
-        ], [
             'title' => $this->translation(
                 'Lesson 1: Introduction to Real Numbers',
                 'الحصة الأولى: مقدمة الأعداد الحقيقية'
@@ -306,10 +425,10 @@ class CoursesSeeder extends BaseSeeder
             $lessonItem = LessonItem::query()->updateOrCreate([
                 'lesson_id' => $lesson->id,
                 'sort_order' => $sortOrder,
-                'starts_at' => now(),
-                'ends_at' => now()->addWeek(),
             ], [
                 ...$item,
+                'starts_at' => now(),
+                'ends_at' => now()->addWeek(),
                 'is_active' => true,
             ]);
         }

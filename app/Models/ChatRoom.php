@@ -6,6 +6,7 @@ use App\Concerns\FiltersByTenant;
 use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ChatRoom extends Model
@@ -42,5 +43,15 @@ class ChatRoom extends Model
     public function lesson(): BelongsTo
     {
         return $this->belongsTo(Lesson::class, 'lesson_id');
+    }
+
+    public function members(): HasMany
+    {
+        return $this->hasMany(ChatMember::class, 'chat_room_id');
+    }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(ChatMessage::class, 'chat_room_id');
     }
 }

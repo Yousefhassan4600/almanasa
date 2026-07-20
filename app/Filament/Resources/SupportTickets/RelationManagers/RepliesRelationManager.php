@@ -19,14 +19,14 @@ class RepliesRelationManager extends BaseRelationManager
         return $schema
             ->components([
                 Select::make('user_id')
-                    ->label('User')
+                    ->label(__('admin.labels.User'))
                     ->relationship('user', 'phone')
                     ->getOptionLabelFromRecordUsing(fn (User $record): string => $record->name ?: $record->phone)
                     ->preload()
                     ->searchable()
                     ->required(),
                 Textarea::make('message')
-                    ->label('Message')
+                    ->label(__('admin.labels.Message'))
                     ->columnSpanFull()
                     ->required(),
             ]);
@@ -39,15 +39,15 @@ class RepliesRelationManager extends BaseRelationManager
             ->recordTitleAttribute('message')
             ->columns([
                 TextColumn::make('user.phone')
-                    ->label('User')
+                    ->label(__('admin.labels.User'))
                     ->formatStateUsing(fn (mixed $state, mixed $record): ?string => $record->user?->name ?: $state)
                     ->searchable(),
                 TextColumn::make('message')
-                    ->label('Message')
+                    ->label(__('admin.labels.Message'))
                     ->limit(80)
                     ->searchable(),
                 TextColumn::make('created_at')
-                    ->label('Created At')
+                    ->label(__('admin.labels.Created At'))
                     ->dateTime()
                     ->sortable(),
             ])

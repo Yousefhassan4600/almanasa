@@ -15,6 +15,8 @@ class UserResource extends BaseResource
 {
     protected static ?string $model = User::class;
 
+    protected static bool $isSaasOwnerOnly = true;
+
     protected static string|UnitEnum|null $navigationGroup = 'Users & Subscriptions';
 
     protected static ?int $navigationSort = 1;

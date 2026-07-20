@@ -102,6 +102,11 @@ class AccountPicker extends Component
             ])
             ->where(function (Builder $query): void {
                 $query
+                    ->where('accounts.type', '!=', AccountType::AcademyTeacher->value)
+                    ->orWhereHas('academyTeacherAssignments', fn (Builder $query): Builder => $query->where('is_active', true));
+            })
+            ->where(function (Builder $query): void {
+                $query
                     ->where('accounts.type', AccountType::SaasOwner->value)
                     ->orWhereHas('provider.activeSubscription');
             })

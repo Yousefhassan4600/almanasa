@@ -13,18 +13,18 @@ class SlidersTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             ImageColumn::make('cover')
-                ->label('Cover'),
+                ->label(__('admin.labels.Cover')),
             TextColumn::make('title')
-                ->label('Title')
+                ->label(__('admin.labels.Title'))
                 ->wrap(),
             TextColumn::make('subtitle')
-                ->label('Subtitle')
+                ->label(__('admin.labels.Subtitle'))
                 ->wrap(),
             ToggleColumn::make('is_active')
-                ->label('Is Active'),
+                ->label(__('admin.labels.Is Active')),
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProviderCodes\Schemas;
 
+use App\Filament\Support\CurrentAccount;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\ProviderCode;
@@ -21,8 +22,8 @@ class ProviderCodeForm
     {
         return $schema
             ->components([
-                Select::make('provider_id')
-                    ->label('Provider')
+                CurrentAccount::providerSelect(Select::make('provider_id'))
+                    ->label(__('admin.labels.Provider'))
                     ->relationship('provider', 'name')
                     ->live()
                     ->afterStateUpdated(function (Set $set): void {
@@ -34,7 +35,7 @@ class ProviderCodeForm
                     ->required()
                     ->columnSpanFull(),
                 TextInput::make('code')
-                    ->label('Code')
+                    ->label(__('admin.labels.Code'))
                     ->maxLength(255)
                     ->rules([
                         fn (Get $get, ?ProviderCode $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
@@ -51,14 +52,14 @@ class ProviderCodeForm
                                 ->exists();
 
                             if ($exists) {
-                                $fail('This provider already has a code with the same value.');
+                                $fail(__('admin.messages.provider_code_already_exists'));
                             }
                         },
                     ])
                     ->required()
                     ->columnSpanFull(),
                 Select::make('purchase_unit_id')
-                    ->label('Purchase Unit')
+                    ->label(__('admin.labels.Purchase Unit'))
                     ->options(fn (): array => PurchaseUnit::query()
                         ->where('is_active', true)
                         ->orderBy('sort_order')
@@ -72,7 +73,7 @@ class ProviderCodeForm
                     ->required()
                     ->columnSpanFull(),
                 Select::make('course_id')
-                    ->label('Course')
+                    ->label(__('admin.labels.Course'))
                     ->options(fn (Get $get): array => blank($get('provider_id'))
                         ? []
                         : Course::query()
@@ -99,7 +100,7 @@ class ProviderCodeForm
                                 ->exists();
 
                             if (! $belongsToProvider) {
-                                $fail('The selected course does not belong to the selected provider.');
+                                $fail(__('admin.messages.selected_course_not_in_provider'));
                             }
                         },
                     ])
@@ -107,7 +108,7 @@ class ProviderCodeForm
                     ->preload()
                     ->searchable(),
                 Select::make('lesson_id')
-                    ->label('Lesson')
+                    ->label(__('admin.labels.Lesson'))
                     ->options(fn (Get $get): array => blank($get('course_id'))
                         ? []
                         : Lesson::query()
@@ -133,7 +134,7 @@ class ProviderCodeForm
                                 ->exists();
 
                             if (! $belongsToCourse) {
-                                $fail('The selected lesson does not belong to the selected course.');
+                                $fail(__('admin.messages.selected_lesson_not_in_course'));
                             }
                         },
                     ])
@@ -141,13 +142,13 @@ class ProviderCodeForm
                     ->preload()
                     ->searchable(),
                 TextInput::make('num_of_uses')
-                    ->label('Number Of Uses')
+                    ->label(__('admin.labels.Number Of Uses'))
                     ->numeric()
                     ->default(1)
                     ->minValue(1)
                     ->required(),
                 DatePicker::make('expiry_date')
-                    ->label('Expiry Date')
+                    ->label(__('admin.labels.Expiry Date'))
                     ->native(false),
             ])
             ->columns(2);

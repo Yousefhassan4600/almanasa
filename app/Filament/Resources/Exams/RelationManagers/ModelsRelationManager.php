@@ -44,30 +44,30 @@ class ModelsRelationManager extends RelationManager
             ->heading('Model Questions')
             ->columns([
                 TextColumn::make('id')
-                    ->label('#')
+                    ->label(__('admin.labels.#'))
                     ->sortable(),
                 TextColumn::make('title')
-                    ->label('Title')
+                    ->label(__('admin.labels.Title'))
                     ->searchable()
                     ->wrap(),
                 TextColumn::make('lesson.course.title')
-                    ->label('Course')
+                    ->label(__('admin.labels.Course'))
                     ->searchable()
                     ->wrap(),
                 TextColumn::make('lesson.title')
-                    ->label('Lesson')
+                    ->label(__('admin.labels.Lesson'))
                     ->searchable()
                     ->wrap(),
                 TextColumn::make('type')
-                    ->label('Type')
+                    ->label(__('admin.labels.Type'))
                     ->badge()
                     ->sortable(),
                 TextColumn::make('difficulty')
-                    ->label('Difficulty')
+                    ->label(__('admin.labels.Difficulty'))
                     ->badge()
                     ->sortable(),
                 TextInputColumn::make('max_score')
-                    ->label('Max Score')
+                    ->label(__('admin.labels.Max Score'))
                     ->type('number')
                     ->step('0.01')
                     ->rules(['numeric', 'min:0'])

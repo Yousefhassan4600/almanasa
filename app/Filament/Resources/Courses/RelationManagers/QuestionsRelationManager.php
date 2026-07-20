@@ -76,19 +76,19 @@ class QuestionsRelationManager extends BaseRelationManager
     private function questionFormComponents(bool $useRelationshipRepeater): array
     {
         $optionsRepeater = Repeater::make('options')
-            ->label('Options')
+            ->label(__('admin.labels.Options'))
             ->schema([
                 Textarea::make('title')
-                    ->label('Title')
+                    ->label(__('admin.labels.Title'))
                     ->required(),
                 FileUpload::make('media')
-                    ->label('Media')
+                    ->label(__('admin.labels.Media'))
                     ->disk('public')
                     ->visibility('public')
                     ->directory('questions/options')
                     ->columnSpanFull(),
                 Toggle::make('is_correct')
-                    ->label('Correct')
+                    ->label(__('admin.labels.Correct'))
                     ->default(false),
             ])
             ->columns(1)
@@ -102,12 +102,12 @@ class QuestionsRelationManager extends BaseRelationManager
 
         return [
             Select::make('lesson_id')
-                ->label('Lesson')
-                ->options(fn(): array => Lesson::query()
+                ->label(__('admin.labels.Lesson'))
+                ->options(fn (): array => Lesson::query()
                     ->where('course_id', $this->getOwnerRecord()->getKey())
                     ->orderBy('sort_order')
                     ->get()
-                    ->mapWithKeys(fn(Lesson $lesson): array => [
+                    ->mapWithKeys(fn (Lesson $lesson): array => [
                         $lesson->id => $lesson->title,
                     ])
                     ->all())
@@ -115,18 +115,18 @@ class QuestionsRelationManager extends BaseRelationManager
                 ->preload()
                 ->required(),
             Select::make('type')
-                ->label('Type')
+                ->label(__('admin.labels.Type'))
                 ->options(QuestionType::options())
                 ->required(),
             Select::make('difficulty')
-                ->label('Difficulty')
+                ->label(__('admin.labels.Difficulty'))
                 ->options(QuestionDifficulty::options())
                 ->required(),
             Textarea::make('title')
-                ->label('Title')
+                ->label(__('admin.labels.Title'))
                 ->required(),
             FileUpload::make('media')
-                ->label('Media')
+                ->label(__('admin.labels.Media'))
                 ->disk('public')
                 ->visibility('public')
                 ->directory('questions/media')

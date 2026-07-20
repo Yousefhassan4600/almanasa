@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Roles\Tables;
 
 use App\Filament\Base\BaseTable;
+use App\Filament\Support\CurrentAccount;
 use Filament\Tables\Columns\TextColumn;
 
 class RolesTable extends BaseTable
@@ -11,21 +12,22 @@ class RolesTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             TextColumn::make('provider.name')
-                ->label('Provider')
+                ->label(__('admin.labels.Provider'))
+                ->visible(fn (): bool => CurrentAccount::isSaasOwner())
                 ->searchable()
                 ->sortable(),
             TextColumn::make('name')
-                ->label('Name')
+                ->label(__('admin.labels.Name'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('creator.owner.name')
-                ->label('Created By Account')
+                ->label(__('admin.labels.Created By Account'))
                 ->searchable(),
             TextColumn::make('guard_name')
-                ->label('Guard Name')
+                ->label(__('admin.labels.Guard Name'))
                 ->searchable()
                 ->sortable(),
         ];

@@ -14,6 +14,8 @@ class CityResource extends BaseResource
 {
     protected static ?string $model = City::class;
 
+    protected static bool $isSaasOwnerOnly = true;
+
     protected static ?string $cluster = Locations::class;
 
     protected static ?int $navigationSort = 2;

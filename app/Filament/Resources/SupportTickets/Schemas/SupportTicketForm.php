@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SupportTickets\Schemas;
 
+use App\Filament\Support\CurrentAccount;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -12,22 +13,22 @@ class SupportTicketForm
     {
         return $schema
             ->components([
-                TextInput::make('provider_id')
-                    ->label('Provider Id')
+                CurrentAccount::providerTextInput(TextInput::make('provider_id'))
+                    ->label(__('admin.labels.Provider Id'))
                     ->numeric(),
                 TextInput::make('user_id')
-                    ->label('User Id')
+                    ->label(__('admin.labels.User Id'))
                     ->numeric()
                     ->required(),
                 TextInput::make('subject')
-                    ->label('Subject')
+                    ->label(__('admin.labels.Subject'))
                     ->required(),
                 Textarea::make('message')
-                    ->label('Message')
+                    ->label(__('admin.labels.Message'))
                     ->columnSpanFull()
                     ->required(),
                 TextInput::make('status')
-                    ->label('Status')
+                    ->label(__('admin.labels.Status'))
                     ->required(),
             ]);
     }

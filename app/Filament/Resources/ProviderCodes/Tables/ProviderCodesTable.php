@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ProviderCodes\Tables;
 
 use App\Filament\Base\BaseTable;
+use App\Filament\Support\CurrentAccount;
 use Filament\Tables\Columns\TextColumn;
 
 class ProviderCodesTable extends BaseTable
@@ -11,34 +12,35 @@ class ProviderCodesTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             TextColumn::make('code')
-                ->label('Code')
+                ->label(__('admin.labels.Code'))
                 ->searchable()
                 ->badge()
                 ->sortable()
                 ->copyable(),
             TextColumn::make('provider.name')
-                ->label('Provider'),
+                ->label(__('admin.labels.Provider'))
+                ->visible(fn (): bool => CurrentAccount::isSaasOwner()),
             TextColumn::make('purchaseUnit.name')
-                ->label('Purchase Unit')
+                ->label(__('admin.labels.Purchase Unit'))
                 ->badge()
                 ->searchable(),
             TextColumn::make('course.title')
-                ->label('Course')
+                ->label(__('admin.labels.Course'))
                 ->searchable()
                 ->toggleable(),
             TextColumn::make('lesson.title')
-                ->label('Lesson')
+                ->label(__('admin.labels.Lesson'))
                 ->searchable()
                 ->toggleable(),
             TextColumn::make('num_of_uses')
-                ->label('Uses')
+                ->label(__('admin.labels.Uses'))
                 ->badge()
                 ->sortable(),
             TextColumn::make('expiry_date')
-                ->label('Expiry Date')
+                ->label(__('admin.labels.Expiry Date'))
                 ->date()
                 ->sortable(),
         ];

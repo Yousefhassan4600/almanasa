@@ -19,9 +19,9 @@ class ListCarts extends BaseListRecords
     public function getTabs(): array
     {
         return [
-            'active' => Tab::make('Active')
+            'active' => Tab::make(__('admin.labels.Active'))
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->withoutTrashed()),
-            'unactive' => Tab::make('Unactive')
+            'unactive' => Tab::make(__('admin.labels.Unactive'))
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->onlyTrashed()),
         ];
     }

@@ -14,7 +14,9 @@ use App\Filament\Resources\Students\RelationManagers\StudentAttemptsRelationMana
 use App\Filament\Resources\Students\RelationManagers\SubscriptionsRelationManager;
 use App\Filament\Resources\Students\Schemas\StudentForm;
 use App\Filament\Resources\Students\Tables\StudentsTable;
+use App\Filament\Support\CurrentAccount;
 use App\Models\Account;
+use App\Support\AdminPermissions;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -42,17 +44,42 @@ class StudentResource extends BaseResource
         return StudentsTable::configure($table);
     }
 
+    public static function canViewAny(): bool
+    {
+        if (CurrentAccount::isAcademyTeacher() && AdminPermissions::hasViewHisOnly(static::class)) {
+            return true;
+        }
+
+        return parent::canViewAny();
+    }
+
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
+        $query = CurrentAccount::isAcademyTeacher() && AdminPermissions::hasViewHisOnly(static::class)
+            ? Account::query()
+            : parent::getEloquentQuery();
+
+        $query
             ->where('type', AccountType::Student->value)
             ->with(['owner.studentProfile.grade', 'provider']);
+
+        if (CurrentAccount::isAcademyTeacher() && AdminPermissions::hasViewHisOnly(static::class)) {
+            return self::scopeStudentsToCurrentTeacher($query);
+        }
+
+        return $query;
     }
 
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
-        return parent::getRecordRouteBindingEloquentQuery()
+        $query = parent::getRecordRouteBindingEloquentQuery()
             ->where('type', AccountType::Student->value);
+
+        if (CurrentAccount::isAcademyTeacher() && AdminPermissions::hasViewHisOnly(static::class)) {
+            return self::scopeStudentsToCurrentTeacher($query);
+        }
+
+        return $query;
     }
 
     public static function getRelations(): array
@@ -73,5 +100,22 @@ class StudentResource extends BaseResource
             'create' => CreateStudent::route('/create'),
             'edit' => EditStudent::route('/{record}/edit'),
         ];
+    }
+
+    private static function scopeStudentsToCurrentTeacher(Builder $query): Builder
+    {
+        $account = CurrentAccount::account();
+
+        return $query->where(function (Builder $query) use ($account): void {
+            $query
+                ->whereHas('studentAttempts.course.academyTeacher', fn (Builder $query): Builder => $query
+                    ->where('teacher_account_id', $account?->id))
+                ->orWhereHas('lessonProgresses.course.academyTeacher', fn (Builder $query): Builder => $query
+                    ->where('teacher_account_id', $account?->id))
+                ->orWhereHas('courseReviews.course.academyTeacher', fn (Builder $query): Builder => $query
+                    ->where('teacher_account_id', $account?->id))
+                ->orWhereHas('subscriptions.course.academyTeacher', fn (Builder $query): Builder => $query
+                    ->where('teacher_account_id', $account?->id));
+        });
     }
 }

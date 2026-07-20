@@ -11,36 +11,36 @@ class ExamsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             TextColumn::make('title')
-                ->label('Title')
+                ->label(__('admin.labels.Title'))
                 ->searchable()
                 ->wrap(),
             TextColumn::make('course.title')
-                ->label('Course')
+                ->label(__('admin.labels.Course'))
                 ->searchable()
                 ->wrap(),
             TextColumn::make('num_of_questions')
-                ->label('Number of Questions')
+                ->label(__('admin.labels.Number of Questions'))
                 ->badge()
                 ->sortable(),
             TextColumn::make('num_of_models')
-                ->label('Number of Models')
+                ->label(__('admin.labels.Number of Models'))
                 ->badge()
                 ->sortable(),
             TextColumn::make('max_degree')
-                ->label('Max Degree')
+                ->label(__('admin.labels.Max Degree'))
                 ->badge()
                 ->numeric()
                 ->sortable(),
             TextColumn::make('duration_minutes')
-                ->label('Duration')
+                ->label(__('admin.labels.Duration'))
                 ->suffix(' min')
                 ->badge()
                 ->sortable(),
             TextColumn::make('num_of_attempts')
-                ->label('Number of Attempts')
+                ->label(__('admin.labels.Number of Attempts'))
                 ->badge()
                 ->sortable(),
         ];

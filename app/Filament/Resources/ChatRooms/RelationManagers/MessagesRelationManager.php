@@ -20,21 +20,21 @@ class MessagesRelationManager extends BaseRelationManager
         return $schema
             ->components([
                 Select::make('sender_user_id')
-                    ->label('Sender')
+                    ->label(__('admin.labels.Sender'))
                     ->relationship('sender', 'phone')
                     ->getOptionLabelFromRecordUsing(fn (User $record): string => $record->name ?: $record->phone)
                     ->preload()
                     ->searchable()
                     ->required(),
                 Textarea::make('message')
-                    ->label('Message')
+                    ->label(__('admin.labels.Message'))
                     ->columnSpanFull(),
                 TextInput::make('file_url')
-                    ->label('File Url'),
+                    ->label(__('admin.labels.File Url')),
                 TextInput::make('file_name')
-                    ->label('File Name'),
+                    ->label(__('admin.labels.File Name')),
                 TextInput::make('file_size')
-                    ->label('File Size'),
+                    ->label(__('admin.labels.File Size')),
             ]);
     }
 
@@ -45,20 +45,20 @@ class MessagesRelationManager extends BaseRelationManager
             ->recordTitleAttribute('message')
             ->columns([
                 TextColumn::make('sender.phone')
-                    ->label('Sender')
+                    ->label(__('admin.labels.Sender'))
                     ->formatStateUsing(fn (mixed $state, mixed $record): ?string => $record->sender?->name ?: $state)
                     ->searchable(),
                 TextColumn::make('message')
-                    ->label('Message')
+                    ->label(__('admin.labels.Message'))
                     ->limit(80)
                     ->searchable(),
                 TextColumn::make('file_name')
-                    ->label('File Name')
+                    ->label(__('admin.labels.File Name'))
                     ->searchable(),
                 TextColumn::make('file_size')
-                    ->label('File Size'),
+                    ->label(__('admin.labels.File Size')),
                 TextColumn::make('created_at')
-                    ->label('Created At')
+                    ->label(__('admin.labels.Created At'))
                     ->dateTime()
                     ->sortable(),
             ])

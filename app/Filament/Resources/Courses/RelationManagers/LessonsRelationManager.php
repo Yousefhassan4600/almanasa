@@ -31,17 +31,17 @@ class LessonsRelationManager extends BaseRelationManager
         return $schema
             ->components([
                 TextInput::make('title.ar')
-                    ->label('Title (Arabic)')
+                    ->label(__('admin.labels.Title (Arabic)'))
                     ->required(),
                 TextInput::make('title.en')
-                    ->label('Title (English)')
+                    ->label(__('admin.labels.Title (English)'))
                     ->required(),
                 Textarea::make('description.ar')
-                    ->label('Description (Arabic)'),
+                    ->label(__('admin.labels.Description (Arabic)')),
                 Textarea::make('description.en')
-                    ->label('Description (English)'),
+                    ->label(__('admin.labels.Description (English)')),
                 Select::make('course_period_id')
-                    ->label('Course Period')
+                    ->label(__('admin.labels.Course Period'))
                     ->options(fn (): array => CoursePeriod::query()
                         ->where('is_active', true)
                         ->orderBy('sort_order')
@@ -54,43 +54,43 @@ class LessonsRelationManager extends BaseRelationManager
                     ->preload()
                     ->required(),
                 TextInput::make('num_of_video_views')
-                    ->label('Number Of Video Views')
+                    ->label(__('admin.labels.Number Of Video Views'))
                     ->numeric()
                     ->integer()
                     ->default(1)
                     ->minValue(0),
                 DateTimePicker::make('starts_at')
-                    ->label('Starts At'),
+                    ->label(__('admin.labels.Starts At')),
                 DateTimePicker::make('ends_at')
-                    ->label('Ends At'),
+                    ->label(__('admin.labels.Ends At')),
                 Toggle::make('is_active')
-                    ->label('Is Active')
+                    ->label(__('admin.labels.Is Active'))
                     ->default(true),
                 Repeater::make('items')
-                    ->label('Lesson Items')
+                    ->label(__('admin.labels.Lesson Items'))
                     ->relationship()
                     ->collapsible()
                     ->collapsed(true)
                     ->itemLabel(fn (array $state): ?string => $state['title']['en'] ?? $state['title']['ar'] ?? null)
                     ->schema([
                         Select::make('type')
-                            ->label('Type')
+                            ->label(__('admin.labels.Type'))
                             ->options(fn (): array => $this->lessonItemTypeOptions())
                             ->live()
                             ->required()
                             ->columnSpanFull(),
                         TextInput::make('title.ar')
-                            ->label('Title (Arabic)')
+                            ->label(__('admin.labels.Title (Arabic)'))
                             ->required(),
                         TextInput::make('title.en')
-                            ->label('Title (English)')
+                            ->label(__('admin.labels.Title (English)'))
                             ->required(),
                         Textarea::make('description.ar')
-                            ->label('Description (Arabic)'),
+                            ->label(__('admin.labels.Description (Arabic)')),
                         Textarea::make('description.en')
-                            ->label('Description (English)'),
+                            ->label(__('admin.labels.Description (English)')),
                         FileUpload::make('video_url')
-                            ->label('Video')
+                            ->label(__('admin.labels.Video'))
                             ->acceptedFileTypes([
                                 'video/mp4',
                             ])
@@ -101,7 +101,7 @@ class LessonsRelationManager extends BaseRelationManager
                             ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Video->value)
                             ->columnSpanFull(),
                         FileUpload::make('file_url')
-                            ->label('File')
+                            ->label(__('admin.labels.File'))
                             ->disk('public')
                             ->visibility('public')
                             ->directory(fn (): string => 'courses/lesson_'.$this->currentLessonFolderKey().'/files')
@@ -109,25 +109,25 @@ class LessonsRelationManager extends BaseRelationManager
                             ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::File->value)
                             ->columnSpanFull(),
                         TextInput::make('link_url')
-                            ->label('Link Url')
+                            ->label(__('admin.labels.Link Url'))
                             ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::Link->value)
                             ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Link->value)
                             ->columnSpanFull(),
                         $this->singleAssignmentSelect($this->getOwnerRecord()->getKey()),
                         $this->singleExamSelect($this->getOwnerRecord()->getKey()),
                         TextInput::make('duration_minutes')
-                            ->label('Duration Minutes')
+                            ->label(__('admin.labels.Duration Minutes'))
                             ->numeric()
                             ->columnSpanFull(),
                         DateTimePicker::make('starts_at')
-                            ->label('Starts At'),
+                            ->label(__('admin.labels.Starts At')),
                         DateTimePicker::make('ends_at')
-                            ->label('Ends At'),
+                            ->label(__('admin.labels.Ends At')),
                         Toggle::make('is_active')
-                            ->label('Is Active')
+                            ->label(__('admin.labels.Is Active'))
                             ->default(true),
                         Toggle::make('is_free')
-                            ->label('Is Free')
+                            ->label(__('admin.labels.Is Free'))
                             ->default(false),
                     ])
                     ->columns(2)
@@ -173,7 +173,7 @@ class LessonsRelationManager extends BaseRelationManager
     private function singleAssignmentSelect(int|string|null $courseId): Select
     {
         return Select::make('assignment_id')
-            ->label('Assignment')
+            ->label(__('admin.labels.Assignment'))
             ->options(fn (): array => Assignment::query()
                 ->where('course_id', $courseId)
                 ->pluck('title', 'id')
@@ -188,7 +188,7 @@ class LessonsRelationManager extends BaseRelationManager
     private function singleExamSelect(int|string|null $courseId): Select
     {
         return Select::make('exam_id')
-            ->label('Exam')
+            ->label(__('admin.labels.Exam'))
             ->options(fn (): array => Exam::query()
                 ->where('course_id', $courseId)
                 ->pluck('title', 'id')

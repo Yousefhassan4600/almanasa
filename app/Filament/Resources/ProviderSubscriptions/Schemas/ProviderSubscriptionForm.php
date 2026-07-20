@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ProviderSubscriptions\Schemas;
 
 use App\Enums\ProviderSubscriptionStatus;
+use App\Filament\Support\CurrentAccount;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
@@ -15,14 +16,14 @@ class ProviderSubscriptionForm
     {
         return $schema
             ->components([
-                Select::make('provider_id')
-                    ->label('Provider')
+                CurrentAccount::providerSelect(Select::make('provider_id'))
+                    ->label(__('admin.labels.Provider'))
                     ->relationship('provider', 'name')
                     ->preload()
                     ->searchable()
                     ->required(),
                 Select::make('provider_plan_option_id')
-                    ->label('Plan Option')
+                    ->label(__('admin.labels.Plan Option'))
                     ->relationship('planOption', 'id')
                     ->getOptionLabelFromRecordUsing(fn ($record): string => sprintf(
                         '%s - %s days - %s',
@@ -34,19 +35,19 @@ class ProviderSubscriptionForm
                     ->searchable()
                     ->required(),
                 Select::make('status')
-                    ->label('Status')
+                    ->label(__('admin.labels.Status'))
                     ->options(ProviderSubscriptionStatus::options())
                     ->required(),
                 TextInput::make('amount')
-                    ->label('Amount')
+                    ->label(__('admin.labels.Amount'))
                     ->numeric()
                     ->required(),
                 DateTimePicker::make('starts_at')
-                    ->label('Starts At'),
+                    ->label(__('admin.labels.Starts At')),
                 DateTimePicker::make('ends_at')
-                    ->label('Ends At'),
+                    ->label(__('admin.labels.Ends At')),
                 KeyValue::make('metadata')
-                    ->label('Metadata')
+                    ->label(__('admin.labels.Metadata'))
                     ->columnSpanFull(),
             ]);
     }

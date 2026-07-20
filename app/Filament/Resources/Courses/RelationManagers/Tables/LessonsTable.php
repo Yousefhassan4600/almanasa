@@ -12,33 +12,33 @@ class LessonsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             TextColumn::make('title')
-                ->label('Title')
+                ->label(__('admin.labels.Title'))
                 ->searchable()
                 ->wrap(),
             TextColumn::make('coursePeriod.name')
-                ->label('Period')
+                ->label(__('admin.labels.Period'))
                 ->searchable(),
             TextColumn::make('starts_at')
-                ->label('Starts At')
+                ->label(__('admin.labels.Starts At'))
                 ->dateTime()
                 ->sortable(),
             TextColumn::make('ends_at')
-                ->label('Ends At')
+                ->label(__('admin.labels.Ends At'))
                 ->dateTime()
                 ->sortable(),
             TextColumn::make('num_of_video_views')
-                ->label('Video Views')
+                ->label(__('admin.labels.Video Views'))
                 ->numeric()
                 ->sortable(),
             TextColumn::make('items_count')
-                ->label('Items')
+                ->label(__('admin.labels.Items'))
                 ->counts('items')
                 ->sortable(),
             ToggleColumn::make('is_active')
-                ->label('Active'),
+                ->label(__('admin.labels.Active')),
         ];
     }
 

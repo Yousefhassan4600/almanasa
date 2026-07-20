@@ -14,29 +14,29 @@ class PaymentMethodsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             ImageColumn::make('image')
-                ->label('Image'),
+                ->label(__('admin.labels.Image')),
             TextColumn::make('name')
-                ->label('Name')
+                ->label(__('admin.labels.Name'))
                 ->searchable()
                 ->wrap(),
             TextColumn::make('slug')
-                ->label('Slug')
+                ->label(__('admin.labels.Slug'))
                 ->searchable()
                 ->sortable(),
             IconColumn::make('is_bank')
-                ->label('Is Bank')
+                ->label(__('admin.labels.Is Bank'))
                 ->boolean(),
             IconColumn::make('is_code')
-                ->label('Is Code')
+                ->label(__('admin.labels.Is Code'))
                 ->boolean(),
             IconColumn::make('require_proof')
-                ->label('Require Proof')
+                ->label(__('admin.labels.Require Proof'))
                 ->boolean(),
             ToggleColumn::make('is_active')
-                ->label('Is Active'),
+                ->label(__('admin.labels.Is Active')),
         ];
     }
 

@@ -20,7 +20,7 @@ class GradeForm
                 Hidden::make('name.en')
                     ->dehydrated(true),
                 Select::make('subject_ids')
-                    ->label('Subjects')
+                    ->label(__('admin.labels.Subjects'))
                     ->multiple()
                     ->options(fn () => Subject::query()
                         ->with('track')

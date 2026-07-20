@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders\Tables;
 
 use App\Filament\Base\BaseTable;
+use App\Filament\Support\CurrentAccount;
 use App\Models\Order;
 use App\Models\OrderStatusType;
 use Filament\Actions\Action;
@@ -17,18 +18,19 @@ class OrdersTable extends BaseTable
     {
         return [
             TextColumn::make('order_number')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('provider.name')
-                ->label('Provider')
+                ->label(__('admin.labels.Provider'))
+                ->visible(fn (): bool => CurrentAccount::isSaasOwner())
                 ->searchable()
                 ->sortable(),
             TextColumn::make('student.name')
-                ->label('Student')
+                ->label(__('admin.labels.Student'))
                 ->searchable(),
             TextColumn::make('items')
-                ->label('Courses')
+                ->label(__('admin.labels.Courses'))
                 ->state(function (Order $record): array {
                     $record->loadMissing('items.course');
 
@@ -42,19 +44,19 @@ class OrdersTable extends BaseTable
                 ->badge()
                 ->color('info'),
             TextColumn::make('purchaseUnit.name')
-                ->label('Purchase Unit')
+                ->label(__('admin.labels.Purchase Unit'))
                 ->badge()
                 ->placeholder('-'),
             TextColumn::make('purchase_type')
-                ->label('Purchase Type')
+                ->label(__('admin.labels.Purchase Type'))
                 ->badge(),
             TextColumn::make('total')
-                ->label('Total')
+                ->label(__('admin.labels.Total'))
                 ->suffix(' EGP')
                 ->badge()
                 ->color('success'),
             SelectColumn::make('current_status_type_id')
-                ->label('Status')
+                ->label(__('admin.labels.Status'))
                 ->getStateUsing(fn (Order $record): ?int => $record->currentStatus?->order_status_type_id)
                 ->options(fn (): array => OrderStatusType::query()
                     ->where('is_active', true)
@@ -69,7 +71,7 @@ class OrdersTable extends BaseTable
                     return $state;
                 }),
             ToggleColumn::make('is_paid')
-                ->label('Paid')
+                ->label(__('admin.labels.Paid'))
                 ->getStateUsing(fn (Order $record): bool => (bool) $record->payments()
                     ->latest()
                     ->value('is_paid'))
@@ -141,7 +143,7 @@ class OrdersTable extends BaseTable
                 ->color('primary')
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Close')
-                ->modalHeading('Status History')
+                ->modalHeading(__('admin.labels.Status History'))
                 ->modalContent(fn (Order $record): View => view('filament.resources.orders.status-logs-modal', [
                     'statusLogs' => $record->statuses()
                         ->with(['type', 'createdBy'])

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Students\Tables;
 
 use App\Filament\Base\BaseTable;
+use App\Filament\Support\CurrentAccount;
 use App\Models\Account;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
@@ -14,20 +15,21 @@ class StudentsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             TextColumn::make('provider.name')
-                ->label('Provider'),
+                ->label(__('admin.labels.Provider'))
+                ->visible(fn (): bool => CurrentAccount::isSaasOwner()),
             ImageColumn::make('owner.studentProfile.avatar')
-                ->label('Image'),
+                ->label(__('admin.labels.Image')),
             TextColumn::make('owner.name')
-                ->label('Student')
+                ->label(__('admin.labels.Student'))
                 ->searchable(),
             TextColumn::make('owner.phone')
-                ->label('Phone')
+                ->label(__('admin.labels.Phone'))
                 ->searchable(),
             TextColumn::make('owner.studentProfile.country_id')
-                ->label('Location')
+                ->label(__('admin.labels.Location'))
                 ->formatStateUsing(function ($state, Account $record) {
                     $country = $record->owner?->studentProfile?->country?->name;
                     $city = $record->owner?->studentProfile?->city?->name;
@@ -43,22 +45,22 @@ class StudentsTable extends BaseTable
                     return '-';
                 }),
             TextColumn::make('owner.studentProfile.grade.full_name')
-                ->label('Grade')
+                ->label(__('admin.labels.Grade'))
                 ->badge()
                 ->color('info')
                 ->placeholder('-'),
             TextColumn::make('owner.studentProfile.gender')
-                ->label('Gender')
+                ->label(__('admin.labels.Gender'))
                 ->badge(),
             TextColumn::make('owner.studentProfile.school_name')
-                ->label('School')
+                ->label(__('admin.labels.School'))
                 ->wrap(),
             IconColumn::make('is_active')
-                ->label('Active')
+                ->label(__('admin.labels.Active'))
                 ->boolean()
                 ->sortable(),
             TextColumn::make('created_at')
-                ->label('Joined At')
+                ->label(__('admin.labels.Joined At'))
                 ->dateTime()
                 ->sortable(),
         ];

@@ -7,11 +7,12 @@ use App\Filament\Clusters\EducationCatalog;
 use App\Filament\Resources\LessonProgressStatusTypes\Tables\LessonProgressStatusTypesTable;
 use App\Models\LessonProgressStatusType;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class LessonProgressStatusTypeResource extends BaseResource
 {
     protected static ?string $model = LessonProgressStatusType::class;
+
+    protected static bool $isSaasOwnerOnly = true;
 
     protected static ?string $cluster = EducationCatalog::class;
 

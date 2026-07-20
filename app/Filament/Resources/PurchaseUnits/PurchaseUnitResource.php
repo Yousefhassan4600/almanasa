@@ -12,6 +12,8 @@ class PurchaseUnitResource extends BaseResource
 {
     protected static ?string $model = PurchaseUnit::class;
 
+    protected static bool $isSaasOwnerOnly = true;
+
     protected static ?string $cluster = OrdersCatalog::class;
 
     protected static ?int $navigationSort = 1;

@@ -19,26 +19,26 @@ class SlidersRelationManager extends BaseRelationManager
         return $schema
             ->components([
                 FileUpload::make('cover')
-                    ->label('Cover')
+                    ->label(__('admin.labels.Cover'))
                     ->image()
                     ->directory('banners')
                     ->columnSpanFull()
                     ->required(),
                 TextInput::make('title.ar')
-                    ->label('Title (Arabic)')
+                    ->label(__('admin.labels.Title (Arabic)'))
                     ->required(),
                 TextInput::make('title.en')
-                    ->label('Title (English)')
+                    ->label(__('admin.labels.Title (English)'))
                     ->required(),
                 TextInput::make('subtitle.ar')
-                    ->label('Subtitle (Arabic)'),
+                    ->label(__('admin.labels.Subtitle (Arabic)')),
                 TextInput::make('subtitle.en')
-                    ->label('Subtitle (English)'),
+                    ->label(__('admin.labels.Subtitle (English)')),
                 TextInput::make('url')
-                    ->label('URL')
+                    ->label(__('admin.labels.URL'))
                     ->columnSpanFull(),
                 Toggle::make('is_active')
-                    ->label('Is Active')
+                    ->label(__('admin.labels.Is Active'))
                     ->default(true),
             ]);
     }

@@ -25,10 +25,10 @@ class ProviderForm
     {
         return $schema
             ->components([
-                Section::make('Basic Information')
+                Section::make(__('admin.labels.Basic Information'))
                     ->schema([
                         Select::make('type')
-                            ->label('Type')
+                            ->label(__('admin.labels.Type'))
                             ->options(ProviderType::options())
                             ->live()
                             ->afterStateUpdated(function (Set $set): void {
@@ -37,135 +37,135 @@ class ProviderForm
                             })
                             ->required(),
                         Select::make('owner_user_id')
-                            ->label('Owner User Id')
+                            ->label(__('admin.labels.Owner User Id'))
                             ->relationship('owner', 'first_name')
                             ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name)
                             ->preload()
                             ->searchable()
                             ->required(),
                         FileUpload::make('logo')
-                            ->label('Logo')
+                            ->label(__('admin.labels.Logo'))
                             ->image()
                             ->directory('providers/logos')
                             ->required(),
                         TextInput::make('name')
-                            ->label('Name')
+                            ->label(__('admin.labels.Name'))
                             ->required(),
                         TextInput::make('slug')
-                            ->label('Slug')
+                            ->label(__('admin.labels.Slug'))
                             ->required(),
                         Select::make('country_id')
-                            ->label('Country')
+                            ->label(__('admin.labels.Country'))
                             ->relationship('country', 'name')
                             ->preload()
                             ->searchable()
                             ->required(),
                         Select::make('city_id')
-                            ->label('City')
+                            ->label(__('admin.labels.City'))
                             ->relationship('city', 'name')
                             ->preload()
                             ->searchable()
                             ->required(),
                         Toggle::make('use_custom_domain')
-                            ->label('Use Custom Domain')
+                            ->label(__('admin.labels.Use Custom Domain'))
                             ->reactive(),
                         TextInput::make('subdomain')
-                            ->label('Subdomain')
+                            ->label(__('admin.labels.Subdomain'))
                             ->visible(fn ($get): bool => ! $get('use_custom_domain'))
                             ->required(fn ($get): bool => ! $get('use_custom_domain'))
                             ->dehydrated(fn ($get): bool => ! $get('use_custom_domain')),
                         TextInput::make('custom_domain')
-                            ->label('Custom Domain')
+                            ->label(__('admin.labels.Custom Domain'))
                             ->visible(fn ($get): bool => $get('use_custom_domain'))
                             ->required(fn ($get): bool => $get('use_custom_domain'))
                             ->dehydrated(fn ($get): bool => $get('use_custom_domain')),
                     ]),
-                Section::make('Additional Information')
+                Section::make(__('admin.labels.Additional Information'))
                     ->schema([
                         FileUpload::make('cover_image')
-                            ->label('Cover Image')
+                            ->label(__('admin.labels.Cover Image'))
                             ->image()
                             ->directory('providers/cover_images'),
                         Textarea::make('bio.ar')
-                            ->label('Bio (Arabic)')
+                            ->label(__('admin.labels.Bio (Arabic)'))
                             ->columnSpanFull(),
                         Textarea::make('bio.en')
-                            ->label('Bio (English)')
+                            ->label(__('admin.labels.Bio (English)'))
                             ->columnSpanFull(),
                         Textarea::make('address')
-                            ->label('Address')
+                            ->label(__('admin.labels.Address'))
                             ->columnSpanFull(),
                         TextInput::make('latitude')
-                            ->label('Latitude')
+                            ->label(__('admin.labels.Latitude'))
                             ->numeric(),
                         TextInput::make('longitude')
-                            ->label('Longitude')
+                            ->label(__('admin.labels.Longitude'))
                             ->numeric(),
                         Toggle::make('is_active')
-                            ->label('Is Active'),
+                            ->label(__('admin.labels.Is Active')),
                         Toggle::make('pause_website')
-                            ->label('Pause Website')
+                            ->label(__('admin.labels.Pause Website'))
                             ->default(false),
                     ]),
-                Section::make('Contact Information')
+                Section::make(__('admin.labels.Contact Information'))
                     ->schema([
                         TextInput::make('contact_phone')
-                            ->label('Contact Phone')
+                            ->label(__('admin.labels.Contact Phone'))
                             ->tel(),
                         TextInput::make('contact_whatsapp')
-                            ->label('Contact Whatsapp')
+                            ->label(__('admin.labels.Contact Whatsapp'))
                             ->tel(),
                         TextInput::make('contact_email')
-                            ->label('Contact Email')
+                            ->label(__('admin.labels.Contact Email'))
                             ->email(),
                         TextInput::make('youtube_link')
-                            ->label('Youtube Link')
+                            ->label(__('admin.labels.Youtube Link'))
                             ->url(),
                         TextInput::make('facebook_link')
-                            ->label('Facebook Link')
+                            ->label(__('admin.labels.Facebook Link'))
                             ->url(),
                         TextInput::make('instagram_link')
-                            ->label('Instagram Link')
+                            ->label(__('admin.labels.Instagram Link'))
                             ->url(),
                         TextInput::make('linkedin_link')
-                            ->label('Linkedin Link')
+                            ->label(__('admin.labels.Linkedin Link'))
                             ->url(),
                         TextInput::make('x_link')
-                            ->label('X Link')
+                            ->label(__('admin.labels.X Link'))
                             ->url(),
                         TextInput::make('snapchat_link')
-                            ->label('Snapchat Link')
+                            ->label(__('admin.labels.Snapchat Link'))
                             ->url(),
                     ])
                     ->columns(1),
-                Section::make('Settings')
+                Section::make(__('admin.labels.Settings'))
                     ->schema([
                         ColorPicker::make('primary_color')
-                            ->label('Primary Color'),
+                            ->label(__('admin.labels.Primary Color')),
                         ColorPicker::make('secondary_color')
-                            ->label('Secondary Color'),
+                            ->label(__('admin.labels.Secondary Color')),
                         TextInput::make('completion_watch_percentage')
-                            ->label('Completion Watch Percentage')
+                            ->label(__('admin.labels.Completion Watch Percentage'))
                             ->numeric()
                             ->default(70)
                             ->suffix('%')
                             ->minValue(1)
                             ->maxValue(100),
                         Select::make('current_course_period_type')
-                            ->label('Current Course Period')
+                            ->label(__('admin.labels.Current Course Period'))
                             ->options(CoursePeriodType::options())
                             ->default(CoursePeriodType::Term1->value)
                             ->required(),
                         RichEditor::make('terms_conditions')
-                            ->label('Terms Conditions')
+                            ->label(__('admin.labels.Terms Conditions'))
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull()
                     ->columns(2),
-                Section::make('Subjects')
+                Section::make(__('admin.labels.Subjects'))
                     ->schema([
                         Select::make('subject_id')
-                            ->label('Subject')
+                            ->label(__('admin.labels.Subject'))
                             ->options(fn (): array => Subject::query()
                                 ->with('track')
                                 ->get()
@@ -183,19 +183,19 @@ class ProviderForm
                             })
                             ->columnSpanFull(),
                         Repeater::make('accountSubjects')
-                            ->label('Subjects')
+                            ->label(__('admin.labels.Subjects'))
                             ->relationship()
                             ->disabled(fn (Get $get): bool => $get('type') === ProviderType::StandaloneTeacher->value && blank($get('subject_id')))
                             ->schema([
                                 Select::make('grade_subject_id')
-                                    ->label('Grade Subject')
+                                    ->label(__('admin.labels.Grade Subject'))
                                     ->options(fn (Get $get): array => self::gradeSubjectOptions($get))
                                     ->searchable()
                                     ->preload()
                                     ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                     ->required(),
                                 Toggle::make('is_active')
-                                    ->label('Is Active')
+                                    ->label(__('admin.labels.Is Active'))
                                     ->default(true),
                             ])
                             ->columns(1)

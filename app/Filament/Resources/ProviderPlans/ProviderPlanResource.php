@@ -17,6 +17,8 @@ class ProviderPlanResource extends BaseResource
 {
     protected static ?string $model = ProviderPlan::class;
 
+    protected static bool $isSaasOwnerOnly = true;
+
     protected static string|UnitEnum|null $navigationGroup = 'Users & Subscriptions';
 
     protected static ?int $navigationSort = 4;

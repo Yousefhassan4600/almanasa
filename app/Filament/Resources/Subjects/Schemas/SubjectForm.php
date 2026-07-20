@@ -16,34 +16,34 @@ class SubjectForm
         return $schema
             ->components([
                 Select::make('track_id')
-                    ->label('Track')
+                    ->label(__('admin.labels.Track'))
                     ->relationship('track', 'name')
                     ->searchable()
                     ->preload()
                     ->columnSpanFull()
                     ->required(),
                 TextInput::make('name.ar')
-                    ->label('Name (Arabic)')
+                    ->label(__('admin.labels.Name (Arabic)'))
                     ->required(),
                 TextInput::make('name.en')
-                    ->label('Name (English)')
+                    ->label(__('admin.labels.Name (English)'))
                     ->required(),
                 FileUpload::make('icon')
-                    ->label('Icon')
+                    ->label(__('admin.labels.Icon'))
                     ->image()
                     ->directory('subjects/icons'),
                 FileUpload::make('image')
-                    ->label('Image')
+                    ->label(__('admin.labels.Image'))
                     ->image()
                     ->directory('subjects/images'),
                 Textarea::make('description.ar')
-                    ->label('Description (Arabic)')
+                    ->label(__('admin.labels.Description (Arabic)'))
                     ->columnSpanFull(),
                 Textarea::make('description.en')
-                    ->label('Description (English)')
+                    ->label(__('admin.labels.Description (English)'))
                     ->columnSpanFull(),
                 Select::make('grade_ids')
-                    ->label('Grades')
+                    ->label(__('admin.labels.Grades'))
                     ->multiple()
                     ->options(fn () => Grade::query()
                         ->with('educationStage')

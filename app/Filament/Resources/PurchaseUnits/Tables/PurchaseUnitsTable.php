@@ -12,20 +12,20 @@ class PurchaseUnitsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             TextColumn::make('name')
-                ->label('Name')
+                ->label(__('admin.labels.Name'))
                 ->wrap(),
             TextColumn::make('type')
-                ->label('Type')
+                ->label(__('admin.labels.Type'))
                 ->badge(),
             TextColumn::make('period_days')
-                ->label('Period Days')
+                ->label(__('admin.labels.Period Days'))
                 ->placeholder('-')
                 ->sortable(),
             ToggleColumn::make('is_active')
-                ->label('Active'),
+                ->label(__('admin.labels.Active')),
         ];
     }
 

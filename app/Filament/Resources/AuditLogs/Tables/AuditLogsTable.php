@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\AuditLogs\Tables;
 
 use App\Filament\Base\BaseTable;
+use App\Filament\Support\CurrentAccount;
 use App\Models\AuditLog;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -13,19 +14,20 @@ class AuditLogsTable extends BaseTable
     {
         return [
             TextColumn::make('created_at')
-                ->label('Date')
+                ->label(__('admin.labels.Date'))
                 ->dateTime()
                 ->sortable(),
             TextColumn::make('user.phone')
-                ->label('User')
+                ->label(__('admin.labels.User'))
                 ->formatStateUsing(fn (mixed $state, AuditLog $record): ?string => $record->user?->name ?: $state)
                 ->searchable(),
             TextColumn::make('provider.name')
-                ->label('Provider')
+                ->label(__('admin.labels.Provider'))
+                ->visible(fn (): bool => CurrentAccount::isSaasOwner())
                 ->searchable()
                 ->sortable(),
             TextColumn::make('action')
-                ->label('Action')
+                ->label(__('admin.labels.Action'))
                 ->badge()
                 ->color(fn (string $state): string => match ($state) {
                     'created', 'restored' => 'success',
@@ -35,15 +37,15 @@ class AuditLogsTable extends BaseTable
                 })
                 ->sortable(),
             TextColumn::make('auditable_type')
-                ->label('Model')
+                ->label(__('admin.labels.Model'))
                 ->formatStateUsing(fn (?string $state): ?string => $state ? class_basename($state) : null)
                 ->searchable()
                 ->sortable(),
             TextColumn::make('auditable_id')
-                ->label('Record #')
+                ->label(__('admin.labels.Record #'))
                 ->sortable(),
             TextColumn::make('ip_address')
-                ->label('IP Address')
+                ->label(__('admin.labels.IP Address'))
                 ->searchable(),
         ];
     }

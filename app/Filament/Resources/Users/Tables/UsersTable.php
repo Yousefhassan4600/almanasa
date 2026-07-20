@@ -12,22 +12,22 @@ class UsersTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             TextColumn::make('name')
-                ->label('Name')
+                ->label(__('admin.labels.Name'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('dial_country_code')
-                ->label('Dial Country Code')
+                ->label(__('admin.labels.Dial Country Code'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('phone')
-                ->label('Phone')
+                ->label(__('admin.labels.Phone'))
                 ->searchable()
                 ->sortable(),
             IconColumn::make('is_active')
-                ->label('Is Active')
+                ->label(__('admin.labels.Is Active'))
                 ->boolean(),
         ];
     }

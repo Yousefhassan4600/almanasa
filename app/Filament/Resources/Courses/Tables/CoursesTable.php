@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Courses\Tables;
 
 use App\Filament\Base\BaseTable;
+use App\Filament\Support\CurrentAccount;
 use Filament\Tables\Columns\TextColumn;
 
 class CoursesTable extends BaseTable
@@ -11,31 +12,33 @@ class CoursesTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             TextColumn::make('provider.name')
-                ->label('Provider')
+                ->label(__('admin.labels.Provider'))
+                ->visible(fn (): bool => CurrentAccount::isSaasOwner())
                 // ->searchable()
                 ->sortable(),
             TextColumn::make('academyTeacher.teacher.owner.name')
-                ->label('Teacher'),
+                ->label(__('admin.labels.Teacher'))
+                ->visible(fn (): bool => ! CurrentAccount::isAcademyTeacher()),
             TextColumn::make('accountSubject.name')
-                ->label('Grade Subject'),
+                ->label(__('admin.labels.Grade Subject')),
             // ->searchable(),
             TextColumn::make('title')
-                ->label('Title')
+                ->label(__('admin.labels.Title'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('weekly_lectures_count')
-                ->label('Weekly Lessons')
+                ->label(__('admin.labels.Weekly Lessons'))
                 ->badge()
                 ->sortable(),
             TextColumn::make('num_of_lessons')
-                ->label('Lessons')
+                ->label(__('admin.labels.Lessons'))
                 ->badge()
                 ->sortable(),
             TextColumn::make('num_of_hours')
-                ->label('Hours')
+                ->label(__('admin.labels.Hours'))
                 ->badge()
                 ->sortable(),
         ];

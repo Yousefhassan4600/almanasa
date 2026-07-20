@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Base\BaseResource;
 use App\Filament\Pages\Auth\Login;
 use App\Http\Middleware\EnsureCurrentAccount;
 use App\Http\Middleware\SetPanelLocale;
@@ -19,8 +18,6 @@ use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsRenderHook;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -49,21 +46,29 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->navigationGroups([
-                NavigationGroup::make('Users & Subscriptions')
+                'Users & Subscriptions' => NavigationGroup::make()
+                    ->label(fn (): string => __('admin.navigation_groups.Users & Subscriptions'))
                     ->icon(Heroicon::OutlinedUsers),
-                NavigationGroup::make(BaseResource::PROJECT_DATA_NAVIGATION_GROUP)
+                'Project Data' => NavigationGroup::make()
+                    ->label(fn (): string => __('admin.navigation_groups.Project Data'))
                     ->icon(Heroicon::OutlinedAdjustmentsHorizontal),
-                NavigationGroup::make('Users & Accounts')
+                'Users & Accounts' => NavigationGroup::make()
+                    ->label(fn (): string => __('admin.navigation_groups.Users & Accounts'))
                     ->icon(Heroicon::OutlinedUsers),
-                NavigationGroup::make('Provider Setup')
+                'Provider Setup' => NavigationGroup::make()
+                    ->label(fn (): string => __('admin.navigation_groups.Provider Setup'))
                     ->icon(Heroicon::OutlinedBookOpen),
-                NavigationGroup::make('Learning Content')
+                'Learning Content' => NavigationGroup::make()
+                    ->label(fn (): string => __('admin.navigation_groups.Learning Content'))
                     ->icon(Heroicon::OutlinedBookOpen),
-                NavigationGroup::make('Students & Families')
+                'Students & Families' => NavigationGroup::make()
+                    ->label(fn (): string => __('admin.navigation_groups.Students & Families'))
                     ->icon(Heroicon::OutlinedUserGroup),
-                NavigationGroup::make('Sales & Payments')
+                'Sales & Payments' => NavigationGroup::make()
+                    ->label(fn (): string => __('admin.navigation_groups.Sales & Payments'))
                     ->icon(Heroicon::OutlinedCreditCard),
-                NavigationGroup::make('Communication & Website')
+                'Communication & Website' => NavigationGroup::make()
+                    ->label(fn (): string => __('admin.navigation_groups.Communication & Website'))
                     ->icon(Heroicon::OutlinedChatBubbleLeftRight),
             ])
             ->renderHook(
@@ -71,10 +76,7 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => Livewire::mount('admin.account-picker'),
             )
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-            ])
+            ->widgets([])
             ->plugins([
                 FilamentLanguageSwitcherPlugin::make()
                     ->rememberLocale()

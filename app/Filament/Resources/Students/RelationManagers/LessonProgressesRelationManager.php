@@ -4,7 +4,9 @@ namespace App\Filament\Resources\Students\RelationManagers;
 
 use App\Filament\Base\RelationManagers\BaseRelationManager;
 use App\Filament\Resources\LessonProgress\Tables\LessonProgressTable;
+use App\Filament\Support\CurrentAccount;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class LessonProgressesRelationManager extends BaseRelationManager
 {
@@ -12,6 +14,19 @@ class LessonProgressesRelationManager extends BaseRelationManager
 
     public function table(Table $table): Table
     {
-        return LessonProgressTable::configure($table);
+        return LessonProgressTable::configure($table)
+            ->modifyQueryUsing(fn (Builder $query): Builder => $this->scopeToCurrentTeacher($query));
+    }
+
+    private function scopeToCurrentTeacher(Builder $query): Builder
+    {
+        $account = CurrentAccount::account();
+
+        if (! $account || ! CurrentAccount::isAcademyTeacher()) {
+            return $query;
+        }
+
+        return $query->whereHas('course.academyTeacher', fn (Builder $query): Builder => $query
+            ->where('teacher_account_id', $account->id));
     }
 }

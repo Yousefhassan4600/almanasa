@@ -12,6 +12,8 @@ class PaymentMethodResource extends BaseResource
 {
     protected static ?string $model = PaymentMethod::class;
 
+    protected static bool $isSaasOwnerOnly = true;
+
     protected static ?string $cluster = OrdersCatalog::class;
 
     protected static ?int $navigationSort = 2;

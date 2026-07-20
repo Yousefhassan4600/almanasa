@@ -11,20 +11,20 @@ class ProviderPaymentMethodsTable extends BaseTable
     {
         return [
             TextColumn::make('paymentMethod.name')
-                ->label('Payment Method')
+                ->label(__('admin.labels.Payment Method'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('account_number')
-                ->label('Account Number')
+                ->label(__('admin.labels.Account Number'))
                 ->searchable(),
             TextColumn::make('account_holder')
-                ->label('Account Holder')
+                ->label(__('admin.labels.Account Holder'))
                 ->searchable(),
             TextColumn::make('phone_number')
-                ->label('Phone Number')
+                ->label(__('admin.labels.Phone Number'))
                 ->searchable(),
             TextColumn::make('phone_holder')
-                ->label('Phone Holder')
+                ->label(__('admin.labels.Phone Holder'))
                 ->searchable(),
         ];
     }

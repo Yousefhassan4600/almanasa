@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Lessons\Tables;
 
 use App\Filament\Base\BaseTable;
+use App\Filament\Support\CurrentAccount;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 
@@ -12,34 +13,36 @@ class LessonsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('title')
-                ->label('Title')
+                ->label(__('admin.labels.Title'))
                 ->searchable(),
             TextColumn::make('course.title')
-                ->label('Course'),
+                ->label(__('admin.labels.Course')),
             TextColumn::make('course.provider.name')
-                ->label('Provider'),
+                ->label(__('admin.labels.Provider'))
+                ->visible(fn (): bool => CurrentAccount::isSaasOwner()),
             TextColumn::make('course.academyTeacher.teacher.owner.name')
-                ->label('Teacher'),
+                ->label(__('admin.labels.Teacher'))
+                ->visible(fn (): bool => ! CurrentAccount::isAcademyTeacher()),
             TextColumn::make('coursePeriod.name')
-                ->label('Period'),
+                ->label(__('admin.labels.Period')),
             TextColumn::make('starts_at')
-                ->label('Starts At')
+                ->label(__('admin.labels.Starts At'))
                 ->dateTime()
                 ->sortable(),
             TextColumn::make('ends_at')
-                ->label('Ends At')
+                ->label(__('admin.labels.Ends At'))
                 ->dateTime()
                 ->sortable(),
             TextColumn::make('num_of_video_views')
-                ->label('Video Views')
+                ->label(__('admin.labels.Video Views'))
                 ->numeric()
                 ->sortable(),
             ToggleColumn::make('is_active')
-                ->label('Active'),
+                ->label(__('admin.labels.Active')),
         ];
     }
 

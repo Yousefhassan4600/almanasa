@@ -12,15 +12,15 @@ class OrderStatusTypesTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#'),
+                ->label(__('admin.labels.#')),
             TextColumn::make('name')
-                ->label('Name')
+                ->label(__('admin.labels.Name'))
                 ->wrap(),
             TextColumn::make('slug')
-                ->label('Slug')
+                ->label(__('admin.labels.Slug'))
                 ->badge(),
             IconColumn::make('is_active')
-                ->label('Is Active')
+                ->label(__('admin.labels.Is Active'))
                 ->boolean(),
         ];
     }

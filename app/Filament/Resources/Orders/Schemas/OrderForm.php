@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders\Schemas;
 
 use App\Enums\PurchaseType;
+use App\Filament\Support\CurrentAccount;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -14,20 +15,20 @@ class OrderForm
     {
         return $schema
             ->components([
-                Select::make('provider_id')
-                    ->label('Provider')
+                CurrentAccount::providerSelect(Select::make('provider_id'))
+                    ->label(__('admin.labels.Provider'))
                     ->relationship('provider', 'name')
                     ->preload()
                     ->searchable()
                     ->required(),
                 Select::make('student_user_id')
-                    ->label('Student')
+                    ->label(__('admin.labels.Student'))
                     ->relationship('student', 'phone')
                     ->preload()
                     ->searchable()
                     ->required(),
                 Select::make('cart_id')
-                    ->label('Cart')
+                    ->label(__('admin.labels.Cart'))
                     ->relationship(
                         'cart',
                         'id',
@@ -36,19 +37,19 @@ class OrderForm
                     ->preload()
                     ->searchable(),
                 TextInput::make('order_number')
-                    ->label('Order Number')
+                    ->label(__('admin.labels.Order Number'))
                     ->required(),
                 Select::make('purchase_type')
-                    ->label('Purchase Type')
+                    ->label(__('admin.labels.Purchase Type'))
                     ->options(PurchaseType::options())
                     ->default(PurchaseType::SingleCourse->value)
                     ->required(),
                 TextInput::make('subtotal')
-                    ->label('Subtotal')
+                    ->label(__('admin.labels.Subtotal'))
                     ->numeric()
                     ->required(),
                 TextInput::make('total')
-                    ->label('Total')
+                    ->label(__('admin.labels.Total'))
                     ->numeric()
                     ->required(),
             ])

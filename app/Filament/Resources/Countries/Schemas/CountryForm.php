@@ -12,15 +12,15 @@ class CountryForm
         return $schema
             ->components([
                 TextInput::make('name.ar')
-                    ->label('Name (Arabic)')
+                    ->label(__('admin.labels.Name (Arabic)'))
                     ->required(),
                 TextInput::make('name.en')
-                    ->label('Name (English)')
+                    ->label(__('admin.labels.Name (English)'))
                     ->required(),
                 TextInput::make('code')
-                    ->label('Code'),
+                    ->label(__('admin.labels.Code')),
                 TextInput::make('phone_code')
-                    ->label('Phone Code'),
+                    ->label(__('admin.labels.Phone Code')),
             ]);
     }
 }

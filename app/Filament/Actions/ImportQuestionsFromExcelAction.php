@@ -14,11 +14,11 @@ class ImportQuestionsFromExcelAction
     {
         return Action::make('import_questions_from_excel')
             ->color('success')
-            ->label('Import Questions From Excel')
-            ->modalHeading('Import Questions From Excel')
+            ->label(__('admin.labels.Import Questions From Excel'))
+            ->modalHeading(__('admin.labels.Import Questions From Excel'))
             ->schema([
                 FileUpload::make('file')
-                    ->label('Excel / CSV File')
+                    ->label(__('admin.labels.Excel / CSV File'))
                     ->disk('local')
                     ->directory('imports/questions')
                     ->acceptedFileTypes([

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\AccountType;
+use App\Enums\AdminPermissionAction;
 use App\Enums\ProviderSubscriptionStatus;
 use App\Enums\ProviderType;
 use App\Models\Account;
@@ -15,6 +16,7 @@ use App\Models\ProviderSubscription;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
 
 abstract class BaseSeeder extends Seeder
 {
@@ -113,7 +115,7 @@ abstract class BaseSeeder extends Seeder
         Account $creator,
         bool $isAssignable = true,
     ): Role {
-        return Role::query()->firstOrCreate([
+        $role = Role::query()->firstOrCreate([
             'provider_id' => $account->provider_id,
             'name' => $name,
         ], [
@@ -121,5 +123,12 @@ abstract class BaseSeeder extends Seeder
             'created_by_account_id' => $creator->id,
             'is_assignable' => $isAssignable,
         ]);
+
+        $role->syncPermissions(Permission::query()
+            ->where('name', 'not like', '%.'.AdminPermissionAction::ViewHis->value)
+            ->pluck('name')
+            ->all());
+
+        return $role;
     }
 }

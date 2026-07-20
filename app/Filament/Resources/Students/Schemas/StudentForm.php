@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Students\Schemas;
 
 use App\Enums\AccountType;
+use App\Filament\Support\CurrentAccount;
 use App\Models\Account;
 use App\Models\User;
 use Closure;
@@ -22,14 +23,14 @@ class StudentForm
                 Hidden::make('type')
                     ->default(AccountType::Student->value),
                 Select::make('owner_user_id')
-                    ->label('Student User')
+                    ->label(__('admin.labels.Student User'))
                     ->relationship('owner', 'phone')
-                    ->getOptionLabelFromRecordUsing(fn(User $record): string => trim("{$record->name} {$record->phone}"))
+                    ->getOptionLabelFromRecordUsing(fn (User $record): string => trim("{$record->name} {$record->phone}"))
                     ->live()
                     ->disabled(true)
                     ->dehydrated()
                     ->rules([
-                        fn(Get $get, ?Account $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
+                        fn (Get $get, ?Account $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
                             $providerId = $get('provider_id');
 
                             if (blank($value) || blank($providerId)) {
@@ -40,48 +41,32 @@ class StudentForm
                                 ->where('owner_user_id', $value)
                                 ->where('type', AccountType::Student->value)
                                 ->where('provider_id', $providerId)
-                                ->when($record?->exists, fn($query) => $query->whereKeyNot($record->getKey()))
+                                ->when($record?->exists, fn ($query) => $query->whereKeyNot($record->getKey()))
                                 ->exists();
 
                             if ($accountExists) {
-                                $fail('This user already has a student account for the selected provider.');
+                                $fail(__('admin.messages.student_account_already_exists'));
                             }
                         },
                     ])
                     ->preload()
                     ->searchable()
                     ->required(),
-                Select::make('provider_id')
-                    ->label('Provider')
+                CurrentAccount::providerSelect(Select::make('provider_id'))
+                    ->label(__('admin.labels.Provider'))
                     ->relationship('provider', 'name')
-                    ->default(fn(): ?int => self::currentProviderId())
-                    ->disabled(true)
-                    ->dehydrated()
                     ->preload()
                     ->searchable()
                     ->required(),
                 DateTimePicker::make('approved_at')
-                    ->label('Approved At')
+                    ->label(__('admin.labels.Approved At'))
                     ->default(now())
                     ->readOnly()
                     ->columnSpanFull(),
                 Toggle::make('is_active')
-                    ->label('Is Active')
+                    ->label(__('admin.labels.Is Active'))
                     ->default(true)
                     ->columnSpanFull(),
             ]);
-    }
-
-    private static function currentProviderId(): ?int
-    {
-        $account = request()->attributes->get('current_account');
-
-        if ($account instanceof Account && $account->provider_id) {
-            return $account->provider_id;
-        }
-
-        $providerId = (int) request()->session()->get('current_provider_id');
-
-        return $providerId > 0 ? $providerId : null;
     }
 }

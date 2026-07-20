@@ -146,6 +146,7 @@ class AcademySiteController extends Controller
         $html = $this->injectAttemptResultPage($html, $provider, $page);
         $html = $this->injectCartPage($html, $provider, $page);
         $html = $this->injectCheckoutPage($html, $provider, $page);
+        $html = $this->injectMyLessonsPage($html, $provider, $page);
         $html = $this->injectWebsiteHeader($html, $provider, $page);
         $html = $this->injectHomeHero($html, $page);
         $html = $this->injectHomeHeroActions($html, $provider, $page);
@@ -503,6 +504,20 @@ HTML;
         return preg_replace(
             '/(<\/header>)\s*.*?(?=<footer\b)/s',
             "$1\n@livewire('website.checkout-page', ['providerId' => {$provider->id}], key('website-checkout-page-{$provider->id}'))\n",
+            $html,
+            1,
+        ) ?? $html;
+    }
+
+    private function injectMyLessonsPage(string $html, Provider $provider, string $page): string
+    {
+        if ($page !== 'my_lessons.html') {
+            return $html;
+        }
+
+        return preg_replace(
+            '/(<\/header>)\s*.*?(?=<footer\b)/s',
+            "$1\n@livewire('website.my-lessons-page', ['providerId' => {$provider->id}], key('website-my-lessons-page-{$provider->id}'))\n",
             $html,
             1,
         ) ?? $html;

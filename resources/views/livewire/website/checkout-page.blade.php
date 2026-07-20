@@ -4,6 +4,16 @@
     $subtotal = (float) ($cart?->subtotal ?? 0);
     $total = (float) ($cart?->total ?? 0);
     $money = fn (float|int|string|null $amount): string => number_format((float) $amount, 2).' ج.م';
+    $unitLabel = function ($unit): string {
+        if (! $unit) {
+            return '';
+        }
+
+        return $unit->getTranslation('name', 'ar', false)
+            ?: $unit->getTranslation('name', 'en', false)
+            ?: $unit->type?->value
+            ?: '';
+    };
     $methodName = function ($providerPaymentMethod): string {
         $paymentMethod = $providerPaymentMethod?->paymentMethod;
 
@@ -76,6 +86,31 @@
                         {{ $message }}
                     </div>
                 @enderror
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-black text-gray-800 flex items-center gap-2">
+                        <i class="fa-regular fa-calendar-check text-gray-400"></i>
+                        نوع الاشتراك
+                    </h3>
+
+                    @if ($purchaseUnits->isNotEmpty())
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                            @foreach ($purchaseUnits as $purchaseUnit)
+                                @php $isSelected = (int) $selectedPurchaseUnitId === (int) $purchaseUnit->id; @endphp
+                                <button
+                                    type="button"
+                                    wire:click="selectPurchaseUnit({{ $purchaseUnit->id }})"
+                                    class="text-xs font-black py-3.5 rounded-xl transition-all"
+                                    style="{{ $isSelected ? 'background-color: '.$themeColor.'; color: white; box-shadow: 0 10px 18px '.$themeColor.'25;' : 'background-color: #F3F4F9; color: #4b5563;' }}"
+                                >
+                                    {{ $unitLabel($purchaseUnit) }}
+                                </button>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-sm text-gray-400 font-semibold">لا توجد أنواع اشتراك مفعلة حالياً.</p>
+                    @endif
+                </div>
 
                 <div class="space-y-4">
                     <h3 class="text-sm font-black text-gray-800 flex items-center gap-2">

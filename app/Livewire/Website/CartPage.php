@@ -96,6 +96,8 @@ class CartPage extends Component
             $cart->items()->whereKey($cartItemId)->first()?->delete();
             $this->recalculateCart($cart);
         });
+
+        $this->dispatch('cart-updated');
     }
 
     public function render(): mixed
@@ -169,6 +171,8 @@ class CartPage extends Component
             $this->recalculateCart($cart);
             $this->selectedPurchaseUnitId = $coursePrice->purchase_unit_id;
         });
+
+        $this->dispatch('cart-updated');
     }
 
     private function preferredCoursePrice(Course $course): ?CoursePrice

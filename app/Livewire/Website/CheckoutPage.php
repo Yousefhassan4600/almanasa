@@ -12,6 +12,7 @@ use App\Models\OrderStatusType;
 use App\Models\Payment;
 use App\Models\Provider;
 use App\Models\ProviderPaymentMethod;
+use App\Models\PurchaseUnit;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +35,8 @@ class CheckoutPage extends Component
 
     public ?int $selectedProviderPaymentMethodId = null;
 
+    public ?int $selectedPurchaseUnitId = null;
+
     public ?TemporaryUploadedFile $transferImage = null;
 
     public ?string $transactionReference = null;
@@ -50,7 +53,54 @@ class CheckoutPage extends Component
         }
 
         $provider = Provider::query()->findOrFail($this->providerId);
+        $cart = $this->cart($provider);
+
+        $this->selectedPurchaseUnitId = $cart?->items()->value('purchase_unit_id')
+            ?: $this->selectedPurchaseUnitId
+            ?: $this->purchaseUnits($provider)->first()?->id;
+
         $this->selectedProviderPaymentMethodId = $this->paymentMethods($provider)->first()?->id;
+    }
+
+    public function selectPurchaseUnit(int $purchaseUnitId): void
+    {
+        $provider = Provider::query()->findOrFail($this->providerId);
+        $purchaseUnit = $this->purchaseUnits($provider)->firstWhere('id', $purchaseUnitId);
+
+        if (! $purchaseUnit) {
+            return;
+        }
+
+        $cart = $this->cart($provider);
+
+        if (! $cart) {
+            $this->selectedPurchaseUnitId = $purchaseUnitId;
+
+            return;
+        }
+
+        DB::transaction(function () use ($cart, $purchaseUnitId): void {
+            $cart->loadMissing('items.course.prices.purchaseUnit');
+
+            $cart->items->each(function (CartItem $item) use ($purchaseUnitId): void {
+                $price = $item->course->prices->firstWhere('purchase_unit_id', $purchaseUnitId);
+
+                if (! $price) {
+                    return;
+                }
+
+                $item->update([
+                    'course_price_id' => $price->id,
+                    'purchase_unit_id' => $purchaseUnitId,
+                    'unit_price' => $price->price,
+                    'total' => $price->price,
+                ]);
+            });
+
+            $this->recalculateCart($cart);
+        });
+
+        $this->selectedPurchaseUnitId = $purchaseUnitId;
     }
 
     public function selectPaymentMethod(int $providerPaymentMethodId): void
@@ -154,6 +204,8 @@ class CheckoutPage extends Component
             'provider' => $provider,
             'cart' => $cart,
             'items' => $cart?->items ?? collect(),
+            'purchaseUnits' => $this->purchaseUnits($provider),
+            'selectedPurchaseUnitId' => $this->selectedPurchaseUnitId,
             'paymentMethods' => $paymentMethods,
             'selectedPaymentMethod' => $paymentMethods->firstWhere('id', $this->selectedProviderPaymentMethodId),
         ]);
@@ -176,18 +228,7 @@ class CheckoutPage extends Component
             return;
         }
 
-        $coursePrice = $course->prices
-            ->filter(fn (CoursePrice $price): bool => (bool) $price->purchaseUnit?->is_active)
-            ->sort(function (CoursePrice $firstPrice, CoursePrice $secondPrice): int {
-                return [
-                    $firstPrice->purchaseUnit?->sort_order ?? PHP_INT_MAX,
-                    $firstPrice->purchaseUnit?->id ?? PHP_INT_MAX,
-                ] <=> [
-                    $secondPrice->purchaseUnit?->sort_order ?? PHP_INT_MAX,
-                    $secondPrice->purchaseUnit?->id ?? PHP_INT_MAX,
-                ];
-            })
-            ->first();
+        $coursePrice = $this->preferredCoursePrice($course);
 
         if (! $coursePrice) {
             return;
@@ -225,7 +266,35 @@ class CheckoutPage extends Component
             ])->save();
 
             $this->recalculateCart($cart);
+            $this->selectedPurchaseUnitId = $coursePrice->purchase_unit_id;
         });
+
+        $this->dispatch('cart-updated');
+    }
+
+    private function preferredCoursePrice(Course $course): ?CoursePrice
+    {
+        if ($this->selectedPurchaseUnitId) {
+            $selectedPrice = $course->prices
+                ->first(fn (CoursePrice $price): bool => (int) $price->purchase_unit_id === (int) $this->selectedPurchaseUnitId);
+
+            if ($selectedPrice) {
+                return $selectedPrice;
+            }
+        }
+
+        return $course->prices
+            ->filter(fn (CoursePrice $price): bool => (bool) $price->purchaseUnit?->is_active)
+            ->sort(function (CoursePrice $firstPrice, CoursePrice $secondPrice): int {
+                return [
+                    $firstPrice->purchaseUnit?->sort_order ?? PHP_INT_MAX,
+                    $firstPrice->purchaseUnit?->id ?? PHP_INT_MAX,
+                ] <=> [
+                    $secondPrice->purchaseUnit?->sort_order ?? PHP_INT_MAX,
+                    $secondPrice->purchaseUnit?->id ?? PHP_INT_MAX,
+                ];
+            })
+            ->first();
     }
 
     private function cart(Provider $provider): ?Cart
@@ -238,6 +307,7 @@ class CheckoutPage extends Component
             ->with([
                 'items' => fn ($query) => $query->oldest('id'),
                 'items.course.accountSubject.gradeSubject.subject:id,name,track_id',
+                'items.course.prices.purchaseUnit',
                 'items.purchaseUnit:id,type,name,sort_order,is_active',
             ])
             ->whereBelongsTo($provider)
@@ -261,6 +331,19 @@ class CheckoutPage extends Component
             ->orderBy('provider_payment_methods.id')
             ->select('provider_payment_methods.*')
             ->get();
+    }
+
+    /**
+     * @return Collection<int, PurchaseUnit>
+     */
+    private function purchaseUnits(Provider $provider): Collection
+    {
+        return PurchaseUnit::query()
+            ->where('is_active', true)
+            ->whereHas('prices.course', fn ($query) => $query->whereBelongsTo($provider))
+            ->oldest('sort_order')
+            ->oldest('id')
+            ->get(['id', 'type', 'name', 'sort_order', 'is_active']);
     }
 
     private function recalculateCart(Cart $cart): void

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Courses\Schemas;
 
 use App\Enums\ProviderType;
+use App\Filament\Support\CurrentAccount;
 use App\Models\AcademyTeacher;
 use App\Models\AccountSubject;
 use App\Models\Provider;
@@ -27,71 +28,78 @@ class CourseForm
     {
         return $schema
             ->components([
-                Section::make('Basic Information')
+                Section::make(__('admin.labels.Basic Information'))
                     ->schema([
-                        Select::make('provider_id')
-                            ->label('Provider')
+                        CurrentAccount::providerSelect(Select::make('provider_id'))
+                            ->label(__('admin.labels.Provider'))
                             ->relationship('provider', 'name')
                             ->live()
-                            ->afterStateUpdated(fn (Set $set): mixed => $set('academy_teacher_id', null))
+                            ->afterStateUpdated(function (Set $set, mixed $state): void {
+                                $set('account_subject_id', null);
+                                $set(
+                                    'academy_teacher_id',
+                                    self::shouldShowAcademyTeacherField($state) ? CurrentAccount::academyTeacherId() : null,
+                                );
+                            })
                             ->preload()
                             ->searchable()
-                            ->required(),
-                        Select::make('account_subject_id')
-                            ->label('Grade Subject')
-                            ->options(fn (Get $get): array => AccountSubject::query()
-                                ->with(['gradeSubject.grade.educationStage', 'gradeSubject.subject.track'])
-                                ->when($get('provider_id'), fn (Builder $query, int $providerId): Builder => $query->where('provider_id', $providerId))
-                                ->get()
-                                ->mapWithKeys(fn (AccountSubject $accountSubject): array => [
-                                    $accountSubject->id => $accountSubject->name,
-                                ])
-                                ->all())
-                            ->searchable()
-                            ->preload()
                             ->required(),
                         Select::make('academy_teacher_id')
-                            ->label('Academy Teacher')
+                            ->label(__('admin.labels.Academy Teacher'))
+                            ->default(fn (): ?int => CurrentAccount::academyTeacherId())
                             ->options(fn (Get $get): array => AcademyTeacher::query()
                                 ->with(['teacher.owner'])
                                 ->when($get('provider_id'), fn (Builder $query, int $providerId): Builder => $query->where('provider_id', $providerId))
+                                ->when(CurrentAccount::isAcademyTeacher(), fn (Builder $query): Builder => $query->whereKey(CurrentAccount::academyTeacherId()))
+                                ->where('is_active', true)
                                 ->get()
                                 ->mapWithKeys(fn (AcademyTeacher $academyTeacher): array => [
                                     $academyTeacher->id => $academyTeacher->teacher?->owner?->name ?? "Teacher #{$academyTeacher->id}",
                                 ])
                                 ->all())
+                            ->live()
+                            ->afterStateUpdated(fn (Set $set): mixed => $set('account_subject_id', null))
+                            ->disabled(fn (): bool => CurrentAccount::isAcademyTeacher())
                             ->visible(fn (Get $get): bool => self::shouldShowAcademyTeacherField($get('provider_id')))
-                            ->dehydrated(fn (Get $get): bool => self::shouldShowAcademyTeacherField($get('provider_id')))
+                            ->dehydrated(true)
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->required(fn (Get $get): bool => self::shouldShowAcademyTeacherField($get('provider_id'))),
+                        Select::make('account_subject_id')
+                            ->label(__('admin.labels.Grade Subject'))
+                            ->options(fn (Get $get): array => self::accountSubjectOptions($get))
+                            ->searchable()
+                            ->preload()
+                            ->disabled(fn (Get $get): bool => self::shouldDisableAccountSubjectField($get))
+                            ->required(),
                         TextInput::make('title.ar')
-                            ->label('Title (Arabic)')
+                            ->label(__('admin.labels.Title (Arabic)'))
                             ->required(),
                         TextInput::make('title.en')
-                            ->label('Title (English)')
+                            ->label(__('admin.labels.Title (English)'))
                             ->required(),
                         Textarea::make('description.ar')
-                            ->label('Description (Arabic)')
+                            ->label(__('admin.labels.Description (Arabic)'))
                             ->columnSpanFull(),
                         Textarea::make('description.en')
-                            ->label('Description (English)')
+                            ->label(__('admin.labels.Description (English)'))
                             ->columnSpanFull(),
                         FileUpload::make('thumbnail')
-                            ->label('Thumbnail')
+                            ->label(__('admin.labels.Thumbnail'))
                             ->image()
                             ->directory('courses/thumbnails')
                             ->columnSpanFull(),
                     ])
                     ->columns(1)
                     ->columnSpan(2),
-                Section::make('Prices')
+                Section::make(__('admin.labels.Prices'))
                     ->schema([
                         Repeater::make('prices')
-                            ->label('Course Prices')
+                            ->label(__('admin.labels.Course Prices'))
                             ->relationship()
                             ->schema([
                                 Select::make('purchase_unit_id')
-                                    ->label('Purchase Unit')
+                                    ->label(__('admin.labels.Purchase Unit'))
                                     ->options(fn (): array => PurchaseUnit::query()
                                         ->where('is_active', true)
                                         ->orderBy('sort_order')
@@ -133,12 +141,12 @@ class CourseForm
                                     ->preload()
                                     ->required(),
                                 TextInput::make('price')
-                                    ->label('Price')
+                                    ->label(__('admin.labels.Price'))
                                     ->numeric()
                                     ->default(0)
                                     ->required(),
                                 TextInput::make('offer_price')
-                                    ->label('Offer Price')
+                                    ->label(__('admin.labels.Offer Price'))
                                     ->numeric()
                                     ->default(0)
                                     ->required(),
@@ -151,31 +159,31 @@ class CourseForm
                             ->columnSpanFull(),
                     ])
                     ->columnSpan(3),
-                Section::make('Course Details')
+                Section::make(__('admin.labels.Course Details'))
                     ->schema([
                         TextInput::make('weekly_lectures_count')
-                            ->label('Weekly Lectures Count')
+                            ->label(__('admin.labels.Weekly Lectures Count'))
                             ->numeric(),
                         TextInput::make('num_of_lessons')
-                            ->label('Number Of Lessons')
+                            ->label(__('admin.labels.Number Of Lessons'))
                             ->numeric(),
                         TextInput::make('num_of_hours')
-                            ->label('Number Of Hours')
+                            ->label(__('admin.labels.Number Of Hours'))
                             ->numeric(),
                         TextInput::make('academy_percentage')
-                            ->label('Academy Percentage')
+                            ->label(__('admin.labels.Academy Percentage'))
                             ->numeric()
                             ->default(50)
                             ->suffix('%')
                             ->required(),
                         TextInput::make('teacher_percentage')
-                            ->label('Teacher Percentage')
+                            ->label(__('admin.labels.Teacher Percentage'))
                             ->numeric()
                             ->default(40)
                             ->suffix('%')
                             ->required(),
                         TextInput::make('platform_percentage')
-                            ->label('Platform Percentage')
+                            ->label(__('admin.labels.Platform Percentage'))
                             ->numeric()
                             ->default(10)
                             ->suffix('%')
@@ -183,17 +191,17 @@ class CourseForm
                     ])
                     ->columns(1)
                     ->columnSpan(1),
-                Section::make('Outcomes')
+                Section::make(__('admin.labels.Outcomes'))
                     ->schema([
                         Repeater::make('outcomes')
-                            ->label('Course Outcomes')
+                            ->label(__('admin.labels.Course Outcomes'))
                             ->relationship()
                             ->schema([
                                 TextInput::make('title.ar')
-                                    ->label('Title (Arabic)')
+                                    ->label(__('admin.labels.Title (Arabic)'))
                                     ->required(),
                                 TextInput::make('title.en')
-                                    ->label('Title (English)')
+                                    ->label(__('admin.labels.Title (English)'))
                                     ->required(),
                             ])
                             ->columns(2)
@@ -216,6 +224,46 @@ class CourseForm
             ->whereKey($providerId)
             ->where('type', '!=', ProviderType::StandaloneTeacher)
             ->exists();
+    }
+
+    private static function shouldDisableAccountSubjectField(Get $get): bool
+    {
+        if (blank($get('provider_id'))) {
+            return true;
+        }
+
+        return self::shouldShowAcademyTeacherField($get('provider_id')) && blank($get('academy_teacher_id'));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function accountSubjectOptions(Get $get): array
+    {
+        $providerId = $get('provider_id');
+
+        if (blank($providerId)) {
+            return [];
+        }
+
+        return AccountSubject::query()
+            ->with(['gradeSubject.grade.educationStage', 'gradeSubject.subject.track'])
+            ->where('provider_id', $providerId)
+            ->where('is_active', true)
+            ->when(
+                self::shouldShowAcademyTeacherField($providerId),
+                fn (Builder $query): Builder => $query->whereHas(
+                    'teacherAssignments',
+                    fn (Builder $query): Builder => $query
+                        ->where('academy_teacher_id', $get('academy_teacher_id'))
+                        ->where('is_active', true),
+                ),
+            )
+            ->get()
+            ->mapWithKeys(fn (AccountSubject $accountSubject): array => [
+                $accountSubject->id => $accountSubject->name,
+            ])
+            ->all();
     }
 
     private static function activePurchaseUnitsCount(): int

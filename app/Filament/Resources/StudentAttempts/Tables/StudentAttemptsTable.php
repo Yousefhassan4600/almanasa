@@ -23,34 +23,34 @@ class StudentAttemptsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('student.name')
-                ->label('Student')
+                ->label(__('admin.labels.Student'))
                 ->sortable(),
             TextColumn::make('course.title')
-                ->label('Course')
+                ->label(__('admin.labels.Course'))
                 ->sortable(),
             TextColumn::make('attemptable_type')
-                ->label('Type')
+                ->label(__('admin.labels.Type'))
                 ->formatStateUsing(fn (?string $state): string => $state ? class_basename($state) : '-')
                 ->badge()
                 ->searchable()
                 ->sortable(),
             TextColumn::make('attemptable_id')
-                ->label('Attemptable')
+                ->label(__('admin.labels.Attemptable'))
                 ->getStateUsing(fn (StudentAttempt $record): string => $this->attemptableName($record)),
             TextColumn::make('attempt_number')
-                ->label('Attempt Number')
+                ->label(__('admin.labels.Attempt Number'))
                 ->badge()
                 ->sortable(),
             TextColumn::make('examModel.model_number')
-                ->label('Exam Model')
+                ->label(__('admin.labels.Exam Model'))
                 ->badge()
                 ->placeholder('-'),
             SelectColumn::make('current_status_type_id')
-                ->label('Status')
+                ->label(__('admin.labels.Status'))
                 ->getStateUsing(fn (StudentAttempt $record): ?int => $record->currentStatus?->attempt_status_type_id)
                 ->options(fn (): array => AttemptStatusType::query()
                     ->where('is_active', true)
@@ -65,11 +65,11 @@ class StudentAttemptsTable extends BaseTable
                     return $state;
                 }),
             TextColumn::make('score')
-                ->label('Score')
+                ->label(__('admin.labels.Score'))
                 ->getStateUsing(fn (StudentAttempt $record): HtmlString => $this->scoreState($record))
                 ->html(),
             TextColumn::make('time_spent_seconds')
-                ->label('Time Spent')
+                ->label(__('admin.labels.Time Spent'))
                 ->badge()
                 ->suffix(' minutes')
                 ->formatStateUsing(fn (?int $state): string => $this->formatDuration($state)),
@@ -117,25 +117,25 @@ class StudentAttemptsTable extends BaseTable
                 ->modalHeading(fn (StudentAttempt $record): string => 'Grade Statement Answers - '.$this->attemptableName($record))
                 ->schema([
                     Repeater::make('answers')
-                        ->label('Statement Answers')
+                        ->label(__('admin.labels.Statement Answers'))
                         ->schema([
                             Hidden::make('id'),
                             Textarea::make('question')
-                                ->label('Question')
+                                ->label(__('admin.labels.Question'))
                                 ->disabled()
                                 ->dehydrated(false)
                                 ->columnSpanFull(),
                             Textarea::make('answer')
-                                ->label('Student Answer')
+                                ->label(__('admin.labels.Student Answer'))
                                 ->disabled()
                                 ->dehydrated(false)
                                 ->columnSpanFull(),
                             TextInput::make('max_score')
-                                ->label('Max Question Score')
+                                ->label(__('admin.labels.Max Question Score'))
                                 ->readOnly()
                                 ->dehydrated(false),
                             TextInput::make('score')
-                                ->label('Score')
+                                ->label(__('admin.labels.Score'))
                                 ->numeric()
                                 ->minValue(0)
                                 ->maxValue(fn ($get): ?float => (float) ($get('max_score') ?? 0))
@@ -162,7 +162,7 @@ class StudentAttemptsTable extends BaseTable
                 ->color('primary')
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Close')
-                ->modalHeading('Status History')
+                ->modalHeading(__('admin.labels.Status History'))
                 ->modalContent(fn (StudentAttempt $record): View => view('filament.resources.student-attempts.status-logs-modal', [
                     'statusLogs' => $record->statuses()
                         ->with(['type', 'createdBy'])
@@ -299,8 +299,8 @@ class StudentAttemptsTable extends BaseTable
                 .'<div style="position: absolute; top: 0; bottom: 0; '.e($positionSide).': 0; width: '.e(number_format($barPercentage, 2)).'%; border-radius: 999px; background: '.e($color).';"></div>'
                 .'</div>'
                 .'<div style="display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: 11px; color: #6b7280;">'
-                .'<span dir="auto">Score: '.e(number_format($score, 2)).'</span>'
-                .'<span dir="auto">Max: '.e($maxScore > 0 ? number_format($maxScore, 2) : '0.00').'</span>'
+                .'<span dir="auto">'.e(__('admin.labels.Score')).': '.e(number_format($score, 2)).'</span>'
+                .'<span dir="auto">'.e(__('admin.labels.Max')).': '.e($maxScore > 0 ? number_format($maxScore, 2) : '0.00').'</span>'
                 .'</div>'
                 .'</div>'
         );
@@ -325,10 +325,10 @@ class StudentAttemptsTable extends BaseTable
         return new HtmlString(
             '<div dir="'.e($direction).'" style="min-width: 220px; direction: '.e($direction).'; text-align: '.e($textAlign).';">'
                 .'<div style="display: inline-flex; align-items: center; border-radius: 999px; background: #fef3c7; color: #92400e; padding: 0.2rem 0.6rem; font-size: 11px; font-weight: 700; margin-bottom: 6px;">'
-                .e(__('Needs Grading'))
+                .e(__('admin.labels.Needs Grading'))
                 .'</div>'
                 .'<div style="font-size: 12px; font-weight: 600; color: #4b5563;">'
-                .e(__('Partial Score')).': '.e(number_format($score, 2)).' / '.e($maxScore > 0 ? number_format($maxScore, 2) : '0.00')
+                .e(__('admin.labels.Partial Score')).': '.e(number_format($score, 2)).' / '.e($maxScore > 0 ? number_format($maxScore, 2) : '0.00')
                 .'</div>'
                 .'<div style="margin-top: 6px; height: 18px; width: 100%; overflow: hidden; border-radius: 999px; background: #fef3c7; border: 1px solid #f59e0b;"></div>'
                 .'</div>'

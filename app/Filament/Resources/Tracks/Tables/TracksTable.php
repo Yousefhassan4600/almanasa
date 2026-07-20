@@ -11,13 +11,13 @@ class TracksTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#'),
+                ->label(__('admin.labels.#')),
 
             TextColumn::make('name')
-                ->label('Name'),
+                ->label(__('admin.labels.Name')),
 
             TextColumn::make('code')
-                ->label('Code'),
+                ->label(__('admin.labels.Code')),
         ];
     }
 

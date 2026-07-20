@@ -18,26 +18,6 @@ class ProviderCodeResource extends BaseResource
 
     protected static ?int $navigationSort = 1;
 
-    public static function getLabel(): string
-    {
-        return 'Codes';
-    }
-
-    public static function getPluralLabel(): string
-    {
-        return 'Codes';
-    }
-
-    public static function getNavigationLabel(): string
-    {
-        return 'Codes';
-    }
-
-    public static function getModelLabel(): string
-    {
-        return 'Code';
-    }
-
     public static function form(Schema $schema): Schema
     {
         return ProviderCodeForm::configure($schema);

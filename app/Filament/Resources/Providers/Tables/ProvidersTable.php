@@ -19,30 +19,30 @@ class ProvidersTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('name')
-                ->label('Name')
+                ->label(__('admin.labels.Name'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('type')
-                ->label('Type')
+                ->label(__('admin.labels.Type'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('owner.name')
-                ->label('Owner User')
+                ->label(__('admin.labels.Owner User'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('currentSubscription.status')
-                ->label('Subscription')
+                ->label(__('admin.labels.Subscription'))
                 ->badge()
                 ->searchable(),
             IconColumn::make('is_active')
-                ->label('Is Active')
+                ->label(__('admin.labels.Is Active'))
                 ->boolean(),
             IconColumn::make('pause_website')
-                ->label('Website Paused')
+                ->label(__('admin.labels.Website Paused'))
                 ->boolean(),
         ];
     }

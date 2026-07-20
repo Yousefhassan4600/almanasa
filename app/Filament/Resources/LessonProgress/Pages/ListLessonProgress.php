@@ -20,7 +20,7 @@ class ListLessonProgress extends BaseListRecords
     public function getTabs(): array
     {
         $tabs = [
-            'all' => Tab::make('All'),
+            'all' => Tab::make(__('admin.labels.All')),
         ];
 
         LessonProgressStatusType::query()

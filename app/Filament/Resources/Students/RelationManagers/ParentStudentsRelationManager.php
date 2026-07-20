@@ -38,7 +38,7 @@ class ParentStudentsRelationManager extends BaseRelationManager
         return $schema
             ->components([
                 Select::make('parent_user_id')
-                    ->label('Parent')
+                    ->label(__('admin.labels.Parent'))
                     ->relationship('parent', 'phone')
                     ->getOptionLabelFromRecordUsing(fn (User $record): string => trim("{$record->name} {$record->phone}"))
                     ->rules([
@@ -50,7 +50,7 @@ class ParentStudentsRelationManager extends BaseRelationManager
                             }
 
                             if ((int) $value === $studentUserId) {
-                                $fail('The parent user cannot be the same as the student user.');
+                                $fail(__('admin.messages.parent_user_cannot_be_student'));
 
                                 return;
                             }
@@ -62,7 +62,7 @@ class ParentStudentsRelationManager extends BaseRelationManager
                                 ->exists();
 
                             if ($parentStudentExists) {
-                                $fail('This parent is already linked to this student.');
+                                $fail(__('admin.messages.parent_already_linked_to_student'));
                             }
                         },
                     ])
@@ -70,13 +70,13 @@ class ParentStudentsRelationManager extends BaseRelationManager
                     ->searchable()
                     ->required(),
                 Select::make('relation')
-                    ->label('Relation')
+                    ->label(__('admin.labels.Relation'))
                     ->options(RelationEnum::options())
                     ->required(),
                 TextInput::make('occupation')
-                    ->label('Occupation'),
+                    ->label(__('admin.labels.Occupation')),
                 Toggle::make('is_primary')
-                    ->label('Primary')
+                    ->label(__('admin.labels.Primary'))
                     ->default(false),
             ]);
     }
@@ -87,23 +87,23 @@ class ParentStudentsRelationManager extends BaseRelationManager
             ->recordTitleAttribute('parent_user_id')
             ->columns([
                 TextColumn::make('parent.first_name')
-                    ->label('Parent')
+                    ->label(__('admin.labels.Parent'))
                     ->formatStateUsing(fn (ParentStudent $record): string => $record->parent?->name ?: '-'),
                 TextColumn::make('parent.phone')
-                    ->label('Phone')
+                    ->label(__('admin.labels.Phone'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('relation')
-                    ->label('Relation')
+                    ->label(__('admin.labels.Relation'))
                     ->badge()
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('occupation')
-                    ->label('Occupation')
+                    ->label(__('admin.labels.Occupation'))
                     ->searchable()
                     ->sortable(),
                 IconColumn::make('is_primary')
-                    ->label('Primary')
+                    ->label(__('admin.labels.Primary'))
                     ->boolean()
                     ->sortable(),
             ])

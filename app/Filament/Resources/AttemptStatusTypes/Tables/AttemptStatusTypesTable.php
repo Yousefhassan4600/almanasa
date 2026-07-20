@@ -5,7 +5,6 @@ namespace App\Filament\Resources\AttemptStatusTypes\Tables;
 use App\Filament\Base\BaseTable;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
 
 class AttemptStatusTypesTable extends BaseTable
 {
@@ -13,15 +12,15 @@ class AttemptStatusTypesTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#'),
+                ->label(__('admin.labels.#')),
             TextColumn::make('name')
-                ->label('Name')
+                ->label(__('admin.labels.Name'))
                 ->wrap(),
             TextColumn::make('slug')
-                ->label('Slug')
+                ->label(__('admin.labels.Slug'))
                 ->badge(),
             IconColumn::make('is_active')
-                ->label('Is Active')
+                ->label(__('admin.labels.Is Active'))
                 ->boolean(),
         ];
     }

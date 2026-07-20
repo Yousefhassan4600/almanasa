@@ -12,6 +12,8 @@ class EducationStageResource extends BaseResource
 {
     protected static ?string $model = EducationStage::class;
 
+    protected static bool $isSaasOwnerOnly = true;
+
     protected static ?string $cluster = EducationCatalog::class;
 
     protected static ?int $navigationSort = 1;

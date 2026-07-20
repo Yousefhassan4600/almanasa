@@ -13,24 +13,24 @@ class CourseReviewsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#'),
+                ->label(__('admin.labels.#')),
             TextColumn::make('student.name')
-                ->label('Student')
+                ->label(__('admin.labels.Student'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('course.title')
-                ->label('Course')
+                ->label(__('admin.labels.Course'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('rating')
-                ->label('Rating')
+                ->label(__('admin.labels.Rating'))
                 ->suffix(' / 5')
                 ->badge(),
             IconColumn::make('is_approved')
-                ->label('Is Approved')
+                ->label(__('admin.labels.Is Approved'))
                 ->boolean(),
             // ToggleColumn::make('is_approved')
-            //     ->label('Is Approved'),
+            //     ->label(__('admin.labels.Is Approved')),
         ];
     }
 

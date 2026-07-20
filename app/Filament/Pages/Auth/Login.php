@@ -13,7 +13,7 @@ class Login extends BaseLogin
     protected function getEmailFormComponent(): Component
     {
         return TextInput::make('phone')
-            ->label('Phone')
+            ->label(__('admin.labels.Phone'))
             ->tel()
             ->required()
             ->autocomplete('tel')

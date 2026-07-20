@@ -15,20 +15,20 @@ class LessonProgressTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#'),
+                ->label(__('admin.labels.#')),
             TextColumn::make('student.name')
-                ->label('Student')
+                ->label(__('admin.labels.Student'))
                 ->searchable(),
             TextColumn::make('course.title')
-                ->label('Course')
+                ->label(__('admin.labels.Course'))
                 ->searchable(),
             TextColumn::make('lesson.title')
-                ->label('Lesson')
+                ->label(__('admin.labels.Lesson'))
                 ->searchable(),
             TextColumn::make('currentStatus.type.name')
-                ->label('Status')
+                ->label(__('admin.labels.Status'))
                 ->badge()
-                ->color(fn(LessonProgress $record): string => $this->statusBadgeColor($record))
+                ->color(fn (LessonProgress $record): string => $this->statusBadgeColor($record))
                 ->placeholder('-'),
         ];
     }
@@ -52,8 +52,8 @@ class LessonProgressTable extends BaseTable
                 ->color('primary')
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Close')
-                ->modalHeading('Status History')
-                ->modalContent(fn(LessonProgress $record): View => view('filament.resources.lesson-progress.status-logs-modal', [
+                ->modalHeading(__('admin.labels.Status History'))
+                ->modalContent(fn (LessonProgress $record): View => view('filament.resources.lesson-progress.status-logs-modal', [
                     'statusLogs' => $record->statuses()
                         ->with(['type', 'createdBy'])
                         ->latest('status_at')

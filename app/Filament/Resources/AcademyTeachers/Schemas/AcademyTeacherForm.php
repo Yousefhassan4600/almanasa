@@ -4,6 +4,7 @@ namespace App\Filament\Resources\AcademyTeachers\Schemas;
 
 use App\Enums\AccountType;
 use App\Enums\ProviderType;
+use App\Filament\Support\CurrentAccount;
 use App\Models\AcademyTeacher;
 use App\Models\Account;
 use App\Models\AccountSubject;
@@ -24,8 +25,8 @@ class AcademyTeacherForm
     {
         return $schema
             ->components([
-                Select::make('provider_id')
-                    ->label('Academy')
+                CurrentAccount::providerSelect(Select::make('provider_id'))
+                    ->label(__('admin.labels.Academy'))
                     ->relationship(
                         name: 'provider',
                         titleAttribute: 'name',
@@ -37,7 +38,7 @@ class AcademyTeacherForm
                     ->searchable()
                     ->required(),
                 Select::make('teacher_user_id')
-                    ->label('Teacher User')
+                    ->label(__('admin.labels.Teacher User'))
                     ->options(fn (): array => User::query()
                         ->orderBy('first_name')
                         ->get()
@@ -59,7 +60,7 @@ class AcademyTeacherForm
                                 ->first();
 
                             if ($existingAccount) {
-                                $fail('This user already has an account for the selected academy.');
+                                $fail(__('admin.messages.user_already_has_academy_account'));
 
                                 return;
                             }
@@ -73,7 +74,7 @@ class AcademyTeacherForm
                                 ->exists();
 
                             if ($existingAssignment) {
-                                $fail('This user is already assigned as a teacher for the selected academy.');
+                                $fail(__('admin.messages.academy_teacher_already_assigned'));
                             }
                         },
                     ])
@@ -81,19 +82,19 @@ class AcademyTeacherForm
                     ->searchable()
                     ->required(),
                 FileUpload::make('image')
-                    ->label('Image')
+                    ->label(__('admin.labels.Image'))
                     ->image()
                     ->directory('academy-teachers')
                     ->columnSpanFull(),
                 TextInput::make('experience_years')
-                    ->label('Experience Years')
+                    ->label(__('admin.labels.Experience Years'))
                     ->numeric()
                     ->minValue(0)
                     ->default(1)
                     ->required()
                     ->columnSpanFull(),
                 Select::make('accountSubjects')
-                    ->label('Grade Subjects')
+                    ->label(__('admin.labels.Grade Subjects'))
                     ->relationship(
                         name: 'accountSubjects',
                         titleAttribute: 'id',
@@ -116,7 +117,7 @@ class AcademyTeacherForm
                     ->disabled(fn (Get $get): bool => blank($get('provider_id')))
                     ->columnSpanFull(),
                 Toggle::make('is_active')
-                    ->label('Is Active')
+                    ->label(__('admin.labels.Is Active'))
                     ->default(true),
             ]);
     }

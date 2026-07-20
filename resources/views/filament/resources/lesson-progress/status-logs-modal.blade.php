@@ -6,7 +6,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
             </div>
-            <h3 style="font-weight: 700; font-size: 1.1rem; color: #075985;">{{ __('Lesson Progress Status History') }}</h3>
+            <h3 style="font-weight: 700; font-size: 1.1rem; color: #075985;">{{ __('admin.labels.Lesson Progress Status History') }}</h3>
         </div>
 
         <div style="position: relative;">
@@ -27,11 +27,11 @@
                         <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem; margin-bottom: 0.5rem;">
                             <div>
                                 <h4 style="font-weight: 600; font-size: 0.95rem; color: #0c4a6e; margin-bottom: 0.25rem;">
-                                    {{ $statusLog->type?->name ?? __('Unknown Status') }}
+                                    {{ $statusLog->type?->name ?? __('admin.labels.Unknown Status') }}
                                 </h4>
                                 @if($loop->first)
                                     <span style="display: inline-block; background: #10b981; color: white; font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 4px;">
-                                        {{ __('Current Status') }}
+                                        {{ __('admin.labels.Current Status') }}
                                     </span>
                                 @endif
                             </div>
@@ -47,7 +47,7 @@
 
                         @if($statusLog->createdBy)
                             <p style="font-size: 0.75rem; color: #475569; margin-top: 0.5rem;">
-                                {{ __('Changed By') }}: {{ $statusLog->createdBy->name }}
+                                {{ __('admin.labels.Changed By') }}: {{ $statusLog->createdBy->name }}
                             </p>
                         @endif
 
@@ -60,7 +60,7 @@
                 </div>
             @empty
                 <div style="background: rgba(255,255,255,0.7); border-radius: 8px; padding: 1rem; border: 1px solid #cbd5e1; color: #64748b; text-align: center;">
-                    {{ __('No status logs found for this lesson progress.') }}
+                    {{ __('admin.messages.no_status_logs_found_for_this_lesson_progress') }}
                 </div>
             @endforelse
         </div>

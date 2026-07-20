@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Lessons\Schemas;
 
+use App\Filament\Support\CurrentAccount;
 use App\Models\Course;
 use App\Models\CoursePeriod;
 use Filament\Forms\Components\DateTimePicker;
@@ -18,24 +19,25 @@ class LessonForm
         return $schema
             ->components([
                 Select::make('course_id')
-                    ->label('Course')
-                    ->options(fn(): array => Course::query()
+                    ->label(__('admin.labels.Course'))
+                    ->options(fn (): array => Course::query()
                         ->with(['provider', 'academyTeacher.teacher.owner'])
+                        ->when(CurrentAccount::isAcademyTeacher(), fn ($query) => CurrentAccount::scopeCoursesToAcademyTeacher($query))
                         ->get()
-                        ->mapWithKeys(fn(Course $course): array => [
-                            $course->id => $course->title . ' - ' . $course->provider?->name . ' - ' . $course->academyTeacher?->teacher?->owner?->name,
+                        ->mapWithKeys(fn (Course $course): array => [
+                            $course->id => $course->title.' - '.$course->provider?->name.' - '.$course->academyTeacher?->teacher?->owner?->name,
                         ])
                         ->all())
                     ->searchable()
                     ->preload()
                     ->required(),
                 Select::make('course_period_id')
-                    ->label('Course Period')
-                    ->options(fn(): array => CoursePeriod::query()
+                    ->label(__('admin.labels.Course Period'))
+                    ->options(fn (): array => CoursePeriod::query()
                         ->where('is_active', true)
                         ->orderBy('sort_order')
                         ->get()
-                        ->mapWithKeys(fn(CoursePeriod $coursePeriod): array => [
+                        ->mapWithKeys(fn (CoursePeriod $coursePeriod): array => [
                             $coursePeriod->id => $coursePeriod->name,
                         ])
                         ->all())
@@ -43,28 +45,28 @@ class LessonForm
                     ->required()
                     ->preload(),
                 TextInput::make('title.ar')
-                    ->label('Title (Arabic)')
+                    ->label(__('admin.labels.Title (Arabic)'))
                     ->required(),
                 TextInput::make('title.en')
-                    ->label('Title (English)')
+                    ->label(__('admin.labels.Title (English)'))
                     ->required(),
                 Textarea::make('description.ar')
-                    ->label('Description (Arabic)'),
+                    ->label(__('admin.labels.Description (Arabic)')),
                 Textarea::make('description.en')
-                    ->label('Description (English)'),
+                    ->label(__('admin.labels.Description (English)')),
                 DateTimePicker::make('starts_at')
-                    ->label('Starts At'),
+                    ->label(__('admin.labels.Starts At')),
                 DateTimePicker::make('ends_at')
-                    ->label('Ends At'),
+                    ->label(__('admin.labels.Ends At')),
                 TextInput::make('num_of_video_views')
-                    ->label('Number Of Video Views')
+                    ->label(__('admin.labels.Number Of Video Views'))
                     ->numeric()
                     ->integer()
                     ->default(1)
                     ->minValue(0)
                     ->columnSpanFull(),
                 Toggle::make('is_active')
-                    ->label('Is Active')
+                    ->label(__('admin.labels.Is Active'))
                     ->default(true),
             ])->columns(2);
     }

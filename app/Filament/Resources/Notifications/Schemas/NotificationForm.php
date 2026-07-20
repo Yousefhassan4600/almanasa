@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Notifications\Schemas;
 
+use App\Filament\Support\CurrentAccount;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -14,23 +15,23 @@ class NotificationForm
         return $schema
             ->components([
                 TextInput::make('user_id')
-                    ->label('User Id')
+                    ->label(__('admin.labels.User Id'))
                     ->numeric()
                     ->required(),
-                TextInput::make('provider_id')
-                    ->label('Provider Id')
+                CurrentAccount::providerTextInput(TextInput::make('provider_id'))
+                    ->label(__('admin.labels.Provider Id'))
                     ->numeric(),
                 TextInput::make('title')
-                    ->label('Title')
+                    ->label(__('admin.labels.Title'))
                     ->required(),
                 Textarea::make('body')
-                    ->label('Body')
+                    ->label(__('admin.labels.Body'))
                     ->columnSpanFull(),
                 Textarea::make('data')
-                    ->label('Data')
+                    ->label(__('admin.labels.Data'))
                     ->columnSpanFull(),
                 DateTimePicker::make('read_at')
-                    ->label('Read At'),
+                    ->label(__('admin.labels.Read At')),
             ]);
     }
 }

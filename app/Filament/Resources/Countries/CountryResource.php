@@ -14,6 +14,8 @@ class CountryResource extends BaseResource
 {
     protected static ?string $model = Country::class;
 
+    protected static bool $isSaasOwnerOnly = true;
+
     protected static ?string $cluster = Locations::class;
 
     protected static ?int $navigationSort = 1;

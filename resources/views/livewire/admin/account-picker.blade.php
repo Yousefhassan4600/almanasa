@@ -9,7 +9,7 @@
                     class="min-h-10 px-3 py-2 text-sm"
                     wire:change="switchAccount($event.target.value)"
                     wire:loading.attr="disabled"
-                    aria-label="Current account"
+                    aria-label="{{ __('admin.labels.Current Account') }}"
                 >
                     @foreach ($accounts as $account)
                         <option

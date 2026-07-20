@@ -14,13 +14,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser
 {
     use FiltersByTenant;
 
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasRoles, Notifiable;
 
     use SoftDeletes, SoftDeletesWithUser;
 
@@ -73,7 +74,7 @@ class User extends Authenticatable implements FilamentUser
         return $this->employees()->where('is_active', true);
     }
 
-    public function roles(): BelongsToMany
+    public function employeeRoles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'employees')
             ->withPivot(['account_id', 'predefined_role', 'is_active', 'created_by_user_id'])

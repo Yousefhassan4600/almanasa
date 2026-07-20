@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
-use App\Enums\EmployeeRole;
 use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Permission\PermissionRegistrar;
 
 class Employee extends Model
 {
@@ -27,9 +27,19 @@ class Employee extends Model
     protected function casts(): array
     {
         return [
-            'predefined_role' => EmployeeRole::class,
             'is_active' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(function (Employee $employee): void {
+            $employee->syncSpatieRole();
+        });
+
+        static::deleted(function (Employee $employee): void {
+            $employee->removeSpatieRole();
+        });
     }
 
     public function user(): BelongsTo
@@ -50,5 +60,41 @@ class Employee extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    public function syncSpatieRole(): void
+    {
+        $this->loadMissing('account', 'user', 'role');
+
+        if (! $this->account?->provider_id || ! $this->user) {
+            return;
+        }
+
+        setPermissionsTeamId($this->account->provider_id);
+        $this->user->unsetRelation('roles')->unsetRelation('permissions');
+
+        if (! $this->is_active || ! $this->role) {
+            $this->user->syncRoles([]);
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+            return;
+        }
+
+        $this->user->syncRoles([$this->role]);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
+
+    public function removeSpatieRole(): void
+    {
+        $this->loadMissing('account', 'user');
+
+        if (! $this->account?->provider_id || ! $this->user) {
+            return;
+        }
+
+        setPermissionsTeamId($this->account->provider_id);
+        $this->user->unsetRelation('roles')->unsetRelation('permissions');
+        $this->user->syncRoles([]);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }

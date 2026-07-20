@@ -26,37 +26,37 @@ class QuestionsRelationManager extends BaseRelationManager
         return $schema
             ->components([
                 Select::make('type')
-                    ->label('Type')
+                    ->label(__('admin.labels.Type'))
                     ->options(QuestionType::options())
                     ->required(),
                 Select::make('difficulty')
-                    ->label('Difficulty')
+                    ->label(__('admin.labels.Difficulty'))
                     ->options(QuestionDifficulty::options())
                     ->required(),
                 Textarea::make('title')
-                    ->label('Title')
+                    ->label(__('admin.labels.Title'))
                     ->required(),
                 FileUpload::make('media')
-                    ->label('Media')
+                    ->label(__('admin.labels.Media'))
                     ->disk('public')
                     ->visibility('public')
                     ->directory('questions/media')
                     ->columnSpanFull(),
                 Repeater::make('options')
-                    ->label('Options')
+                    ->label(__('admin.labels.Options'))
                     ->relationship()
                     ->schema([
                         Textarea::make('title')
-                            ->label('Title')
+                            ->label(__('admin.labels.Title'))
                             ->required(),
                         FileUpload::make('media')
-                            ->label('Media')
+                            ->label(__('admin.labels.Media'))
                             ->disk('public')
                             ->visibility('public')
                             ->directory('questions/options')
                             ->columnSpanFull(),
                         Toggle::make('is_correct')
-                            ->label('Correct')
+                            ->label(__('admin.labels.Correct'))
                             ->default(false),
                     ])
                     ->columns(1)

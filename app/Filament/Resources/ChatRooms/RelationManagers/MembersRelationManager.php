@@ -22,7 +22,7 @@ class MembersRelationManager extends BaseRelationManager
         return $schema
             ->components([
                 Select::make('user_id')
-                    ->label('User')
+                    ->label(__('admin.labels.User'))
                     ->relationship('user', 'phone')
                     ->getOptionLabelFromRecordUsing(fn (User $record): string => $record->name ?: $record->phone)
                     ->preload()
@@ -40,19 +40,19 @@ class MembersRelationManager extends BaseRelationManager
                                 ->exists();
 
                             if ($memberExists) {
-                                $fail('This user is already a member of this chat room.');
+                                $fail(__('admin.messages.user_already_chat_member'));
                             }
                         },
                     ])
                     ->required(),
                 Select::make('role')
-                    ->label('Role')
+                    ->label(__('admin.labels.Role'))
                     ->options(ChatMemberRole::options())
                     ->required(),
                 DateTimePicker::make('joined_at')
-                    ->label('Joined At'),
+                    ->label(__('admin.labels.Joined At')),
                 DateTimePicker::make('last_read_at')
-                    ->label('Last Read At'),
+                    ->label(__('admin.labels.Last Read At')),
             ]);
     }
 
@@ -63,20 +63,20 @@ class MembersRelationManager extends BaseRelationManager
             ->recordTitleAttribute('user_id')
             ->columns([
                 TextColumn::make('user.phone')
-                    ->label('User')
+                    ->label(__('admin.labels.User'))
                     ->formatStateUsing(fn (mixed $state, mixed $record): ?string => $record->user?->name ?: $state)
                     ->searchable(),
                 TextColumn::make('role')
-                    ->label('Role')
+                    ->label(__('admin.labels.Role'))
                     ->badge()
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('joined_at')
-                    ->label('Joined At')
+                    ->label(__('admin.labels.Joined At'))
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('last_read_at')
-                    ->label('Last Read At')
+                    ->label(__('admin.labels.Last Read At'))
                     ->dateTime()
                     ->sortable(),
             ])

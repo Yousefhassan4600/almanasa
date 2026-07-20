@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ProviderSubscriptions\Tables;
 
 use App\Filament\Base\BaseTable;
+use App\Filament\Support\CurrentAccount;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -17,31 +18,32 @@ class ProviderSubscriptionsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             TextColumn::make('provider.name')
-                ->label('Provider')
+                ->label(__('admin.labels.Provider'))
+                ->visible(fn (): bool => CurrentAccount::isSaasOwner())
                 ->searchable(),
             TextColumn::make('planOption.plan.name')
-                ->label('Plan')
+                ->label(__('admin.labels.Plan'))
                 ->searchable(),
             TextColumn::make('planOption.billing_period_days')
-                ->label('Billing Days')
+                ->label(__('admin.labels.Billing Days'))
                 ->sortable(),
             TextColumn::make('status')
-                ->label('Status')
+                ->label(__('admin.labels.Status'))
                 ->searchable()
                 ->badge()
                 ->sortable(),
             TextColumn::make('amount')
-                ->label('Amount')
+                ->label(__('admin.labels.Amount'))
                 ->sortable(),
             TextColumn::make('starts_at')
-                ->label('Starts At')
+                ->label(__('admin.labels.Starts At'))
                 ->dateTime()
                 ->sortable(),
             TextColumn::make('ends_at')
-                ->label('Ends At')
+                ->label(__('admin.labels.Ends At'))
                 ->dateTime()
                 ->sortable(),
         ];

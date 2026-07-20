@@ -19,6 +19,8 @@ class ProviderResource extends BaseResource
 {
     protected static ?string $model = Provider::class;
 
+    protected static bool $isSaasOwnerOnly = true;
+
     protected static string|UnitEnum|null $navigationGroup = 'Users & Subscriptions';
 
     protected static ?int $navigationSort = 2;

@@ -3,10 +3,11 @@
 namespace App\Filament\Resources\Students\RelationManagers;
 
 use App\Filament\Base\RelationManagers\BaseRelationManager;
-use App\Models\Account;
+use App\Filament\Support\CurrentAccount;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class SubscriptionsRelationManager extends BaseRelationManager
 {
@@ -18,42 +19,48 @@ class SubscriptionsRelationManager extends BaseRelationManager
             ->recordTitleAttribute('course_id')
             ->columns([
                 TextColumn::make('id')
-                    ->label('#')
+                    ->label(__('admin.labels.#'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('provider.name')
-                    ->label('Provider')
+                    ->label(__('admin.labels.Provider'))
+                    ->visible(fn (): bool => CurrentAccount::isSaasOwner())
                     ->searchable(),
                 TextColumn::make('course.title')
-                    ->label('Course'),
+                    ->label(__('admin.labels.Course')),
                 TextColumn::make('purchaseUnit.name')
-                    ->label('Purchase Unit')
+                    ->label(__('admin.labels.Purchase Unit'))
                     ->badge(),
                 TextColumn::make('purchase_type')
-                    ->label('Purchase Type')
+                    ->label(__('admin.labels.Purchase Type'))
                     ->badge(),
                 TextColumn::make('starts_at')
-                    ->label('Starts At')
+                    ->label(__('admin.labels.Starts At'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('ends_at')
-                    ->label('Ends At')
+                    ->label(__('admin.labels.Ends At'))
                     ->searchable()
                     ->sortable(),
                 IconColumn::make('is_active')
-                    ->label('Is Active')
+                    ->label(__('admin.labels.Is Active'))
                     ->boolean(),
             ])
+            ->modifyQueryUsing(fn (Builder $query): Builder => $this->scopeToCurrentTeacher($query))
             ->filters($this->getTableFilters())
             ->headerActions([])
             ->recordActions([]);
     }
 
-    private function studentAccount(): Account
+    private function scopeToCurrentTeacher(Builder $query): Builder
     {
-        /** @var Account $account */
-        $account = $this->getOwnerRecord();
+        $account = CurrentAccount::account();
 
-        return $account;
+        if (! $account || ! CurrentAccount::isAcademyTeacher()) {
+            return $query;
+        }
+
+        return $query->whereHas('course.academyTeacher', fn (Builder $query): Builder => $query
+            ->where('teacher_account_id', $account->id));
     }
 }

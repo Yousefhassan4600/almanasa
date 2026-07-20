@@ -4,6 +4,7 @@ namespace App\Filament\Resources\AcademyTeachers\Tables;
 
 use App\Enums\AccountType;
 use App\Filament\Base\BaseTable;
+use App\Filament\Support\CurrentAccount;
 use App\Models\AcademyTeacher;
 use App\Models\Account;
 use Filament\Actions\EditAction;
@@ -17,24 +18,25 @@ class AcademyTeachersTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             ImageColumn::make('image')
-                ->label('Image'),
+                ->label(__('admin.labels.Image')),
             TextColumn::make('provider.name')
-                ->label('Provider')
+                ->label(__('admin.labels.Provider'))
+                ->visible(fn (): bool => CurrentAccount::isSaasOwner())
                 ->searchable()
                 ->sortable(),
             TextColumn::make('teacher.owner.name')
-                ->label('User')
+                ->label(__('admin.labels.User'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('experience_years')
-                ->label('Experience Years')
+                ->label(__('admin.labels.Experience Years'))
                 ->badge()
                 ->sortable(),
             ToggleColumn::make('is_active')
-                ->label('Is Active'),
+                ->label(__('admin.labels.Is Active')),
         ];
     }
 

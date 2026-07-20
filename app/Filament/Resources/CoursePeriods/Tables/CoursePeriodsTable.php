@@ -12,16 +12,16 @@ class CoursePeriodsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             TextColumn::make('name')
-                ->label('Name')
+                ->label(__('admin.labels.Name'))
                 ->wrap(),
             TextColumn::make('type')
-                ->label('Type')
+                ->label(__('admin.labels.Type'))
                 ->badge(),
             ToggleColumn::make('is_active')
-                ->label('Active'),
+                ->label(__('admin.labels.Active')),
         ];
     }
 

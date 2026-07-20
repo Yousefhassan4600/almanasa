@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Carts\Tables;
 
 use App\Filament\Base\BaseTable;
+use App\Filament\Support\CurrentAccount;
 use App\Models\Cart;
 use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
@@ -14,16 +15,17 @@ class CartsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('provider.name')
-                ->label('Provider'),
+                ->label(__('admin.labels.Provider'))
+                ->visible(fn (): bool => CurrentAccount::isSaasOwner()),
             TextColumn::make('student.name')
-                ->label('Student')
+                ->label(__('admin.labels.Student'))
                 ->searchable(),
             TextColumn::make('items')
-                ->label('Courses')
+                ->label(__('admin.labels.Courses'))
                 ->state(function (Cart $record): array {
                     $record->loadMissing('items.course');
 
@@ -37,14 +39,14 @@ class CartsTable extends BaseTable
                 ->badge()
                 ->color('info'),
             TextColumn::make('purchaseUnit.name')
-                ->label('Purchase Unit')
+                ->label(__('admin.labels.Purchase Unit'))
                 ->badge()
                 ->placeholder('-'),
             TextColumn::make('purchase_type')
-                ->label('Purchase Type')
+                ->label(__('admin.labels.Purchase Type'))
                 ->badge(),
             TextColumn::make('total')
-                ->label('Total')
+                ->label(__('admin.labels.Total'))
                 ->suffix(' EGP')
                 ->badge()
                 ->color('success'),

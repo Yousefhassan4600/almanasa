@@ -20,7 +20,7 @@ class ProviderPaymentMethodsRelationManager extends BaseRelationManager
         return $schema
             ->components([
                 Select::make('payment_method_id')
-                    ->label('Payment Method')
+                    ->label(__('admin.labels.Payment Method'))
                     ->relationship('paymentMethod', 'name')
                     ->preload()
                     ->searchable()
@@ -37,21 +37,21 @@ class ProviderPaymentMethodsRelationManager extends BaseRelationManager
                                 ->exists();
 
                             if ($paymentMethodExists) {
-                                $fail('This payment method is already configured for this provider.');
+                                $fail(__('admin.messages.payment_method_already_configured'));
                             }
                         },
                     ])
                     ->required()
                     ->columnSpanFull(),
                 TextInput::make('account_number')
-                    ->label('Account Number'),
+                    ->label(__('admin.labels.Account Number')),
                 TextInput::make('account_holder')
-                    ->label('Account Holder'),
+                    ->label(__('admin.labels.Account Holder')),
                 TextInput::make('phone_number')
-                    ->label('Phone Number')
+                    ->label(__('admin.labels.Phone Number'))
                     ->tel(),
                 TextInput::make('phone_holder')
-                    ->label('Phone Holder'),
+                    ->label(__('admin.labels.Phone Holder')),
             ]);
     }
 

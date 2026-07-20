@@ -13,17 +13,17 @@ class CityForm
         return $schema
             ->components([
                 Select::make('country_id')
-                    ->label('Country')
+                    ->label(__('admin.labels.Country'))
                     ->relationship('country', 'name')
                     ->preload()
                     ->searchable()
                     ->required()
                     ->columnSpanFull(),
                 TextInput::make('name.ar')
-                    ->label('Name (Arabic)')
+                    ->label(__('admin.labels.Name (Arabic)'))
                     ->required(),
                 TextInput::make('name.en')
-                    ->label('Name (English)')
+                    ->label(__('admin.labels.Name (English)'))
                     ->required(),
             ]);
     }

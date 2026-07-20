@@ -12,38 +12,38 @@ class LessonItemsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->searchable(),
             TextColumn::make('title')
-                ->label('Title')
+                ->label(__('admin.labels.Title'))
                 ->searchable()
                 ->wrap(),
             TextColumn::make('type')
-                ->label('Type')
+                ->label(__('admin.labels.Type'))
                 ->badge()
                 ->wrap(),
             TextColumn::make('assignment.title')
-                ->label('Assignment')
+                ->label(__('admin.labels.Assignment'))
                 ->badge(),
             TextColumn::make('exam.title')
-                ->label('Exam')
+                ->label(__('admin.labels.Exam'))
                 ->badge(),
             TextColumn::make('duration_minutes')
-                ->label('Duration Minutes')
+                ->label(__('admin.labels.Duration Minutes'))
                 ->badge()
                 ->sortable(),
             TextColumn::make('starts_at')
-                ->label('Starts At')
+                ->label(__('admin.labels.Starts At'))
                 ->dateTime()
                 ->sortable(),
             TextColumn::make('ends_at')
-                ->label('Ends At')
+                ->label(__('admin.labels.Ends At'))
                 ->dateTime()
                 ->sortable(),
             ToggleColumn::make('is_active')
-                ->label('Active'),
+                ->label(__('admin.labels.Active')),
             ToggleColumn::make('is_free')
-                ->label('Free'),
+                ->label(__('admin.labels.Free')),
         ];
     }
 

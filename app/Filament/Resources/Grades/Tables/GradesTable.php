@@ -14,16 +14,16 @@ class GradesTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#'),
+                ->label(__('admin.labels.#')),
 
             TextColumn::make('name')
-                ->label('Name'),
+                ->label(__('admin.labels.Name')),
 
             TextColumn::make('educationStage.name')
-                ->label('Education Stage'),
+                ->label(__('admin.labels.Education Stage')),
 
             TextColumn::make('gradeSubjects')
-                ->label('Subjects')
+                ->label(__('admin.labels.Subjects'))
                 ->wrap()
                 ->getStateUsing(function ($record) {
                     if ($record->gradeSubjects->isEmpty()) {

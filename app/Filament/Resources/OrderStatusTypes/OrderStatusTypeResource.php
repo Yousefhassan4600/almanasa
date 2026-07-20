@@ -12,6 +12,8 @@ class OrderStatusTypeResource extends BaseResource
 {
     protected static ?string $model = OrderStatusType::class;
 
+    protected static bool $isSaasOwnerOnly = true;
+
     protected static ?string $cluster = OrdersCatalog::class;
 
     protected static ?int $navigationSort = 3;

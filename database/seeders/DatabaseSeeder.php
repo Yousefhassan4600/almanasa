@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             LearningStructureSeeder::class,
             LocationsSeeder::class,
             EducationCatalogSeeder::class,
+            AdminPermissionsSeeder::class,
             ProvidersAndAccountsSeeder::class,
             CoursesSeeder::class,
             CommerceSeeder::class,

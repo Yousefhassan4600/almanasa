@@ -16,48 +16,48 @@ class ProviderPlanForm
     {
         return $schema
             ->components([
-                Section::make('Basic Information')
+                Section::make(__('admin.labels.Basic Information'))
                     ->schema([
                         TextInput::make('name.ar')
-                            ->label('Name (Arabic)')
+                            ->label(__('admin.labels.Name (Arabic)'))
                             ->required(),
                         TextInput::make('name.en')
-                            ->label('Name (English)')
+                            ->label(__('admin.labels.Name (English)'))
                             ->required(),
                         Textarea::make('description.ar')
-                            ->label('Description (Arabic)'),
+                            ->label(__('admin.labels.Description (Arabic)')),
                         Textarea::make('description.en')
-                            ->label('Description (English)'),
+                            ->label(__('admin.labels.Description (English)')),
                         Toggle::make('is_active')
-                            ->label('Is Active')
+                            ->label(__('admin.labels.Is Active'))
                             ->default(true),
                     ]),
-                Section::make('Features & Options')
+                Section::make(__('admin.labels.Features & Options'))
                     ->schema([
                         TextInput::make('max_students')
-                            ->label('Max Students')
+                            ->label(__('admin.labels.Max Students'))
                             ->numeric(),
                         TextInput::make('max_courses')
-                            ->label('Max Courses')
+                            ->label(__('admin.labels.Max Courses'))
                             ->numeric(),
                         TextInput::make('max_teachers')
-                            ->label('Max Teachers')
+                            ->label(__('admin.labels.Max Teachers'))
                             ->numeric(),
                         RichEditor::make('features')
-                            ->label('Features')
+                            ->label(__('admin.labels.Features'))
                             ->columnSpanFull(),
                     ]),
 
                 Repeater::make('options')
-                    ->label('Plan Options')
+                    ->label(__('admin.labels.Plan Options'))
                     ->relationship()
                     ->schema([
                         TextInput::make('billing_period_days')
-                            ->label('Billing Period Days')
+                            ->label(__('admin.labels.Billing Period Days'))
                             ->numeric()
                             ->required(),
                         TextInput::make('price')
-                            ->label('Price')
+                            ->label(__('admin.labels.Price'))
                             ->numeric()
                             ->required(),
                     ])

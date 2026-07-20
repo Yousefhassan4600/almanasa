@@ -12,23 +12,22 @@ class EmployeesTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#')
+                ->label(__('admin.labels.#'))
                 ->sortable(),
             TextColumn::make('account.provider.name')
-                ->label('Provider')
+                ->label(__('admin.Provider'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('user.name')
-                ->label('User')
+                ->label(__('admin.User'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('role.name')
-                ->label('Role')
-                ->formatStateUsing(fn($state, $record): string => $state ?? $record->predefined_role)
+                ->label(__('admin.Role'))
                 ->searchable()
                 ->sortable(),
             IconColumn::make('is_active')
-                ->label('Is Active')
+                ->label(__('admin.Is Active'))
                 ->boolean()
                 ->sortable(),
         ];

@@ -12,29 +12,29 @@ class StudentAttemptForm
         return $schema
             ->components([
                 TextInput::make('student_user_id')
-                    ->label('Student User Id')
+                    ->label(__('admin.labels.Student User Id'))
                     ->numeric()
                     ->required(),
                 TextInput::make('course_id')
-                    ->label('Course Id')
+                    ->label(__('admin.labels.Course Id'))
                     ->numeric()
                     ->required(),
                 TextInput::make('exam_model_id')
-                    ->label('Exam Model Id')
+                    ->label(__('admin.labels.Exam Model Id'))
                     ->numeric(),
                 TextInput::make('attemptable_type')
-                    ->label('Attemptable Type')
+                    ->label(__('admin.labels.Attemptable Type'))
                     ->required(),
                 TextInput::make('attemptable_id')
-                    ->label('Attemptable Id')
+                    ->label(__('admin.labels.Attemptable Id'))
                     ->numeric()
                     ->required(),
                 TextInput::make('attempt_number')
-                    ->label('Attempt Number')
+                    ->label(__('admin.labels.Attempt Number'))
                     ->numeric()
                     ->required(),
                 TextInput::make('max_score')
-                    ->label('Max Score')
+                    ->label(__('admin.labels.Max Score'))
                     ->numeric(),
             ]);
     }

@@ -31,6 +31,9 @@ class EnsureCurrentAccount
         $request->session()->put('current_account_id', $account->id);
         $request->session()->put('current_provider_id', $account->provider_id);
 
+        setPermissionsTeamId($account->provider_id);
+        $user->unsetRelation('roles')->unsetRelation('permissions');
+
         return $next($request);
     }
 
@@ -86,6 +89,11 @@ class EnsureCurrentAccount
         return match ($surface) {
             'dashboard' => $query
                 ->whereIn('accounts.type', ['saas_owner', 'academy', 'academy_teacher', 'standalone_teacher'])
+                ->where(function ($query): void {
+                    $query
+                        ->where('accounts.type', '!=', 'academy_teacher')
+                        ->orWhereHas('academyTeacherAssignments', fn ($query) => $query->where('is_active', true));
+                })
                 ->where(function ($query): void {
                     $query
                         ->where('accounts.type', 'saas_owner')

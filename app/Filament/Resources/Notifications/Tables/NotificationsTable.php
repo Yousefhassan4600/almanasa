@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Notifications\Tables;
 
 use App\Filament\Base\BaseTable;
+use App\Filament\Support\CurrentAccount;
 use Filament\Tables\Columns\TextColumn;
 
 class NotificationsTable extends BaseTable
@@ -11,19 +12,20 @@ class NotificationsTable extends BaseTable
     {
         return [
             TextColumn::make('user_id')
-                ->label('User Id')
+                ->label(__('admin.labels.User Id'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('provider_id')
-                ->label('Provider Id')
+                ->label(__('admin.labels.Provider Id'))
+                ->visible(fn (): bool => CurrentAccount::isSaasOwner())
                 ->searchable()
                 ->sortable(),
             TextColumn::make('title')
-                ->label('Title')
+                ->label(__('admin.labels.Title'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('read_at')
-                ->label('Read At')
+                ->label(__('admin.labels.Read At'))
                 ->searchable()
                 ->sortable(),
         ];

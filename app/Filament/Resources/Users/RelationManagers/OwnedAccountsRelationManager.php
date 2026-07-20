@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Users\RelationManagers;
 
 use App\Enums\AccountType;
 use App\Filament\Base\RelationManagers\BaseRelationManager;
+use App\Filament\Support\CurrentAccount;
 use App\Models\Account;
 use Closure;
 use Filament\Actions\BulkActionGroup;
@@ -27,10 +28,10 @@ class OwnedAccountsRelationManager extends BaseRelationManager
         return $schema
             ->components([
                 Select::make('type')
-                    ->label('Type')
+                    ->label(__('admin.labels.Type'))
                     ->options(AccountType::options())
                     ->rules([
-                        fn(Get $get, ?Account $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
+                        fn (Get $get, ?Account $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
                             $providerId = $get('provider_id');
 
                             $accountExists = Account::query()
@@ -38,28 +39,28 @@ class OwnedAccountsRelationManager extends BaseRelationManager
                                 ->where('type', $value)
                                 ->when(
                                     filled($providerId),
-                                    fn($query) => $query->where('provider_id', $providerId),
-                                    fn($query) => $query->whereNull('provider_id'),
+                                    fn ($query) => $query->where('provider_id', $providerId),
+                                    fn ($query) => $query->whereNull('provider_id'),
                                 )
-                                ->when($record?->exists, fn($query) => $query->whereKeyNot($record->getKey()))
+                                ->when($record?->exists, fn ($query) => $query->whereKeyNot($record->getKey()))
                                 ->exists();
 
                             if ($accountExists) {
-                                $fail('This user already has an account with the same type and provider.');
+                                $fail(__('admin.messages.account_type_provider_already_exists'));
                             }
                         },
                     ])
                     ->required(),
-                Select::make('provider_id')
-                    ->label('Provider')
+                CurrentAccount::providerSelect(Select::make('provider_id'))
+                    ->label(__('admin.labels.Provider'))
                     ->relationship('provider', 'name')
                     ->preload()
                     ->searchable(),
                 DateTimePicker::make('approved_at')
-                    ->label('Approved At')
+                    ->label(__('admin.labels.Approved At'))
                     ->columnSpanFull(),
                 Toggle::make('is_active')
-                    ->label('Is Active')
+                    ->label(__('admin.labels.Is Active'))
                     ->default(true)
                     ->columnSpanFull(),
             ]);
@@ -71,23 +72,24 @@ class OwnedAccountsRelationManager extends BaseRelationManager
             ->recordTitleAttribute('type')
             ->columns([
                 TextColumn::make('id')
-                    ->label('#')
+                    ->label(__('admin.labels.#'))
                     ->sortable(),
                 TextColumn::make('provider.name')
-                    ->label('Provider')
+                    ->label(__('admin.labels.Provider'))
+                    ->visible(fn (): bool => CurrentAccount::isSaasOwner())
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('type')
-                    ->label('Type')
+                    ->label(__('admin.labels.Type'))
                     ->badge()
                     ->searchable()
                     ->sortable(),
                 IconColumn::make('is_active')
-                    ->label('Is Active')
+                    ->label(__('admin.labels.Is Active'))
                     ->boolean()
                     ->sortable(),
                 TextColumn::make('approved_at')
-                    ->label('Approved At')
+                    ->label(__('admin.labels.Approved At'))
                     ->dateTime()
                     ->sortable(),
             ])

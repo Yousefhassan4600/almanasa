@@ -4,12 +4,12 @@ namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
 use App\Models\Traits\SoftDeletesWithUser;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Permission\Models\Role as SpatieRole;
 
-class Role extends Model
+class Role extends SpatieRole
 {
     use FiltersByTenant;
     use SoftDeletes, SoftDeletesWithUser;

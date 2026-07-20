@@ -12,6 +12,8 @@ class TrackResource extends BaseResource
 {
     protected static ?string $model = Track::class;
 
+    protected static bool $isSaasOwnerOnly = true;
+
     protected static ?string $cluster = EducationCatalog::class;
 
     protected static ?int $navigationSort = 2;

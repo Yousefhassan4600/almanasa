@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Exams\Schemas;
 
+use App\Filament\Support\CurrentAccount;
 use App\Models\Course;
 use App\Models\Lesson;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -19,62 +19,62 @@ class ExamForm
     {
         return $schema
             ->components([
-                Section::make('Assignment Details')
+                Section::make(__('admin.labels.Assignment Details'))
                     ->schema([
                         Select::make('course_id')
-                            ->label('Course')
-                            ->options(fn(): array => self::courseOptions())
+                            ->label(__('admin.labels.Course'))
+                            ->options(fn (): array => self::courseOptions())
                             ->searchable()
                             ->preload()
                             ->live()
                             ->required()
-                            ->afterStateUpdated(fn(Set $set): mixed => $set('lesson_ids', [])),
+                            ->afterStateUpdated(fn (Set $set): mixed => $set('lesson_ids', [])),
                         TextInput::make('title.ar')
-                            ->label('Title (Arabic)')
+                            ->label(__('admin.labels.Title (Arabic)'))
                             ->required(),
                         TextInput::make('title.en')
-                            ->label('Title (English)')
+                            ->label(__('admin.labels.Title (English)'))
                             ->required(),
                         Select::make('lesson_ids')
-                            ->label('Lessons')
+                            ->label(__('admin.labels.Lessons'))
                             ->multiple()
-                            ->options(fn(Get $get): array => self::lessonOptions($get('course_id')))
+                            ->options(fn (Get $get): array => self::lessonOptions($get('course_id')))
                             ->searchable()
                             ->preload()
                             ->helperText('Optional. If selected, exam model questions will be randomized only from these lessons.')
                             ->columnSpanFull(),
                         Textarea::make('description.ar')
-                            ->label('Description (Arabic)'),
+                            ->label(__('admin.labels.Description (Arabic)')),
                         Textarea::make('description.en')
-                            ->label('Description (English)'),
+                            ->label(__('admin.labels.Description (English)')),
                     ])
                     ->columns(1),
-                Section::make('Questions & Date Details')
+                Section::make(__('admin.labels.Questions & Date Details'))
                     ->schema([
                         TextInput::make('num_of_questions')
-                            ->label('Number Of Questions')
+                            ->label(__('admin.labels.Number Of Questions'))
                             ->numeric()
                             ->integer()
                             ->required()
                             ->columnSpanFull()
                             ->default(10)
                             ->minValue(0),
-                        Section::make('Questions Difficulty')
+                        Section::make(__('admin.labels.Questions Difficulty'))
                             ->schema([
                                 TextInput::make('num_of_easy_questions')
-                                    ->label('Easy Questions')
+                                    ->label(__('admin.labels.Easy Questions'))
                                     ->numeric()
                                     ->integer()
                                     ->default(5)
                                     ->minValue(0),
                                 TextInput::make('num_of_medium_questions')
-                                    ->label('Medium Questions')
+                                    ->label(__('admin.labels.Medium Questions'))
                                     ->numeric()
                                     ->integer()
                                     ->default(3)
                                     ->minValue(0),
                                 TextInput::make('num_of_hard_questions')
-                                    ->label('Hard Questions')
+                                    ->label(__('admin.labels.Hard Questions'))
                                     ->numeric()
                                     ->integer()
                                     ->default(2)
@@ -82,23 +82,23 @@ class ExamForm
                             ])
                             ->columns(3)
                             ->columnSpanFull(),
-                        Section::make('Max Degree, Models & Duration')
+                        Section::make(__('admin.labels.Max Degree, Models & Duration'))
                             ->schema([
                                 TextInput::make('max_degree')
-                                    ->label('Max Degree')
+                                    ->label(__('admin.labels.Max Degree'))
                                     ->numeric()
                                     ->required()
                                     ->default(20)
                                     ->minValue(0),
                                 TextInput::make('num_of_models')
-                                    ->label('Number Of Models')
+                                    ->label(__('admin.labels.Number Of Models'))
                                     ->numeric()
                                     ->integer()
                                     ->default(1)
                                     ->required()
                                     ->minValue(1),
                                 TextInput::make('duration_minutes')
-                                    ->label('Duration Minutes')
+                                    ->label(__('admin.labels.Duration Minutes'))
                                     ->numeric()
                                     ->integer()
                                     ->default(10)
@@ -108,7 +108,7 @@ class ExamForm
                             ->columns(3)
                             ->columnSpanFull(),
                         TextInput::make('num_of_attempts')
-                            ->label('Number of Attempts')
+                            ->label(__('admin.labels.Number of Attempts'))
                             ->numeric()
                             ->integer()
                             ->default(1)
@@ -123,8 +123,9 @@ class ExamForm
     {
         return Course::query()
             ->with(['provider'])
+            ->when(CurrentAccount::isAcademyTeacher(), fn ($query) => CurrentAccount::scopeCoursesToAcademyTeacher($query))
             ->get()
-            ->mapWithKeys(fn(Course $course): array => [
+            ->mapWithKeys(fn (Course $course): array => [
                 $course->id => collect([$course->title, $course->provider?->name])->filter()->join(' - '),
             ])
             ->all();
@@ -138,9 +139,10 @@ class ExamForm
 
         return Lesson::query()
             ->where('course_id', $courseId)
+            ->when(CurrentAccount::isAcademyTeacher(), fn ($query) => CurrentAccount::scopeLessonsToAcademyTeacher($query))
             ->orderBy('sort_order')
             ->get()
-            ->mapWithKeys(fn(Lesson $lesson): array => [
+            ->mapWithKeys(fn (Lesson $lesson): array => [
                 $lesson->id => $lesson->title,
             ])
             ->all();

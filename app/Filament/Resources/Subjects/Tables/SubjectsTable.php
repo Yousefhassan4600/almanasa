@@ -15,20 +15,20 @@ class SubjectsTable extends BaseTable
     {
         return [
             TextColumn::make('id')
-                ->label('#'),
+                ->label(__('admin.labels.#')),
             ImageColumn::make('icon')
-                ->label('Icon'),
+                ->label(__('admin.labels.Icon')),
             ImageColumn::make('image')
-                ->label('Image'),
+                ->label(__('admin.labels.Image')),
             TextColumn::make('track.name')
-                ->label('Track'),
+                ->label(__('admin.labels.Track')),
             TextColumn::make('name')
-                ->label('Name'),
+                ->label(__('admin.labels.Name')),
             TextColumn::make('description')
-                ->label('Description')
+                ->label(__('admin.labels.Description'))
                 ->wrap(),
             TextColumn::make('gradeSubjects')
-                ->label('Grades')
+                ->label(__('admin.labels.Grades'))
                 ->wrap()
                 ->getStateUsing(function ($record) {
                     if ($record->gradeSubjects->isEmpty()) {

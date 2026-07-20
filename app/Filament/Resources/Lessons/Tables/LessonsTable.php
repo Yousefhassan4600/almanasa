@@ -26,7 +26,7 @@ class LessonsTable extends BaseTable
                 ->visible(fn (): bool => CurrentAccount::isSaasOwner()),
             TextColumn::make('course.academyTeacher.teacher.owner.name')
                 ->label(__('admin.labels.Teacher'))
-                ->visible(fn (): bool => ! CurrentAccount::isAcademyTeacher()),
+                ->visible(fn (): bool => ! CurrentAccount::isAcademyTeacher() && ! CurrentAccount::isStandaloneTeacher()),
             TextColumn::make('coursePeriod.name')
                 ->label(__('admin.labels.Period')),
             TextColumn::make('starts_at')

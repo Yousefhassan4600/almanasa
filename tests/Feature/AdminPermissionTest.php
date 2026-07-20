@@ -6,8 +6,10 @@ use App\Enums\AccountType;
 use App\Enums\AdminPermissionAction;
 use App\Enums\ProviderSubscriptionStatus;
 use App\Enums\ProviderType;
+use App\Filament\Resources\AcademyTeachers\AcademyTeacherResource;
 use App\Filament\Resources\Courses\CourseResource;
 use App\Filament\Resources\Roles\RoleResource;
+use App\Filament\Resources\Roles\Schemas\RoleForm;
 use App\Livewire\Admin\AccountPicker;
 use App\Models\AcademyTeacher;
 use App\Models\Account;
@@ -184,6 +186,87 @@ class AdminPermissionTest extends TestCase
 
         $this->assertTrue(RoleResource::canEdit($academyTeacherRole));
         $this->assertFalse(RoleResource::canDelete($academyTeacherRole));
+        $this->assertTrue(RoleResource::getEloquentQuery()->whereKey($academyTeacherRole)->exists());
+    }
+
+    public function test_provider_accounts_cannot_see_academy_teacher_system_role(): void
+    {
+        $owner = User::factory()->create();
+        $provider = $this->provider($owner);
+        $account = $this->account(AccountType::Academy, $owner, $provider);
+
+        $academyTeacherRole = Role::query()->create([
+            'provider_id' => null,
+            'created_by_account_id' => null,
+            'name' => AdminPermissions::ACADEMY_TEACHER_ROLE,
+            'guard_name' => 'web',
+            'is_assignable' => false,
+        ]);
+
+        $providerRole = Role::query()->create([
+            'provider_id' => $provider->id,
+            'created_by_account_id' => $account->id,
+            'name' => 'content_creator',
+            'guard_name' => 'web',
+            'is_assignable' => true,
+        ]);
+
+        $this->actingAsTenant($account);
+
+        $this->assertFalse(RoleResource::canView($academyTeacherRole));
+        $this->assertFalse(RoleResource::canEdit($academyTeacherRole));
+        $this->assertFalse(RoleResource::getEloquentQuery()->whereKey($academyTeacherRole)->exists());
+        $this->assertTrue(RoleResource::getEloquentQuery()->whereKey($providerRole)->exists());
+    }
+
+    public function test_standalone_teacher_cannot_access_academy_teachers_resource(): void
+    {
+        $standaloneTeacher = User::factory()->create();
+        $provider = $this->provider($standaloneTeacher, ProviderType::StandaloneTeacher);
+        $account = $this->account(AccountType::StandaloneTeacher, $standaloneTeacher, $provider);
+        $academyTeacher = AcademyTeacher::query()->create([
+            'provider_id' => $provider->id,
+            'teacher_account_id' => $account->id,
+            'is_active' => true,
+        ]);
+
+        $this->actingAsTenant($account);
+
+        $this->assertFalse(AcademyTeacherResource::canViewAny());
+        $this->assertFalse(AcademyTeacherResource::canCreate());
+        $this->assertFalse(AcademyTeacherResource::canEdit($academyTeacher));
+        $this->assertFalse(AcademyTeacherResource::canDelete($academyTeacher));
+        $this->assertFalse(AcademyTeacherResource::canDeleteAny());
+        $this->assertFalse(AcademyTeacherResource::canForceDelete($academyTeacher));
+        $this->assertFalse(AcademyTeacherResource::canForceDeleteAny());
+        $this->assertFalse(AcademyTeacherResource::canRestore($academyTeacher));
+        $this->assertFalse(AcademyTeacherResource::canRestoreAny());
+        $this->assertFalse(AcademyTeacherResource::canReorder());
+        $this->assertFalse(AcademyTeacherResource::shouldRegisterNavigation());
+        $this->assertFalse(AcademyTeacherResource::getEloquentQuery()->whereKey($academyTeacher)->exists());
+    }
+
+    public function test_standalone_teacher_role_form_hides_academy_teachers_permission_card(): void
+    {
+        $standaloneTeacher = User::factory()->create();
+        $provider = $this->provider($standaloneTeacher, ProviderType::StandaloneTeacher);
+        $account = $this->account(AccountType::StandaloneTeacher, $standaloneTeacher, $provider);
+
+        $this->actingAsTenant($account);
+
+        $this->assertArrayNotHasKey('academy-teachers', RoleForm::resourceKeys());
+    }
+
+    public function test_lesson_progress_permission_card_is_after_student_attempts(): void
+    {
+        $resourceKeys = array_keys(RoleForm::resourceKeys());
+
+        $this->assertContains('student-attempts', $resourceKeys);
+        $this->assertContains('lesson-progresses', $resourceKeys);
+        $this->assertSame(
+            array_search('student-attempts', $resourceKeys, true) + 1,
+            array_search('lesson-progresses', $resourceKeys, true),
+        );
     }
 
     private function actingAsTenant(Account $account, ?User $user = null): void
@@ -198,10 +281,10 @@ class AdminPermissionTest extends TestCase
         $this->actingAs($user ?? $account->owner);
     }
 
-    private function provider(User $owner): Provider
+    private function provider(User $owner, ProviderType $type = ProviderType::Academy): Provider
     {
         return Provider::query()->create([
-            'type' => ProviderType::Academy,
+            'type' => $type,
             'owner_user_id' => $owner->id,
             'name' => 'Future Stars Academy',
             'slug' => fake()->unique()->slug(),

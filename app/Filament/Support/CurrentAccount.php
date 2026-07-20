@@ -42,6 +42,13 @@ class CurrentAccount
         return $account?->type === AccountType::AcademyTeacher;
     }
 
+    public static function isStandaloneTeacher(): bool
+    {
+        $account = self::account();
+
+        return $account?->type === AccountType::StandaloneTeacher;
+    }
+
     public static function academyTeacherId(): ?int
     {
         $account = self::account();

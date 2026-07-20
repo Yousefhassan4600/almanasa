@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Enums\AccountType;
-use App\Enums\AdminPermissionAction;
 use App\Enums\ProviderSubscriptionStatus;
 use App\Enums\ProviderType;
 use App\Models\Account;
@@ -13,10 +12,8 @@ use App\Models\Provider;
 use App\Models\ProviderPlan;
 use App\Models\ProviderPlanOption;
 use App\Models\ProviderSubscription;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
 
 abstract class BaseSeeder extends Seeder
 {
@@ -107,28 +104,5 @@ abstract class BaseSeeder extends Seeder
             'is_active' => true,
             'approved_at' => now(),
         ]);
-    }
-
-    protected function role(
-        Account $account,
-        string $name,
-        Account $creator,
-        bool $isAssignable = true,
-    ): Role {
-        $role = Role::query()->firstOrCreate([
-            'provider_id' => $account->provider_id,
-            'name' => $name,
-        ], [
-            'guard_name' => 'web',
-            'created_by_account_id' => $creator->id,
-            'is_assignable' => $isAssignable,
-        ]);
-
-        $role->syncPermissions(Permission::query()
-            ->where('name', 'not like', '%.'.AdminPermissionAction::ViewHis->value)
-            ->pluck('name')
-            ->all());
-
-        return $role;
     }
 }

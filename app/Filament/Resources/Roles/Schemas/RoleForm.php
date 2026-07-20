@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Roles\Schemas;
 
 use App\Enums\AdminPermissionAction;
+use App\Filament\Support\CurrentAccount;
 use App\Models\Role;
 use App\Support\AdminPermissions;
 use Filament\Forms\Components\Checkbox;
@@ -18,6 +19,8 @@ use Spatie\Permission\Models\Permission;
 
 class RoleForm
 {
+    private const ACADEMY_TEACHERS_RESOURCE_KEY = 'academy-teachers';
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -153,7 +156,13 @@ class RoleForm
      */
     public static function resourceKeys(): array
     {
-        return AdminPermissions::resourceKeys();
+        $resourceKeys = AdminPermissions::resourceKeys();
+
+        if (CurrentAccount::isStandaloneTeacher()) {
+            unset($resourceKeys[self::ACADEMY_TEACHERS_RESOURCE_KEY]);
+        }
+
+        return $resourceKeys;
     }
 
     public static function resourceToggleField(string $resourceKey): string

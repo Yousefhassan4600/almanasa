@@ -21,7 +21,7 @@ class CoursesTable extends BaseTable
                 ->sortable(),
             TextColumn::make('academyTeacher.teacher.owner.name')
                 ->label(__('admin.labels.Teacher'))
-                ->visible(fn (): bool => ! CurrentAccount::isAcademyTeacher()),
+                ->visible(fn (): bool => ! CurrentAccount::isAcademyTeacher() && ! CurrentAccount::isStandaloneTeacher()),
             TextColumn::make('accountSubject.name')
                 ->label(__('admin.labels.Grade Subject')),
             // ->searchable(),

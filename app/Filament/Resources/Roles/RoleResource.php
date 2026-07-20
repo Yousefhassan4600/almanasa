@@ -7,8 +7,10 @@ use App\Filament\Resources\Roles\Schemas\RoleForm;
 use App\Filament\Resources\Roles\Tables\RolesTable;
 use App\Filament\Support\CurrentAccount;
 use App\Models\Role;
+use App\Support\AdminPermissions;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
@@ -30,8 +32,36 @@ class RoleResource extends BaseResource
         return RolesTable::configure($table);
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (CurrentAccount::isSaasOwner()) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $query): void {
+            $query
+                ->whereNotNull('provider_id')
+                ->orWhere('name', '!=', AdminPermissions::ACADEMY_TEACHER_ROLE);
+        });
+    }
+
+    public static function canView(Model $record): bool
+    {
+        if ($record instanceof Role && self::isHiddenSystemRole($record)) {
+            return false;
+        }
+
+        return parent::canView($record);
+    }
+
     public static function canEdit(Model $record): bool
     {
+        if ($record instanceof Role && self::isHiddenSystemRole($record)) {
+            return false;
+        }
+
         if ($record instanceof Role && RoleForm::isAcademyTeacherSystemRole($record)) {
             return CurrentAccount::isSaasOwner();
         }
@@ -41,7 +71,7 @@ class RoleResource extends BaseResource
 
     public static function canDelete(Model $record): bool
     {
-        if ($record instanceof Role && RoleForm::isAcademyTeacherSystemRole($record)) {
+        if ($record instanceof Role && (self::isHiddenSystemRole($record) || RoleForm::isAcademyTeacherSystemRole($record))) {
             return false;
         }
 
@@ -55,7 +85,7 @@ class RoleResource extends BaseResource
 
     public static function canRestore(Model $record): bool
     {
-        return ! ($record instanceof Role && RoleForm::isAcademyTeacherSystemRole($record)) && parent::canRestore($record);
+        return ! ($record instanceof Role && (self::isHiddenSystemRole($record) || RoleForm::isAcademyTeacherSystemRole($record))) && parent::canRestore($record);
     }
 
     public static function getRelations(): array
@@ -70,5 +100,11 @@ class RoleResource extends BaseResource
             'create' => Pages\CreateRole::route('/create'),
             'edit' => Pages\EditRole::route('/{record}/edit'),
         ];
+    }
+
+    private static function isHiddenSystemRole(Role $role): bool
+    {
+        return ! CurrentAccount::isSaasOwner()
+            && RoleForm::isAcademyTeacherSystemRole($role);
     }
 }

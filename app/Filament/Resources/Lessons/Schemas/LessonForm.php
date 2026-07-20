@@ -25,7 +25,11 @@ class LessonForm
                         ->when(CurrentAccount::isAcademyTeacher(), fn ($query) => CurrentAccount::scopeCoursesToAcademyTeacher($query))
                         ->get()
                         ->mapWithKeys(fn (Course $course): array => [
-                            $course->id => $course->title.' - '.$course->provider?->name.' - '.$course->academyTeacher?->teacher?->owner?->name,
+                            $course->id => collect([
+                                $course->title,
+                                $course->provider?->name,
+                                CurrentAccount::isStandaloneTeacher() ? null : $course->academyTeacher?->teacher?->owner?->name,
+                            ])->filter()->join(' - '),
                         ])
                         ->all())
                     ->searchable()

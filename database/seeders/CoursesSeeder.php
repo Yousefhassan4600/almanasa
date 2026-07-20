@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\CoursePeriodType;
 use App\Enums\LessonTypeEnum;
+use App\Enums\ProviderType;
 use App\Enums\PurchaseUnitType;
 use App\Enums\QuestionDifficulty;
 use App\Enums\QuestionType;
@@ -59,7 +60,27 @@ class CoursesSeeder extends BaseSeeder
             'accountSubjects.teacherAssignments.academyTeacher.teacher.owner',
         ]);
 
+        if ($provider->type === ProviderType::StandaloneTeacher) {
+            $provider->courses()
+                ->whereNotNull('academy_teacher_id')
+                ->get()
+                ->each->delete();
+        }
+
         $provider->accountSubjects->each(function (AccountSubject $accountSubject) use ($provider, $lessonPurchaseUnit, $monthPurchaseUnit, $termOnePeriod): void {
+            if ($provider->type === ProviderType::StandaloneTeacher) {
+                $this->course(
+                    provider: $provider,
+                    accountSubject: $accountSubject,
+                    academyTeacher: null,
+                    lessonPurchaseUnit: $lessonPurchaseUnit,
+                    monthPurchaseUnit: $monthPurchaseUnit,
+                    termOnePeriod: $termOnePeriod,
+                );
+
+                return;
+            }
+
             $teacherAssignments = $accountSubject->teacherAssignments
                 ->filter(fn ($assignment): bool => filled($assignment->academy_teacher_id));
 

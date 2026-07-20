@@ -36,20 +36,15 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
         $academyOwner = $this->user('01000000001', 'Academy', 'Owner');
         $secondAcademyOwner = $this->user('01000000006', 'Science', 'Owner');
         $academyTeacherUser = $this->user('01000000002', 'Ahmed', 'Teacher');
-        $academyTeacherAssistantUser = $this->user('01000000007', 'Laila', 'Teacher');
         $standaloneTeacherUser = $this->user('01000000003', 'Mona', 'Teacher');
         $scienceTeacherUser = $this->user('01000000008', 'Youssef', 'Teacher');
         $studentUser = $this->user('01000000004', 'Omar', 'Student');
         $parentUser = $this->user('01000000005', 'Sara', 'Parent');
 
-        $saasAccount = $this->account(
+        $this->account(
             type: AccountType::SaasOwner,
             owner: $saasOwner,
         );
-
-        foreach (['support_manager', 'tenant_reviewer', 'finance_admin'] as $roleName) {
-            $this->role($saasAccount, $roleName, $saasAccount);
-        }
 
         $academyMonthlyOption = $this->academyPlanOption();
         $teacherMonthlyOption = $this->teacherPlanOption();
@@ -66,7 +61,7 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
 
         $this->providerSubscription($academyProvider, $academyMonthlyOption);
 
-        $academyAccount = $this->account(
+        $this->account(
             type: AccountType::Academy,
             owner: $academyOwner,
             provider: $academyProvider,
@@ -83,10 +78,6 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
             'instagram_link' => 'https://instagram.com/future-stars-academy',
             'terms_conditions' => '<p>Students must follow academy learning and payment policies.</p>',
         ]);
-
-        foreach (['academy_admin', 'content_manager', 'payment_reviewer'] as $roleName) {
-            $this->role($academyAccount, $roleName, $academyAccount);
-        }
 
         $academyCoverages = $this->syncProviderCoverage(
             providerId: $academyProvider->id,
@@ -105,7 +96,7 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
 
         $this->providerSubscription($secondAcademyProvider, $academyMonthlyOption);
 
-        $secondAcademyAccount = $this->account(
+        $this->account(
             type: AccountType::Academy,
             owner: $secondAcademyOwner,
             provider: $secondAcademyProvider,
@@ -122,10 +113,6 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
             'terms_conditions' => '<p>Enrollment is subject to academy approval and active subscription.</p>',
         ]);
 
-        foreach (['academy_admin', 'content_manager'] as $roleName) {
-            $this->role($secondAcademyAccount, $roleName, $secondAcademyAccount);
-        }
-
         $secondAcademyCoverages = $this->syncProviderCoverage(
             providerId: $secondAcademyProvider->id,
             gradeSubjects: $this->secondaryGradeSubjects(),
@@ -133,7 +120,7 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
 
         $academyTeachers = $this->academyTeachers($academyProvider->id, [
             $academyTeacherUser,
-            $academyTeacherAssistantUser,
+            $scienceTeacherUser,
         ]);
 
         $this->assignTeachersToCoverages($academyTeachers, $academyCoverages);
@@ -157,7 +144,7 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
 
         $this->providerSubscription($standaloneTeacherProvider, $teacherMonthlyOption);
 
-        $standaloneTeacherAccount = $this->account(
+        $this->account(
             type: AccountType::StandaloneTeacher,
             owner: $standaloneTeacherUser,
             provider: $standaloneTeacherProvider,
@@ -176,14 +163,12 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
             'terms_conditions' => '<p>Course access follows the teacher subscription and attendance policies.</p>',
         ]);
 
-        foreach (['content_assistant', 'student_support'] as $roleName) {
-            $this->role($standaloneTeacherAccount, $roleName, $standaloneTeacherAccount);
-        }
-
         $this->syncProviderCoverage(
             providerId: $standaloneTeacherProvider->id,
             gradeSubjects: $this->physicsSecondaryGradeSubjects(),
         );
+
+        $this->removeAcademyTeacherAssignmentsForUser($standaloneTeacherUser);
 
         $this->account(
             type: AccountType::Student,
@@ -378,6 +363,17 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
                 ], [
                     'is_active' => true,
                 ]);
+            });
+    }
+
+    private function removeAcademyTeacherAssignmentsForUser(User $user): void
+    {
+        AcademyTeacher::query()
+            ->whereHas('teacher', fn ($query) => $query->where('owner_user_id', $user->id))
+            ->get()
+            ->each(function (AcademyTeacher $academyTeacher): void {
+                $academyTeacher->accountSubjects()->detach();
+                $academyTeacher->delete();
             });
     }
 

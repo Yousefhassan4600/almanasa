@@ -52,11 +52,11 @@ class AcademySiteController extends Controller
             }
         }
 
-        if (in_array($page, ['profile.html', 'my_lessons.html', 'home_work.html', 'quiz.html', 'home_work_done.html', 'quiz_done.html', 'quiz_review.html'], true) && ! Auth::check()) {
+        if (in_array($page, ['profile.html', 'my_lessons.html', 'cart.html', 'home_work.html', 'quiz.html', 'home_work_done.html', 'quiz_done.html', 'quiz_review.html'], true) && ! Auth::check()) {
             return redirect('/login');
         }
 
-        if (in_array($page, ['home_work.html', 'quiz.html', 'home_work_done.html', 'quiz_done.html', 'quiz_review.html'], true) && ! Auth::user()?->studentProfile()->exists()) {
+        if (in_array($page, ['cart.html', 'home_work.html', 'quiz.html', 'home_work_done.html', 'quiz_done.html', 'quiz_review.html'], true) && ! Auth::user()?->studentProfile()->exists()) {
             return redirect('/register');
         }
 
@@ -144,6 +144,7 @@ class AcademySiteController extends Controller
         $html = $this->injectLessonPage($html, $provider, $page);
         $html = $this->injectAssessmentPage($html, $provider, $page);
         $html = $this->injectAttemptResultPage($html, $provider, $page);
+        $html = $this->injectCartPage($html, $provider, $page);
         $html = $this->injectWebsiteHeader($html, $provider, $page);
         $html = $this->injectHomeHero($html, $page);
         $html = $this->injectHomeHeroActions($html, $provider, $page);
@@ -473,6 +474,20 @@ HTML;
         return preg_replace(
             '/(<\/header>)\s*.*?(?=<footer\b)/s',
             "$1\n@livewire('website.attempt-result-page', ['providerId' => {$provider->id}, 'type' => '{$type}', 'showReview' => {$showReview}], key('website-attempt-result-page-{$provider->id}-{$type}-{$page}'))\n",
+            $html,
+            1,
+        ) ?? $html;
+    }
+
+    private function injectCartPage(string $html, Provider $provider, string $page): string
+    {
+        if ($page !== 'cart.html') {
+            return $html;
+        }
+
+        return preg_replace(
+            '/(<\/header>)\s*.*?(?=<footer\b)/s',
+            "$1\n@livewire('website.cart-page', ['providerId' => {$provider->id}], key('website-cart-page-{$provider->id}'))\n",
             $html,
             1,
         ) ?? $html;

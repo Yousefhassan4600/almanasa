@@ -13,6 +13,7 @@ use App\Enums\QuestionType;
 use App\Livewire\Website\AssessmentPage;
 use App\Livewire\Website\AttemptResultPage;
 use App\Livewire\Website\AuthControls;
+use App\Livewire\Website\CartPage;
 use App\Livewire\Website\HomeCta;
 use App\Livewire\Website\HomeSubjects;
 use App\Livewire\Website\LessonPage;
@@ -27,6 +28,8 @@ use App\Models\Account;
 use App\Models\AccountSubject;
 use App\Models\Assignment;
 use App\Models\Banner;
+use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Course;
@@ -115,6 +118,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->get($providerUrl.'/otp')->assertRedirect('/login');
         $this->get($providerUrl.'/register')->assertRedirect('/login');
         $this->get($providerUrl.'/my_lessons')->assertRedirect('/login');
+        $this->get($providerUrl.'/cart')->assertRedirect('/login');
     }
 
     public function test_provider_branding_banner_and_footer_data_render_on_website(): void
@@ -706,6 +710,96 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('href="/lesson?item='.$expiredItem->id.'"', false)
             ->assertDontSee('href="/lesson?item='.$expiredExamItem->id.'"', false)
             ->assertDontSee('المراجعات النهائية', false);
+    }
+
+    public function test_cart_adds_course_and_uses_purchase_unit_prices_without_offer_price(): void
+    {
+        $provider = $this->provider();
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+
+        $stage = EducationStage::query()->create(['name' => 'Secondary', 'sort_order' => 1]);
+        $grade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
+        $this->studentProfile($user, $grade);
+        $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
+        $subject = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Mathematics', 'ar' => 'الرياضيات'],
+        ]);
+        $accountSubject = AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $grade->id,
+                'subject_id' => $subject->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+        $course = Course::query()->create([
+            'provider_id' => $provider->id,
+            'account_subject_id' => $accountSubject->id,
+            'title' => ['en' => 'Math Course', 'ar' => 'كورس الرياضيات'],
+        ]);
+        $monthPurchaseUnit = PurchaseUnit::query()->create([
+            'type' => PurchaseUnitType::Month->value,
+            'name' => ['en' => 'Month', 'ar' => 'شهر'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $termPurchaseUnit = PurchaseUnit::query()->create([
+            'type' => PurchaseUnitType::Term->value,
+            'name' => ['en' => 'Term', 'ar' => 'ترم'],
+            'sort_order' => 2,
+            'is_active' => true,
+        ]);
+        CoursePrice::query()->create([
+            'course_id' => $course->id,
+            'purchase_unit_id' => $monthPurchaseUnit->id,
+            'price' => 200,
+            'offer_price' => 150,
+        ]);
+        CoursePrice::query()->create([
+            'course_id' => $course->id,
+            'purchase_unit_id' => $termPurchaseUnit->id,
+            'price' => 600,
+            'offer_price' => 450,
+        ]);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/cart?course='.$course->id)
+            ->assertOk()
+            ->assertSeeLivewire(CartPage::class)
+            ->assertSee('كورس الرياضيات', false)
+            ->assertSee('شهر', false)
+            ->assertSee('ترم', false)
+            ->assertSee('200 ج.م', false)
+            ->assertDontSee('150 ج.م', false);
+
+        $cart = Cart::query()
+            ->whereBelongsTo($provider)
+            ->whereBelongsTo($user, 'student')
+            ->firstOrFail();
+
+        $this->assertDatabaseHas(CartItem::class, [
+            'cart_id' => $cart->id,
+            'course_id' => $course->id,
+            'purchase_unit_id' => $monthPurchaseUnit->id,
+            'unit_price' => 200,
+            'total' => 200,
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(CartPage::class, ['providerId' => $provider->id])
+            ->call('selectPurchaseUnit', $termPurchaseUnit->id)
+            ->assertSee('600 ج.م', false)
+            ->assertDontSee('450 ج.م', false);
+
+        $this->assertDatabaseHas(CartItem::class, [
+            'cart_id' => $cart->id,
+            'course_id' => $course->id,
+            'purchase_unit_id' => $termPurchaseUnit->id,
+            'unit_price' => 600,
+            'total' => 600,
+        ]);
     }
 
     public function test_lesson_page_uses_selected_lesson_item_content(): void

@@ -76,6 +76,8 @@
     };
     $activeLessonItemIsOpen = $lessonItemIsOpen($lessonItem);
     $activeLessonItemAvailabilityText = $lessonItemAvailabilityText($lessonItem);
+    $hasCourseAccess = (bool) ($hasCourseSubscription ?? false);
+    $activeLessonItemHasAccess = (bool) ($lessonItem?->is_free || $hasCourseAccess);
     $attemptLimit = $attempts['limit'] ?? null;
     $usedAttempts = $attempts['used'] ?? 0;
     $remainingAttempts = $attempts['remaining'] ?? null;
@@ -127,6 +129,17 @@
                             <h1 class="text-xl sm:text-2xl font-black text-blue-950">{{ $itemTitle }}</h1>
                             <p class="text-sm text-gray-500 font-semibold mt-3">{{ $activeLessonItemAvailabilityText }}</p>
                             <p class="text-xs text-gray-400 font-medium mt-2">العنصر ظاهر في قائمة الدروس، لكن المحتوى لا يمكن فتحه خارج فترة الإتاحة أو أثناء إيقافه.</p>
+                        </div>
+                    @elseif (! $activeLessonItemHasAccess)
+                        <div class="bg-slate-50 border border-slate-100 rounded-[24px] p-8 text-center shadow-sm">
+                            <div class="w-16 h-16 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-4 text-xl">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
+                            <h1 class="text-xl sm:text-2xl font-black text-blue-950">{{ $itemTitle }}</h1>
+                            <p class="text-sm text-gray-500 font-semibold mt-3">هذا العنصر متاح للمشتركين في الكورس فقط.</p>
+                            <a href="/checkout?course={{ $course?->id }}" class="inline-flex mt-4 text-white text-sm font-bold py-3 px-8 rounded-xl transition-all" style="background-color: {{ $activeColor }}" onmouseover="this.style.backgroundColor='{{ $activeHoverColor }}'" onmouseout="this.style.backgroundColor='{{ $activeColor }}'">
+                                اشترك الآن
+                            </a>
                         </div>
                     @elseif ($contentType === 'video')
                         <div class="relative bg-black rounded-3xl overflow-hidden aspect-video shadow-lg">
@@ -305,7 +318,8 @@
                                         default => 'fa-solid fa-play',
                                     };
                                     $isActive = $playlistItem->is($lessonItem);
-                                    $playlistIsLocked = ! $lessonIsOpen || ! $playlistItem->is_free || ! $playlistItemIsOpen;
+                                    $playlistHasAccess = $playlistItem->is_free || $hasCourseAccess;
+                                    $playlistIsLocked = ! $lessonIsOpen || ! $playlistHasAccess || ! $playlistItemIsOpen;
                                     $playlistClass = 'p-3.5 flex items-center justify-between rounded-2xl transition-all '.($isActive ? 'border' : 'bg-white hover:bg-gray-50 border border-transparent text-gray-600');
                                     $playlistActiveStyle = $isActive ? 'background-color: '.$activeSoftColor.'; border-color: '.$activeColor.'33; color: '.$activeColor : '';
                                 @endphp

@@ -25,6 +25,7 @@
     $termOneLessons = $lessons->filter(fn ($lesson) => $lesson->coursePeriod?->type === CoursePeriodType::Term1);
     $termTwoLessons = $lessons->filter(fn ($lesson) => $lesson->coursePeriod?->type === CoursePeriodType::Term2);
     $yearlyLessons = $lessons->filter(fn ($lesson) => $lesson->coursePeriod?->type === CoursePeriodType::Yearly || blank($lesson->coursePeriod));
+    $hasCourseAccess = (bool) ($hasCourseSubscription ?? false);
     $themeColor = $provider?->websitePrimaryColor() ?? '#5D3FD3';
     $themeColorDark = $provider?->websiteSecondaryColor() ?? '#4c32b3';
     $themeGradient = "background: linear-gradient(270deg, {$themeColor} 0%, {$themeColorDark} 100%)";
@@ -199,7 +200,8 @@
                                                                     $itemAvailabilityText = ! $itemIsOpen
                                                                         ? $lessonItemAvailabilityText($item)
                                                                         : null;
-                                                                    $isLocked = ! $lessonIsOpen || ! $item->is_free || ! $itemIsOpen;
+                                                                    $itemHasAccess = $item->is_free || $hasCourseAccess;
+                                                                    $isLocked = ! $lessonIsOpen || ! $itemHasAccess || ! $itemIsOpen;
                                                                 @endphp
 
                                                                 <div class="p-3.5 flex items-center justify-between text-xs {{ $isLocked ? 'opacity-75' : '' }}" wire:key="lesson-item-{{ $item->id }}">
@@ -216,7 +218,7 @@
                                                                             >
                                                                                 {{ $itemTitle }}
                                                                             </a>
-                                                                            <span class="bg-emerald-50 text-emerald-600 text-[9px] font-bold px-2 py-0.5 rounded">مجاني</span>
+                                                                            <span class="bg-emerald-50 text-emerald-600 text-[9px] font-bold px-2 py-0.5 rounded">{{ $item->is_free ? 'مجاني' : 'مشترك' }}</span>
                                                                         @else
                                                                             <span class="font-medium text-gray-600">{{ $itemTitle }}</span>
                                                                             <span class="bg-gray-100 text-gray-500 text-[9px] font-bold px-2 py-0.5 rounded">{{ ! $lessonIsOpen ? 'غير متاح الآن' : ($itemAvailabilityText ?: 'مغلق') }}</span>

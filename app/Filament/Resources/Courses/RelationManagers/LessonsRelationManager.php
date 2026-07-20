@@ -119,6 +119,10 @@ class LessonsRelationManager extends BaseRelationManager
                             ->label('Duration Minutes')
                             ->numeric()
                             ->columnSpanFull(),
+                        DateTimePicker::make('starts_at')
+                            ->label('Starts At'),
+                        DateTimePicker::make('ends_at')
+                            ->label('Ends At'),
                         Toggle::make('is_active')
                             ->label('Is Active')
                             ->default(true),

@@ -10,6 +10,7 @@ use App\Models\Account;
 use App\Models\AccountSubject;
 use App\Models\Course;
 use App\Models\Provider;
+use App\Models\Subscription;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
@@ -49,6 +50,7 @@ class SingleTeacherPage extends Component
             'teacher' => $teacher,
             'accountSubject' => $accountSubject,
             'course' => $course,
+            'hasCourseSubscription' => $course ? $this->hasActiveCourseSubscription($course) : false,
             'monthlyPrice' => $course ? $this->monthlyPrice($course) : null,
         ]);
     }
@@ -157,5 +159,18 @@ class SingleTeacherPage extends Component
             : $course->prices->map(fn ($price) => $price->offer_price ?? $price->price)->filter()->min();
 
         return $price ? number_format((float) $price) : null;
+    }
+
+    private function hasActiveCourseSubscription(Course $course): bool
+    {
+        $studentUserId = Auth::id();
+
+        if (! $studentUserId) {
+            return false;
+        }
+
+        return Subscription::query()
+            ->activeForStudentCourse($studentUserId, $course)
+            ->exists();
     }
 }

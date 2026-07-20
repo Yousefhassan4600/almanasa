@@ -145,7 +145,9 @@ class CourseForm
 
                             ])
                             ->columns(3)
-                            ->defaultItems(0)
+                            ->defaultItems(fn (): int => self::activePurchaseUnitsCount())
+                            ->minItems(fn (): int => self::activePurchaseUnitsCount())
+                            ->maxItems(fn (): int => self::activePurchaseUnitsCount())
                             ->columnSpanFull(),
                     ])
                     ->columnSpan(3),
@@ -214,5 +216,12 @@ class CourseForm
             ->whereKey($providerId)
             ->where('type', '!=', ProviderType::StandaloneTeacher)
             ->exists();
+    }
+
+    private static function activePurchaseUnitsCount(): int
+    {
+        return PurchaseUnit::query()
+            ->where('is_active', true)
+            ->count();
     }
 }

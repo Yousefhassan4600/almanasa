@@ -21,10 +21,8 @@ class LearningStructureSeeder extends BaseSeeder
             [
                 PurchaseUnitType::Lesson->value => ['Lesson', 'حصة', 7, 1],
                 PurchaseUnitType::Month->value => ['Month', 'شهر', 30, 2],
-                PurchaseUnitType::Term->value => ['Term', 'ترم', 120, 3],
-                PurchaseUnitType::Year->value => ['Year', 'سنة', 365, 4],
             ] as $type => [$nameEn, $nameAr, $periodDays, $sortOrder]
-        ) {
+    ) {
             PurchaseUnit::query()->updateOrCreate([
                 'type' => $type,
             ], [

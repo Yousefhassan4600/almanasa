@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Concerns\FiltersByTenant;
 use App\Enums\PurchaseType;
 use App\Models\Traits\SoftDeletesWithUser;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -48,6 +49,20 @@ class Subscription extends Model
     {
         return Attribute::get(fn (): bool => (! $this->starts_at || $this->starts_at->lte(now()))
             && (! $this->ends_at || $this->ends_at->gte(now())));
+    }
+
+    public function scopeActiveForStudentCourse(Builder $query, int $studentUserId, Course $course): Builder
+    {
+        return $query
+            ->where('student_user_id', $studentUserId)
+            ->where('provider_id', $course->provider_id)
+            ->where('course_id', $course->id)
+            ->where(fn (Builder $query): Builder => $query
+                ->whereNull('starts_at')
+                ->orWhere('starts_at', '<=', now()))
+            ->where(fn (Builder $query): Builder => $query
+                ->whereNull('ends_at')
+                ->orWhere('ends_at', '>=', now()));
     }
 
     public function student(): BelongsTo

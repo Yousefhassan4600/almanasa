@@ -15,14 +15,13 @@ class CoursesTable extends BaseTable
                 ->sortable(),
             TextColumn::make('provider.name')
                 ->label('Provider')
-                ->searchable()
+                // ->searchable()
                 ->sortable(),
             TextColumn::make('academyTeacher.teacher.owner.name')
-                ->label('Teacher')
-                ->searchable(),
+                ->label('Teacher'),
             TextColumn::make('accountSubject.name')
-                ->label('Grade Subject')
-                ->searchable(),
+                ->label('Grade Subject'),
+            // ->searchable(),
             TextColumn::make('title')
                 ->label('Title')
                 ->searchable()

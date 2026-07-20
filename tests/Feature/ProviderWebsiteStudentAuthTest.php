@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\AccountType;
 use App\Enums\CoursePeriodType;
 use App\Enums\LessonTypeEnum;
+use App\Enums\PaymentMethodSlugs;
 use App\Enums\ProviderSubscriptionStatus;
 use App\Enums\ProviderType;
 use App\Enums\PurchaseUnitType;
@@ -14,6 +15,7 @@ use App\Livewire\Website\AssessmentPage;
 use App\Livewire\Website\AttemptResultPage;
 use App\Livewire\Website\AuthControls;
 use App\Livewire\Website\CartPage;
+use App\Livewire\Website\CheckoutPage;
 use App\Livewire\Website\HomeCta;
 use App\Livewire\Website\HomeSubjects;
 use App\Livewire\Website\LessonPage;
@@ -43,7 +45,11 @@ use App\Models\Grade;
 use App\Models\GradeSubject;
 use App\Models\Lesson;
 use App\Models\LessonItem;
+use App\Models\Order;
+use App\Models\Payment;
+use App\Models\PaymentMethod;
 use App\Models\Provider;
+use App\Models\ProviderPaymentMethod;
 use App\Models\ProviderPlan;
 use App\Models\ProviderPlanOption;
 use App\Models\ProviderSubscription;
@@ -53,9 +59,12 @@ use App\Models\QuestionOption;
 use App\Models\StudentAttempt;
 use App\Models\StudentProfile;
 use App\Models\Subject;
+use App\Models\Subscription;
 use App\Models\Track;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -119,6 +128,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->get($providerUrl.'/register')->assertRedirect('/login');
         $this->get($providerUrl.'/my_lessons')->assertRedirect('/login');
         $this->get($providerUrl.'/cart')->assertRedirect('/login');
+        $this->get($providerUrl.'/checkout')->assertRedirect('/login');
     }
 
     public function test_provider_branding_banner_and_footer_data_render_on_website(): void
@@ -712,6 +722,110 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('المراجعات النهائية', false);
     }
 
+    public function test_active_course_subscription_unlocks_paid_lesson_items(): void
+    {
+        $provider = $this->provider();
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+
+        $stage = EducationStage::query()->create(['name' => 'Secondary', 'sort_order' => 1]);
+        $grade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
+        $this->studentProfile($user, $grade);
+        $track = Track::query()->create(['name' => ['en' => 'General', 'ar' => 'عام'], 'code' => 'general']);
+        $subject = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Arabic', 'ar' => 'اللغة العربية'],
+            'is_active' => true,
+        ]);
+        $gradeSubject = GradeSubject::query()->create([
+            'grade_id' => $grade->id,
+            'subject_id' => $subject->id,
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $accountSubject = AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => $gradeSubject->id,
+            'is_active' => true,
+        ]);
+        $teacherUser = User::factory()->create(['first_name' => 'Ahmed', 'last_name' => 'Teacher']);
+        $teacherAccount = $this->teacherAccount($provider, $teacherUser);
+        $teacher = AcademyTeacher::query()->create([
+            'provider_id' => $provider->id,
+            'teacher_account_id' => $teacherAccount->id,
+            'is_active' => true,
+        ]);
+        $course = Course::query()->create([
+            'provider_id' => $provider->id,
+            'account_subject_id' => $accountSubject->id,
+            'academy_teacher_id' => $teacher->id,
+            'title' => ['en' => 'Arabic Course', 'ar' => 'كورس اللغة العربية'],
+        ]);
+        $purchaseUnit = PurchaseUnit::query()->create([
+            'name' => ['en' => 'Month', 'ar' => 'شهر'],
+            'type' => PurchaseUnitType::Month,
+            'duration_days' => 30,
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $period = CoursePeriod::query()->create([
+            'type' => CoursePeriodType::Term1->value,
+            'name' => ['en' => 'Term 1', 'ar' => 'الترم الأول'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $lesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $period->id,
+            'title' => ['en' => 'Grammar', 'ar' => 'النحو'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $paidItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Paid Explanation', 'ar' => 'شرح مدفوع'],
+            'video_url' => 'https://videos.example.test/paid-arabic',
+            'duration_minutes' => 20,
+            'sort_order' => 1,
+            'is_active' => true,
+            'is_free' => false,
+        ]);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/single_teacher?teacher='.$teacher->id.'&subject='.$accountSubject->id)
+            ->assertOk()
+            ->assertSee('شرح مدفوع', false)
+            ->assertDontSee('href="/lesson?item='.$paidItem->id.'"', false);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$paidItem->id)
+            ->assertOk()
+            ->assertSee('هذا العنصر متاح للمشتركين في الكورس فقط.', false)
+            ->assertDontSee('https://videos.example.test/paid-arabic', false);
+
+        Subscription::query()->create([
+            'student_user_id' => $user->id,
+            'provider_id' => $provider->id,
+            'course_id' => $course->id,
+            'purchase_unit_id' => $purchaseUnit->id,
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addMonth(),
+        ]);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/single_teacher?teacher='.$teacher->id.'&subject='.$accountSubject->id)
+            ->assertOk()
+            ->assertSee('href="/lesson?item='.$paidItem->id.'"', false)
+            ->assertSee('مشترك', false);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$paidItem->id)
+            ->assertOk()
+            ->assertSee('https://videos.example.test/paid-arabic', false)
+            ->assertDontSee('هذا العنصر متاح للمشتركين في الكورس فقط.', false);
+    }
+
     public function test_cart_adds_course_and_uses_purchase_unit_prices_without_offer_price(): void
     {
         $provider = $this->provider();
@@ -800,6 +914,139 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'unit_price' => 600,
             'total' => 600,
         ]);
+    }
+
+    public function test_checkout_uses_provider_payment_methods_without_billing_or_duration_sections(): void
+    {
+        $provider = $this->provider();
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+
+        $stage = EducationStage::query()->create(['name' => 'Secondary', 'sort_order' => 1]);
+        $grade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
+        $this->studentProfile($user, $grade);
+        $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
+        $subject = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Mathematics', 'ar' => 'الرياضيات'],
+        ]);
+        $accountSubject = AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $grade->id,
+                'subject_id' => $subject->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+        $course = Course::query()->create([
+            'provider_id' => $provider->id,
+            'account_subject_id' => $accountSubject->id,
+            'title' => ['en' => 'Math Course', 'ar' => 'كورس الرياضيات'],
+        ]);
+        $monthPurchaseUnit = PurchaseUnit::query()->create([
+            'type' => PurchaseUnitType::Month->value,
+            'name' => ['en' => 'Month', 'ar' => 'شهر'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        CoursePrice::query()->create([
+            'course_id' => $course->id,
+            'purchase_unit_id' => $monthPurchaseUnit->id,
+            'price' => 200,
+            'offer_price' => 150,
+        ]);
+        $instaPay = PaymentMethod::query()->create([
+            'slug' => PaymentMethodSlugs::InstaPay->value,
+            'name' => ['en' => 'InstaPay', 'ar' => 'إنستا باي'],
+            'sort_order' => 1,
+            'is_active' => true,
+            'require_proof' => true,
+        ]);
+        $code = PaymentMethod::query()->create([
+            'slug' => PaymentMethodSlugs::Code->value,
+            'name' => ['en' => 'Code', 'ar' => 'كود'],
+            'sort_order' => 2,
+            'is_active' => true,
+            'is_code' => true,
+        ]);
+        $inactiveMethod = PaymentMethod::query()->create([
+            'slug' => PaymentMethodSlugs::Bank->value,
+            'name' => ['en' => 'Bank Transfer', 'ar' => 'تحويل بنكي'],
+            'sort_order' => 3,
+            'is_active' => false,
+        ]);
+        $providerPaymentMethod = ProviderPaymentMethod::query()->create([
+            'provider_id' => $provider->id,
+            'payment_method_id' => $instaPay->id,
+            'phone_number' => '01000000001',
+            'phone_holder' => 'Future Stars',
+        ]);
+        ProviderPaymentMethod::query()->create([
+            'provider_id' => $provider->id,
+            'payment_method_id' => $code->id,
+            'account_number' => 'CODE-123',
+            'account_holder' => 'Future Stars',
+        ]);
+        ProviderPaymentMethod::query()->create([
+            'provider_id' => $provider->id,
+            'payment_method_id' => $inactiveMethod->id,
+            'account_number' => 'BANK-123',
+            'account_holder' => 'Future Stars',
+        ]);
+
+        $this->actingAs($user)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/checkout?course='.$course->id)
+            ->assertOk()
+            ->assertSeeLivewire(CheckoutPage::class)
+            ->assertSee('اختر وسيلة الدفع', false)
+            ->assertSee('إنستا باي', false)
+            ->assertSee('كود', false)
+            ->assertSee('01000000001', false)
+            ->assertSee('كورس الرياضيات', false)
+            ->assertSee('200.00 ج.م', false)
+            ->assertDontSee('معلومات الفوترة', false)
+            ->assertDontSee('مدة الاشتراك', false)
+            ->assertDontSee('تحويل بنكي', false)
+            ->assertDontSee('150.00 ج.م', false);
+
+        Storage::fake('public');
+
+        Livewire::actingAs($user)
+            ->test(CheckoutPage::class, ['providerId' => $provider->id])
+            ->set('selectedProviderPaymentMethodId', $providerPaymentMethod->id)
+            ->set('transferImage', UploadedFile::fake()->image('receipt.jpg'))
+            ->set('transactionReference', 'TX-123')
+            ->call('submitOrder')
+            ->assertHasNoErrors()
+            ->assertSee('تم إرسال الطلب', false)
+            ->assertSee('في انتظار موافقة الإدارة', false);
+
+        $order = Order::query()
+            ->whereBelongsTo($provider)
+            ->whereBelongsTo($user, 'student')
+            ->firstOrFail();
+
+        $this->assertDatabaseHas(Payment::class, [
+            'order_id' => $order->id,
+            'provider_payment_method_id' => $providerPaymentMethod->id,
+            'transaction_reference' => 'TX-123',
+            'is_paid' => false,
+        ]);
+
+        $this->assertDatabaseHas('order_items', [
+            'order_id' => $order->id,
+            'course_id' => $course->id,
+            'unit_price' => 200,
+            'total' => 200,
+        ]);
+
+        $this->assertDatabaseHas('order_status_types', [
+            'slug' => 'pending',
+        ]);
+
+        $payment = Payment::query()->whereBelongsTo($order)->firstOrFail();
+        $this->assertNotNull($payment->transfer_image);
+        Storage::disk('public')->assertExists($payment->transfer_image);
     }
 
     public function test_lesson_page_uses_selected_lesson_item_content(): void

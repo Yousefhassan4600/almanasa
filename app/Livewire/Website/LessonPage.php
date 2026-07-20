@@ -3,10 +3,12 @@
 namespace App\Livewire\Website;
 
 use App\Models\Assignment;
+use App\Models\Course;
 use App\Models\Exam;
 use App\Models\LessonItem;
 use App\Models\Provider;
 use App\Models\StudentAttempt;
+use App\Models\Subscription;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
@@ -35,6 +37,9 @@ class LessonPage extends Component
             'provider' => $provider,
             'lessonItem' => $lessonItem,
             'lessonItems' => $lessonItem?->lesson?->items ?? collect(),
+            'hasCourseSubscription' => $lessonItem?->lesson?->course
+                ? $this->hasActiveCourseSubscription($lessonItem->lesson->course)
+                : false,
             'attempts' => $this->attempts($lessonItem?->assignment ?? $lessonItem?->exam),
         ]);
     }
@@ -99,5 +104,18 @@ class LessonPage extends Component
             'used' => $used,
             'remaining' => $limit === null ? null : max(0, $limit - $used),
         ];
+    }
+
+    private function hasActiveCourseSubscription(Course $course): bool
+    {
+        $studentUserId = Auth::id();
+
+        if (! $studentUserId) {
+            return false;
+        }
+
+        return Subscription::query()
+            ->activeForStudentCourse($studentUserId, $course)
+            ->exists();
     }
 }

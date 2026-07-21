@@ -8,6 +8,16 @@ use Filament\Tables\Columns\TextColumn;
 
 class CoursesTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'provider',
+            'academyTeacher.teacher.owner',
+            'accountSubject.gradeSubject.grade.educationStage',
+            'accountSubject.gradeSubject.subject.track',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

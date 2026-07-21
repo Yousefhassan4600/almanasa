@@ -11,6 +11,16 @@ use Filament\Tables\Columns\TextColumn;
 
 class StudentsTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'provider',
+            'owner.studentProfile.country',
+            'owner.studentProfile.city',
+            'owner.studentProfile.grade.educationStage',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

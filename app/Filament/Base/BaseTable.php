@@ -10,6 +10,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 abstract class BaseTable
 {
@@ -19,6 +20,7 @@ abstract class BaseTable
         $defaultSort = $instance->getDefaultSort();
 
         $configuredTable = $table
+            ->modifyQueryUsing(fn (Builder $query): Builder => $instance->modifyQuery($query))
             ->defaultSort($defaultSort, $instance->getDefaultOrder())
             ->reorderable($defaultSort, $defaultSort !== 'id')
             ->columns($instance->columns())
@@ -37,6 +39,33 @@ abstract class BaseTable
     }
 
     abstract protected function columns();
+
+    protected function modifyQuery(Builder $query): Builder
+    {
+        $eagerLoads = $this->eagerLoads();
+
+        if ($eagerLoads !== []) {
+            $query->with($eagerLoads);
+        }
+
+        $eagerLoadCounts = $this->eagerLoadCounts();
+
+        if ($eagerLoadCounts !== []) {
+            $query->withCount($eagerLoadCounts);
+        }
+
+        return $query;
+    }
+
+    protected function eagerLoads(): array
+    {
+        return [];
+    }
+
+    protected function eagerLoadCounts(): array
+    {
+        return [];
+    }
 
     protected function getDefaultSort(): ?string
     {

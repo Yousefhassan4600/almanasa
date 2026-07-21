@@ -9,6 +9,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class RepliesRelationManager extends BaseRelationManager
 {
@@ -37,6 +38,7 @@ class RepliesRelationManager extends BaseRelationManager
         return $table
             ->heading('Replies')
             ->recordTitleAttribute('message')
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('user'))
             ->columns([
                 TextColumn::make('user.phone')
                     ->label(__('admin.labels.User'))

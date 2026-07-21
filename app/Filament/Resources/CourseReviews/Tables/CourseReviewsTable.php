@@ -9,6 +9,14 @@ use Filament\Tables\Columns\ToggleColumn;
 
 class CourseReviewsTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'student',
+            'course',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

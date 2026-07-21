@@ -19,6 +19,23 @@ use Illuminate\Support\HtmlString;
 
 class StudentAttemptsTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'student',
+            'course',
+            'examModel',
+            'attemptable',
+            'currentStatus.type',
+            'statuses' => fn ($query) => $query
+                ->with('type')
+                ->oldest('status_at')
+                ->oldest(),
+            'studentAnswers.question.options',
+            'studentAnswers.question_option',
+        ];
+    }
+
     protected function columns(): array
     {
         return [
@@ -153,9 +170,7 @@ class StudentAttemptsTable extends BaseTable
                 ->action(function (StudentAttempt $record, array $data): void {
                     $this->gradeStatementAnswers($record, $data['answers'] ?? []);
                 })
-                ->visible(fn (StudentAttempt $record): bool => $record->studentAnswers()
-                    ->whereHas('question', fn ($query) => $query->where('type', QuestionType::Statement->value))
-                    ->exists()),
+                ->visible(fn (StudentAttempt $record): bool => $this->hasStatementAnswers($record)),
             Action::make('logs')
                 ->label('')
                 ->icon('heroicon-o-clock')
@@ -308,6 +323,11 @@ class StudentAttemptsTable extends BaseTable
 
     private function hasPendingManualAnswers(StudentAttempt $record): bool
     {
+        if ($record->relationLoaded('studentAnswers')) {
+            return $record->studentAnswers
+                ->contains(fn ($answer): bool => $answer->score === null && $answer->question?->type === QuestionType::Statement);
+        }
+
         return $record->studentAnswers()
             ->whereHas('question', fn ($query) => $query->where('type', QuestionType::Statement->value))
             ->whereNull('score')
@@ -337,8 +357,25 @@ class StudentAttemptsTable extends BaseTable
 
     private function answerScore(StudentAttempt $record): float
     {
+        if ($record->relationLoaded('studentAnswers')) {
+            return (float) $record->studentAnswers
+                ->sum(fn ($answer): float => (float) ($answer->score ?? 0));
+        }
+
         return (float) $record->studentAnswers()
             ->sum('score');
+    }
+
+    private function hasStatementAnswers(StudentAttempt $record): bool
+    {
+        if ($record->relationLoaded('studentAnswers')) {
+            return $record->studentAnswers
+                ->contains(fn ($answer): bool => $answer->question?->type === QuestionType::Statement);
+        }
+
+        return $record->studentAnswers()
+            ->whereHas('question', fn ($query) => $query->where('type', QuestionType::Statement->value))
+            ->exists();
     }
 
     private function formatDuration(?int $seconds): string

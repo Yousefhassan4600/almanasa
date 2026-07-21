@@ -10,6 +10,14 @@ use Illuminate\Support\HtmlString;
 
 class GradesTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'educationStage',
+            'gradeSubjects.subject.track',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

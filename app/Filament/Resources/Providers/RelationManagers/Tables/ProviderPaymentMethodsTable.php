@@ -7,6 +7,13 @@ use Filament\Tables\Columns\TextColumn;
 
 class ProviderPaymentMethodsTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'paymentMethod',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

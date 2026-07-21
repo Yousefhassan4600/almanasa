@@ -30,6 +30,7 @@ class QuestionsRelationManager extends RelationManager
     {
         return $table
             ->heading('Questions')
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('lesson.course'))
             ->columns([
                 TextColumn::make('id')
                     ->label(__('admin.labels.#'))

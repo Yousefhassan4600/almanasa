@@ -7,6 +7,13 @@ use Filament\Tables\Columns\TextColumn;
 
 class CitiesTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'country',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

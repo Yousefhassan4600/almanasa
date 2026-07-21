@@ -12,6 +12,7 @@ use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class MembersRelationManager extends BaseRelationManager
 {
@@ -61,6 +62,7 @@ class MembersRelationManager extends BaseRelationManager
         return $table
             ->heading('Members')
             ->recordTitleAttribute('user_id')
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('user'))
             ->columns([
                 TextColumn::make('user.phone')
                     ->label(__('admin.labels.User'))

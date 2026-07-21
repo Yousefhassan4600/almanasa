@@ -11,6 +11,14 @@ use Illuminate\Support\HtmlString;
 
 class SubjectsTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'track',
+            'gradeSubjects.grade.educationStage',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

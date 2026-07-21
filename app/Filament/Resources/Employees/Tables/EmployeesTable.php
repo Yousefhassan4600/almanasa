@@ -8,6 +8,15 @@ use Filament\Tables\Columns\TextColumn;
 
 class EmployeesTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'account.provider',
+            'user',
+            'role',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

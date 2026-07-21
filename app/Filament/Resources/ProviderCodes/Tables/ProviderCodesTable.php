@@ -8,6 +8,16 @@ use Filament\Tables\Columns\TextColumn;
 
 class ProviderCodesTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'provider',
+            'purchaseUnit',
+            'course',
+            'lesson',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

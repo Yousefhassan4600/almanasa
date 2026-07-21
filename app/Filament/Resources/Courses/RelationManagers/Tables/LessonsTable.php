@@ -8,6 +8,20 @@ use Filament\Tables\Columns\ToggleColumn;
 
 class LessonsTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'coursePeriod',
+        ];
+    }
+
+    protected function eagerLoadCounts(): array
+    {
+        return [
+            'items',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

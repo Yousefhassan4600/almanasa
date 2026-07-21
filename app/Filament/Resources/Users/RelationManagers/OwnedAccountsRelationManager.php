@@ -18,6 +18,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class OwnedAccountsRelationManager extends BaseRelationManager
 {
@@ -70,6 +71,7 @@ class OwnedAccountsRelationManager extends BaseRelationManager
     {
         return $table
             ->recordTitleAttribute('type')
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('provider'))
             ->columns([
                 TextColumn::make('id')
                     ->label(__('admin.labels.#'))

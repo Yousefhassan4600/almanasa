@@ -17,6 +17,8 @@ class SubscriptionsRelationManager extends BaseRelationManager
     {
         return $table
             ->recordTitleAttribute('course_id')
+            ->modifyQueryUsing(fn (Builder $query): Builder => $this->scopeToCurrentTeacher($query)
+                ->with(['provider', 'course', 'purchaseUnit']))
             ->columns([
                 TextColumn::make('id')
                     ->label(__('admin.labels.#'))
@@ -46,7 +48,6 @@ class SubscriptionsRelationManager extends BaseRelationManager
                     ->label(__('admin.labels.Is Active'))
                     ->boolean(),
             ])
-            ->modifyQueryUsing(fn (Builder $query): Builder => $this->scopeToCurrentTeacher($query))
             ->filters($this->getTableFilters())
             ->headerActions([])
             ->recordActions([]);

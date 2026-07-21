@@ -8,6 +8,14 @@ use Filament\Tables\Columns\TextColumn;
 
 class RolesTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'provider',
+            'creator.owner',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

@@ -83,6 +83,11 @@ class Order extends Model
         return $this->hasMany(Payment::class, 'order_id');
     }
 
+    public function latestPayment(): HasOne
+    {
+        return $this->hasOne(Payment::class, 'order_id')->latestOfMany();
+    }
+
     public function statuses(): HasMany
     {
         return $this->hasMany(OrderStatus::class, 'order_id');

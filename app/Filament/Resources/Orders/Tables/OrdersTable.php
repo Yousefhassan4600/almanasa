@@ -6,6 +6,7 @@ use App\Filament\Base\BaseTable;
 use App\Filament\Support\CurrentAccount;
 use App\Models\Order;
 use App\Models\OrderStatusType;
+use App\Models\Payment;
 use Filament\Actions\Action;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -14,6 +15,19 @@ use Illuminate\Contracts\View\View;
 
 class OrdersTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'provider',
+            'student',
+            'items.course',
+            'items.purchaseUnit',
+            'purchaseUnit',
+            'currentStatus.type',
+            'latestPayment',
+        ];
+    }
+
     protected function columns(): array
     {
         return [
@@ -72,13 +86,9 @@ class OrdersTable extends BaseTable
                 }),
             ToggleColumn::make('is_paid')
                 ->label(__('admin.labels.Paid'))
-                ->getStateUsing(fn (Order $record): bool => (bool) $record->payments()
-                    ->latest()
-                    ->value('is_paid'))
+                ->getStateUsing(fn (Order $record): bool => (bool) $this->latestPayment($record)?->is_paid)
                 ->updateStateUsing(function (Order $record, mixed $state): bool {
-                    $payment = $record->payments()
-                        ->latest()
-                        ->first();
+                    $payment = $this->latestPayment($record);
 
                     if ($payment) {
                         $payment->update([
@@ -166,5 +176,12 @@ class OrdersTable extends BaseTable
             'is_current' => true,
             'status_at' => now(),
         ]);
+    }
+
+    private function latestPayment(Order $record): ?Payment
+    {
+        return $record->relationLoaded('latestPayment')
+            ? $record->latestPayment
+            : $record->latestPayment()->first();
     }
 }

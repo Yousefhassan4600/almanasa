@@ -10,6 +10,14 @@ use Filament\Tables\Filters\SelectFilter;
 
 class AuditLogsTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'user',
+            'provider',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

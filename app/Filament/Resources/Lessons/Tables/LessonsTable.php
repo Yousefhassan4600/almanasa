@@ -9,6 +9,15 @@ use Filament\Tables\Columns\ToggleColumn;
 
 class LessonsTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'course.provider',
+            'course.academyTeacher.teacher.owner',
+            'coursePeriod',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

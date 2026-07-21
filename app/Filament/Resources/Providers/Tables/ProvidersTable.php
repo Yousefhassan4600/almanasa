@@ -15,6 +15,14 @@ class ProvidersTable extends BaseTable
         return parent::configure($table);
     }
 
+    protected function eagerLoads(): array
+    {
+        return [
+            'owner',
+            'currentSubscription',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

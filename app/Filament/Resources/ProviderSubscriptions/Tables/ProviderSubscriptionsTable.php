@@ -14,6 +14,14 @@ class ProviderSubscriptionsTable extends BaseTable
         return parent::configure($table);
     }
 
+    protected function eagerLoads(): array
+    {
+        return [
+            'provider',
+            'planOption.plan',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

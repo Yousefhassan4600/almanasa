@@ -10,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class MessagesRelationManager extends BaseRelationManager
 {
@@ -43,6 +44,7 @@ class MessagesRelationManager extends BaseRelationManager
         return $table
             ->heading('Messages')
             ->recordTitleAttribute('message')
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('sender'))
             ->columns([
                 TextColumn::make('sender.phone')
                     ->label(__('admin.labels.Sender'))

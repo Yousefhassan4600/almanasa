@@ -7,6 +7,13 @@ use Filament\Tables\Columns\TextColumn;
 
 class ExamsTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'course',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

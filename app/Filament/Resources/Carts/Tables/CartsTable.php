@@ -11,6 +11,17 @@ use Illuminate\Contracts\View\View;
 
 class CartsTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'provider',
+            'student',
+            'items.course',
+            'items.purchaseUnit',
+            'purchaseUnit',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

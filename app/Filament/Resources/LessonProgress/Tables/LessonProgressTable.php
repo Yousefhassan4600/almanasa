@@ -11,6 +11,16 @@ use Illuminate\Contracts\View\View;
 
 class LessonProgressTable extends BaseTable
 {
+    protected function eagerLoads(): array
+    {
+        return [
+            'student',
+            'course',
+            'lesson',
+            'currentStatus.type',
+        ];
+    }
+
     protected function columns(): array
     {
         return [

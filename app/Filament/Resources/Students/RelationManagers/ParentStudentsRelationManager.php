@@ -19,6 +19,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ParentStudentsRelationManager extends BaseRelationManager
 {
@@ -85,6 +86,7 @@ class ParentStudentsRelationManager extends BaseRelationManager
     {
         return $table
             ->recordTitleAttribute('parent_user_id')
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('parent'))
             ->columns([
                 TextColumn::make('parent.first_name')
                     ->label(__('admin.labels.Parent'))

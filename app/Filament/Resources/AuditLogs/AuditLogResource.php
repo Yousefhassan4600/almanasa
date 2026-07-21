@@ -8,6 +8,7 @@ use App\Filament\Resources\AuditLogs\Tables\AuditLogsTable;
 use App\Models\AuditLog;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class AuditLogResource extends BaseResource
@@ -26,6 +27,12 @@ class AuditLogResource extends BaseResource
     public static function infolist(Schema $schema): Schema
     {
         return AuditLogInfolist::configure($schema);
+    }
+
+    public static function getRecordRouteBindingEloquentQuery(): Builder
+    {
+        return parent::getRecordRouteBindingEloquentQuery()
+            ->with(['user', 'provider']);
     }
 
     public static function getPages(): array

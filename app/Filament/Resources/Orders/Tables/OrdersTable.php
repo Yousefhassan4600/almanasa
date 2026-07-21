@@ -15,6 +15,8 @@ use Illuminate\Contracts\View\View;
 
 class OrdersTable extends BaseTable
 {
+    private ?array $statusTypeOptions = null;
+
     protected function eagerLoads(): array
     {
         return [
@@ -72,12 +74,7 @@ class OrdersTable extends BaseTable
             SelectColumn::make('current_status_type_id')
                 ->label(__('admin.labels.Status'))
                 ->getStateUsing(fn (Order $record): ?int => $record->currentStatus?->order_status_type_id)
-                ->options(fn (): array => OrderStatusType::query()
-                    ->where('is_active', true)
-                    ->orderBy('sort_order')
-                    ->get()
-                    ->mapWithKeys(fn (OrderStatusType $statusType): array => [$statusType->id => $statusType->name])
-                    ->all())
+                ->options(fn (): array => $this->statusTypeOptions())
                 ->selectablePlaceholder(false)
                 ->updateStateUsing(function (Order $record, mixed $state): mixed {
                     $this->updateCurrentStatus($record, (int) $state);
@@ -183,5 +180,15 @@ class OrdersTable extends BaseTable
         return $record->relationLoaded('latestPayment')
             ? $record->latestPayment
             : $record->latestPayment()->first();
+    }
+
+    private function statusTypeOptions(): array
+    {
+        return $this->statusTypeOptions ??= OrderStatusType::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get()
+            ->mapWithKeys(fn (OrderStatusType $statusType): array => [$statusType->id => $statusType->name])
+            ->all();
     }
 }

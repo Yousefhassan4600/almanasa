@@ -19,6 +19,8 @@ use Illuminate\Support\HtmlString;
 
 class StudentAttemptsTable extends BaseTable
 {
+    private ?array $statusTypeOptions = null;
+
     protected function eagerLoads(): array
     {
         return [
@@ -69,12 +71,7 @@ class StudentAttemptsTable extends BaseTable
             SelectColumn::make('current_status_type_id')
                 ->label(__('admin.labels.Status'))
                 ->getStateUsing(fn (StudentAttempt $record): ?int => $record->currentStatus?->attempt_status_type_id)
-                ->options(fn (): array => AttemptStatusType::query()
-                    ->where('is_active', true)
-                    ->orderBy('sort_order')
-                    ->get()
-                    ->mapWithKeys(fn (AttemptStatusType $statusType): array => [$statusType->id => $statusType->name])
-                    ->all())
+                ->options(fn (): array => $this->statusTypeOptions())
                 ->selectablePlaceholder(false)
                 ->updateStateUsing(function (StudentAttempt $record, mixed $state): mixed {
                     $this->updateCurrentStatus($record, (int) $state);
@@ -388,5 +385,15 @@ class StudentAttemptsTable extends BaseTable
         $remainingSeconds = $seconds % 60;
 
         return sprintf('%02d:%02d', $minutes, $remainingSeconds);
+    }
+
+    private function statusTypeOptions(): array
+    {
+        return $this->statusTypeOptions ??= AttemptStatusType::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get()
+            ->mapWithKeys(fn (AttemptStatusType $statusType): array => [$statusType->id => $statusType->name])
+            ->all();
     }
 }

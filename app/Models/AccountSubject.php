@@ -54,7 +54,6 @@ class AccountSubject extends Model
 
     public function getNameAttribute(): string
     {
-        $provider = $this->relationLoaded('provider') ? $this->provider?->name : $this->provider()->value('name');
         $gradeSubject = $this->relationLoaded('gradeSubject')
             ? $this->gradeSubject?->name
             : $this->gradeSubject()->with(['grade', 'subject.track'])->first()?->name;

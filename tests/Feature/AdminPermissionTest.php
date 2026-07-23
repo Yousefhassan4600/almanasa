@@ -43,6 +43,32 @@ class AdminPermissionTest extends TestCase
         $this->assertTrue(AdminPermissions::can(CourseResource::class, AdminPermissionAction::Delete));
     }
 
+    public function test_standalone_teacher_owner_only_sees_own_provider_courses(): void
+    {
+        $standaloneTeacher = User::factory()->create();
+        $otherStandaloneTeacher = User::factory()->create();
+        $provider = $this->provider($standaloneTeacher, ProviderType::StandaloneTeacher);
+        $otherProvider = $this->provider($otherStandaloneTeacher, ProviderType::StandaloneTeacher);
+        $account = $this->account(AccountType::StandaloneTeacher, $standaloneTeacher, $provider);
+
+        $ownCourse = $provider->courses()->create([
+            'account_subject_id' => $this->accountSubject($provider)->id,
+            'title' => ['ar' => 'كورس منى', 'en' => 'Mona Course'],
+        ]);
+
+        $otherCourse = $otherProvider->courses()->create([
+            'account_subject_id' => $this->accountSubject($otherProvider)->id,
+            'title' => ['ar' => 'كورس آخر', 'en' => 'Other Course'],
+        ]);
+
+        $this->actingAsTenant($account);
+
+        $this->assertTrue(AdminPermissions::can(CourseResource::class, AdminPermissionAction::ViewAny));
+        $this->assertTrue(CourseResource::canView($ownCourse));
+        $this->assertFalse(CourseResource::canView($otherCourse));
+        $this->assertSame([$ownCourse->id], CourseResource::getEloquentQuery()->pluck('id')->all());
+    }
+
     public function test_employee_uses_provider_scoped_spatie_role_permissions(): void
     {
         $owner = User::factory()->create();

@@ -56,6 +56,10 @@ abstract class BaseResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
+        if (method_exists($query->getModel(), 'scopeForCurrentTenant')) {
+            $query->forCurrentTenant();
+        }
+
         if (static::$isSaasOwnerOnly || ! AdminPermissions::hasViewHisOnly(static::class)) {
             return $query;
         }
@@ -93,6 +97,10 @@ abstract class BaseResource extends Resource
             return CurrentAccount::isSaasOwner();
         }
 
+        if (! static::recordBelongsToCurrentTenant($record)) {
+            return false;
+        }
+
         if (AdminPermissions::hasViewHisOnly(static::class)) {
             return static::recordBelongsToCurrentAccountScope($record);
         }
@@ -106,6 +114,10 @@ abstract class BaseResource extends Resource
             return CurrentAccount::isSaasOwner();
         }
 
+        if (! static::recordBelongsToCurrentTenant($record)) {
+            return false;
+        }
+
         if (AdminPermissions::hasViewHisOnly(static::class) && ! static::recordBelongsToCurrentAccountScope($record)) {
             return false;
         }
@@ -117,6 +129,10 @@ abstract class BaseResource extends Resource
     {
         if (static::$isSaasOwnerOnly) {
             return CurrentAccount::isSaasOwner();
+        }
+
+        if (! static::recordBelongsToCurrentTenant($record)) {
+            return false;
         }
 
         if (AdminPermissions::hasViewHisOnly(static::class) && ! static::recordBelongsToCurrentAccountScope($record)) {
@@ -217,6 +233,13 @@ abstract class BaseResource extends Resource
     }
 
     protected static function recordBelongsToCurrentAccountScope(Model $record): bool
+    {
+        return static::getEloquentQuery()
+            ->whereKey($record->getKey())
+            ->exists();
+    }
+
+    protected static function recordBelongsToCurrentTenant(Model $record): bool
     {
         return static::getEloquentQuery()
             ->whereKey($record->getKey())

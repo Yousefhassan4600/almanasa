@@ -123,7 +123,7 @@ class ExamForm
     {
         return Course::query()
             ->with(['provider'])
-            ->when(CurrentAccount::isAcademyTeacher(), fn ($query) => CurrentAccount::scopeCoursesToAcademyTeacher($query))
+            ->tap(fn ($query) => CurrentAccount::scopeCoursesToCurrentAccount($query))
             ->get()
             ->mapWithKeys(fn (Course $course): array => [
                 $course->id => collect([$course->title, $course->provider?->name])->filter()->join(' - '),
@@ -139,7 +139,7 @@ class ExamForm
 
         return Lesson::query()
             ->where('course_id', $courseId)
-            ->when(CurrentAccount::isAcademyTeacher(), fn ($query) => CurrentAccount::scopeLessonsToAcademyTeacher($query))
+            ->tap(fn ($query) => CurrentAccount::scopeLessonsToCurrentAccount($query))
             ->orderBy('sort_order')
             ->get()
             ->mapWithKeys(fn (Lesson $lesson): array => [

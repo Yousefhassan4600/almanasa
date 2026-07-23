@@ -75,6 +75,15 @@ class CurrentAccount
             ->where('teacher_account_id', $account->id));
     }
 
+    public static function scopeCoursesToCurrentAccount(Builder $query): Builder
+    {
+        if (method_exists($query->getModel(), 'scopeForCurrentTenant')) {
+            $query->forCurrentTenant(self::account());
+        }
+
+        return self::scopeCoursesToAcademyTeacher($query);
+    }
+
     public static function scopeLessonsToAcademyTeacher(Builder $query): Builder
     {
         $account = self::account();
@@ -85,6 +94,15 @@ class CurrentAccount
 
         return $query->whereHas('course.academyTeacher', fn (Builder $query): Builder => $query
             ->where('teacher_account_id', $account->id));
+    }
+
+    public static function scopeLessonsToCurrentAccount(Builder $query): Builder
+    {
+        if (method_exists($query->getModel(), 'scopeForCurrentTenant')) {
+            $query->forCurrentTenant(self::account());
+        }
+
+        return self::scopeLessonsToAcademyTeacher($query);
     }
 
     public static function providerId(): ?int

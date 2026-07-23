@@ -23,7 +23,7 @@ class QuestionForm
                     ->label(__('admin.labels.Lesson'))
                     ->options(fn (): array => Lesson::query()
                         ->with(['course'])
-                        ->when(CurrentAccount::isAcademyTeacher(), fn ($query) => CurrentAccount::scopeLessonsToAcademyTeacher($query))
+                        ->tap(fn ($query) => CurrentAccount::scopeLessonsToCurrentAccount($query))
                         ->get()
                         ->mapWithKeys(fn (Lesson $lesson): array => [
                             $lesson->id => collect([$lesson->course?->title, $lesson->title])->filter()->join(' - '),

@@ -27,7 +27,7 @@ class ChatRoomForm
                     ->options(fn (Get $get): array => Course::query()
                         ->with('provider')
                         ->when($get('provider_id'), fn ($query, int $providerId) => $query->where('provider_id', $providerId))
-                        ->when(CurrentAccount::isAcademyTeacher(), fn ($query) => CurrentAccount::scopeCoursesToAcademyTeacher($query))
+                        ->tap(fn ($query) => CurrentAccount::scopeCoursesToCurrentAccount($query))
                         ->get()
                         ->mapWithKeys(fn (Course $course): array => [
                             $course->id => collect([$course->title, $course->provider?->name])->filter()->join(' - '),
@@ -42,7 +42,7 @@ class ChatRoomForm
                     ->options(fn (Get $get): array => Lesson::query()
                         ->when($get('course_id'), fn ($query, int $courseId) => $query->where('course_id', $courseId))
                         ->when(blank($get('course_id')), fn ($query) => $query->whereRaw('1 = 0'))
-                        ->when(CurrentAccount::isAcademyTeacher(), fn ($query) => CurrentAccount::scopeLessonsToAcademyTeacher($query))
+                        ->tap(fn ($query) => CurrentAccount::scopeLessonsToCurrentAccount($query))
                         ->orderBy('sort_order')
                         ->get()
                         ->mapWithKeys(fn (Lesson $lesson): array => [

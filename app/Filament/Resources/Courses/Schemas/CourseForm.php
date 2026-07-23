@@ -49,7 +49,7 @@ class CourseForm
                             ->default(fn (): ?int => CurrentAccount::academyTeacherId())
                             ->options(fn (Get $get): array => AcademyTeacher::query()
                                 ->with(['teacher.owner'])
-                                ->when($get('provider_id'), fn (Builder $query, int $providerId): Builder => $query->where('provider_id', $providerId))
+                                ->when(self::selectedProviderId($get), fn (Builder $query, int $providerId): Builder => $query->where('provider_id', $providerId))
                                 ->when(CurrentAccount::isAcademyTeacher(), fn (Builder $query): Builder => $query->whereKey(CurrentAccount::academyTeacherId()))
                                 ->where('is_active', true)
                                 ->get()
@@ -216,6 +216,8 @@ class CourseForm
 
     private static function shouldShowAcademyTeacherField(mixed $providerId): bool
     {
+        $providerId = filled($providerId) ? $providerId : CurrentAccount::providerId();
+
         if (blank($providerId)) {
             return true;
         }
@@ -240,7 +242,7 @@ class CourseForm
      */
     private static function accountSubjectOptions(Get $get): array
     {
-        $providerId = $get('provider_id');
+        $providerId = self::selectedProviderId($get);
 
         if (blank($providerId)) {
             return [];
@@ -264,6 +266,13 @@ class CourseForm
                 $accountSubject->id => $accountSubject->name,
             ])
             ->all();
+    }
+
+    private static function selectedProviderId(Get $get): ?int
+    {
+        $providerId = $get('provider_id') ?: CurrentAccount::providerId();
+
+        return filled($providerId) ? (int) $providerId : null;
     }
 
     private static function activePurchaseUnitsCount(): int

@@ -74,10 +74,11 @@ class ProviderCodeForm
                     ->columnSpanFull(),
                 Select::make('course_id')
                     ->label(__('admin.labels.Course'))
-                    ->options(fn (Get $get): array => blank($get('provider_id'))
+                    ->options(fn (Get $get): array => blank(self::selectedProviderId($get))
                         ? []
                         : Course::query()
-                            ->where('provider_id', $get('provider_id'))
+                            ->where('provider_id', self::selectedProviderId($get))
+                            ->tap(fn (Builder $query) => CurrentAccount::scopeCoursesToCurrentAccount($query))
                             ->oldest('id')
                             ->get()
                             ->mapWithKeys(fn (Course $course): array => [
@@ -88,7 +89,7 @@ class ProviderCodeForm
                     ->afterStateUpdated(fn (Set $set) => $set('lesson_id', null))
                     ->rules([
                         fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
-                            $providerId = $get('provider_id');
+                            $providerId = self::selectedProviderId($get);
 
                             if (blank($providerId) || blank($value)) {
                                 return;
@@ -104,7 +105,7 @@ class ProviderCodeForm
                             }
                         },
                     ])
-                    ->disabled(fn (Get $get): bool => blank($get('provider_id')))
+                    ->disabled(fn (Get $get): bool => blank(self::selectedProviderId($get)))
                     ->preload()
                     ->searchable(),
                 Select::make('lesson_id')
@@ -113,6 +114,7 @@ class ProviderCodeForm
                         ? []
                         : Lesson::query()
                             ->where('course_id', $get('course_id'))
+                            ->tap(fn (Builder $query) => CurrentAccount::scopeLessonsToCurrentAccount($query))
                             ->oldest('sort_order')
                             ->oldest('id')
                             ->get()
@@ -152,5 +154,12 @@ class ProviderCodeForm
                     ->native(false),
             ])
             ->columns(2);
+    }
+
+    private static function selectedProviderId(Get $get): ?int
+    {
+        $providerId = $get('provider_id') ?: CurrentAccount::providerId();
+
+        return filled($providerId) ? (int) $providerId : null;
     }
 }

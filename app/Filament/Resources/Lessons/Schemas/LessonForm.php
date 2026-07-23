@@ -22,7 +22,7 @@ class LessonForm
                     ->label(__('admin.labels.Course'))
                     ->options(fn (): array => Course::query()
                         ->with(['provider', 'academyTeacher.teacher.owner'])
-                        ->when(CurrentAccount::isAcademyTeacher(), fn ($query) => CurrentAccount::scopeCoursesToAcademyTeacher($query))
+                        ->tap(fn ($query) => CurrentAccount::scopeCoursesToCurrentAccount($query))
                         ->get()
                         ->mapWithKeys(fn (Course $course): array => [
                             $course->id => collect([

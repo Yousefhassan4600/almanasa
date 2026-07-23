@@ -6,6 +6,7 @@ use App\Enums\AccountType;
 use App\Enums\AdminPermissionAction;
 use App\Enums\ProviderSubscriptionStatus;
 use App\Enums\ProviderType;
+use App\Filament\Pages\ProviderSettings;
 use App\Filament\Resources\AcademyTeachers\AcademyTeacherResource;
 use App\Filament\Resources\Courses\CourseResource;
 use App\Filament\Resources\Courses\Pages\CreateCourse;
@@ -42,6 +43,25 @@ class AdminPermissionTest extends TestCase
 
         $this->assertTrue(AdminPermissions::can(CourseResource::class, AdminPermissionAction::Create));
         $this->assertTrue(AdminPermissions::can(CourseResource::class, AdminPermissionAction::Delete));
+    }
+
+    public function test_provider_settings_page_is_only_available_to_provider_owner_accounts(): void
+    {
+        $owner = User::factory()->create();
+        $employeeUser = User::factory()->create();
+        $saasOwner = User::factory()->create();
+        $provider = $this->provider($owner);
+        $providerAccount = $this->account(AccountType::Academy, $owner, $provider);
+        $saasAccount = $this->account(AccountType::SaasOwner, $saasOwner);
+
+        $this->actingAsTenant($providerAccount);
+        $this->assertTrue(ProviderSettings::canAccess());
+
+        $this->actingAsTenant($providerAccount, $employeeUser);
+        $this->assertFalse(ProviderSettings::canAccess());
+
+        $this->actingAsTenant($saasAccount);
+        $this->assertFalse(ProviderSettings::canAccess());
     }
 
     public function test_standalone_teacher_owner_only_sees_own_provider_courses(): void
@@ -369,7 +389,6 @@ class AdminPermissionTest extends TestCase
         ]);
 
         $subjectId = DB::table('subjects')->insertGetId([
-            'track_id' => $trackId,
             'name' => json_encode(['ar' => 'رياضيات', 'en' => 'Math']),
             'created_at' => now(),
             'updated_at' => now(),
@@ -377,6 +396,7 @@ class AdminPermissionTest extends TestCase
 
         $gradeSubjectId = DB::table('grade_subjects')->insertGetId([
             'grade_id' => $gradeId,
+            'track_id' => $trackId,
             'subject_id' => $subjectId,
             'created_at' => now(),
             'updated_at' => now(),

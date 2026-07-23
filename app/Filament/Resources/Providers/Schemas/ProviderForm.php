@@ -5,17 +5,14 @@ namespace App\Filament\Resources\Providers\Schemas;
 use App\Enums\CoursePeriodType;
 use App\Enums\ProviderType;
 use App\Models\GradeSubject;
-use App\Models\Subject;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
@@ -32,8 +29,7 @@ class ProviderForm
                             ->options(ProviderType::options())
                             ->live()
                             ->afterStateUpdated(function (Set $set): void {
-                                $set('subject_id', null);
-                                $set('accountSubjects', []);
+                                $set('grade_subject_ids', []);
                             })
                             ->required(),
                         Select::make('owner_user_id')
@@ -164,65 +160,29 @@ class ProviderForm
                     ->columns(2),
                 Section::make(__('admin.labels.Subjects'))
                     ->schema([
-                        Select::make('subject_id')
-                            ->label(__('admin.labels.Subject'))
-                            ->options(fn (): array => Subject::query()
-                                ->with('track')
-                                ->get()
-                                ->mapWithKeys(fn (Subject $subject): array => [
-                                    $subject->id => $subject->full_name,
-                                ])
-                                ->all())
+                        Select::make('grade_subject_ids')
+                            ->label(__('admin.labels.Grade Subjects'))
+                            ->multiple()
+                            ->options(fn (): array => self::gradeSubjectOptions())
+                            ->afterStateHydrated(function (Select $component, $record): void {
+                                $component->state($record?->accountSubjects()
+                                    ->where('is_active', true)
+                                    ->pluck('grade_subject_id')
+                                    ->all() ?? []);
+                            })
                             ->searchable()
                             ->preload()
-                            ->live()
-                            ->required(fn (Get $get): bool => $get('type') === ProviderType::StandaloneTeacher->value)
-                            ->visible(fn (Get $get): bool => $get('type') === ProviderType::StandaloneTeacher->value)
-                            ->afterStateUpdated(function (Set $set): void {
-                                $set('accountSubjects', []);
-                            })
-                            ->columnSpanFull(),
-                        Repeater::make('accountSubjects')
-                            ->label(__('admin.labels.Subjects'))
-                            ->relationship()
-                            ->disabled(fn (Get $get): bool => $get('type') === ProviderType::StandaloneTeacher->value && blank($get('subject_id')))
-                            ->schema([
-                                Select::make('grade_subject_id')
-                                    ->label(__('admin.labels.Grade Subject'))
-                                    ->options(fn (Get $get): array => self::gradeSubjectOptions($get))
-                                    ->searchable()
-                                    ->preload()
-                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                                    ->required(),
-                                Toggle::make('is_active')
-                                    ->label(__('admin.labels.Is Active'))
-                                    ->default(true),
-                            ])
-                            ->columns(1)
-                            ->defaultItems(0)
-                            ->addActionLabel('Add Subject')
-                            ->grid(3)
+                            ->required()
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),
             ])->columns(3);
     }
 
-    private static function gradeSubjectOptions(Get $get): array
+    private static function gradeSubjectOptions(): array
     {
-        $type = $get('../../type') ?? $get('type');
-        $subjectId = $get('../../subject_id') ?? $get('subject_id');
-
-        if ($type === ProviderType::StandaloneTeacher->value && blank($subjectId)) {
-            return [];
-        }
-
         return GradeSubject::query()
-            ->when(
-                $type === ProviderType::StandaloneTeacher->value,
-                fn ($query) => $query->where('subject_id', $subjectId),
-            )
-            ->with(['grade.educationStage', 'subject.track'])
+            ->with(['grade.educationStage', 'track', 'subject'])
             ->get()
             ->mapWithKeys(fn (GradeSubject $gradeSubject): array => [
                 $gradeSubject->id => $gradeSubject->full_name,

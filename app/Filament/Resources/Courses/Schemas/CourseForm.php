@@ -249,7 +249,7 @@ class CourseForm
         }
 
         return AccountSubject::query()
-            ->with(['gradeSubject.grade.educationStage', 'gradeSubject.subject.track'])
+            ->with(['gradeSubject.grade.educationStage', 'gradeSubject.track', 'gradeSubject.subject'])
             ->where('provider_id', $providerId)
             ->where('is_active', true)
             ->when(

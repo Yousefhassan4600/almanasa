@@ -51,11 +51,11 @@ class TeachersPage extends Component
     {
         $query = AccountSubject::query()
             ->with([
-                'gradeSubject:id,grade_id,subject_id',
+                'gradeSubject:id,grade_id,track_id,subject_id',
                 'gradeSubject.grade:id,education_stage_id,name',
                 'gradeSubject.grade.educationStage:id,name',
-                'gradeSubject.subject:id,track_id,name,description,icon',
-                'gradeSubject.subject.track:id,name',
+                'gradeSubject.track:id,name',
+                'gradeSubject.subject:id,name,description,icon',
             ])
             ->whereBelongsTo($provider)
             ->where('is_active', true)

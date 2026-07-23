@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\Grades\Schemas;
 
 use App\Models\Subject;
+use App\Models\Track;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 
@@ -19,17 +21,31 @@ class GradeForm
                     ->dehydrated(true),
                 Hidden::make('name.en')
                     ->dehydrated(true),
-                Select::make('subject_ids')
-                    ->label(__('admin.labels.Subjects'))
-                    ->multiple()
-                    ->options(fn () => Subject::query()
-                        ->with('track')
-                        ->get()
-                        ->mapWithKeys(fn (Subject $subject): array => [
-                            $subject->id => collect([$subject->name, $subject->track?->name])->filter()->join(' - '),
-                        ]))
-                    ->preload()
-                    ->searchable()
+                Repeater::make('gradeSubjects')
+                    ->label(__('admin.labels.Grade Subjects'))
+                    ->relationship()
+                    ->schema([
+                        Select::make('track_id')
+                            ->label(__('admin.labels.Track'))
+                            ->options(fn (): array => Track::query()
+                                ->orderBy('sort_order')
+                                ->pluck('name', 'id')
+                                ->all())
+                            ->preload()
+                            ->searchable()
+                            ->required(),
+                        Select::make('subject_id')
+                            ->label(__('admin.labels.Subject'))
+                            ->options(fn (): array => Subject::query()
+                                ->orderBy('name')
+                                ->pluck('name', 'id')
+                                ->all())
+                            ->preload()
+                            ->searchable()
+                            ->required(),
+                    ])
+                    ->columns(2)
+                    ->defaultItems(0)
                     ->columnSpanFull(),
             ]);
     }

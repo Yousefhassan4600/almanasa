@@ -44,7 +44,7 @@ class Grade extends Model
     public function subjects(): BelongsToMany
     {
         return $this->belongsToMany(Subject::class, 'grade_subjects')
-            ->withPivot(['id'])
+            ->withPivot(['id', 'track_id'])
             ->withTimestamps();
     }
 
@@ -55,33 +55,5 @@ class Grade extends Model
             : $this->educationStage()->first()?->name;
 
         return collect([$educationStage, $this->name])->filter()->join(' - ');
-    }
-
-    /**
-     * @param  array<int, int|string>  $subjectIds
-     */
-    public function syncSubjects(array $subjectIds): void
-    {
-        $subjectIds = collect($subjectIds)
-            ->filter()
-            ->map(fn (int|string $subjectId): int => (int) $subjectId)
-            ->unique()
-            ->values();
-
-        Subject::query()
-            ->whereKey($subjectIds)
-            ->get(['id'])
-            ->each(function (Subject $subject): void {
-                $this->gradeSubjects()->firstOrCreate([
-                    'subject_id' => $subject->id,
-                ]);
-            });
-
-        $this->gradeSubjects()
-            ->when(
-                $subjectIds->isNotEmpty(),
-                fn ($query) => $query->whereNotIn('subject_id', $subjectIds),
-            )
-            ->delete();
     }
 }

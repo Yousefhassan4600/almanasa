@@ -29,10 +29,7 @@ class CommerceSeeder extends BaseSeeder
         $academyProvider = Provider::query()->where('slug', 'future-stars-academy')->firstOrFail();
         $studentUser = User::query()->where('phone', '01000000004')->firstOrFail();
         $academyOwner = User::query()->where('phone', '01000000001')->firstOrFail();
-        $academyCourse = Course::query()
-            ->where('provider_id', $academyProvider->id)
-            ->where('title->en', 'Welcome to the Mathematics Course')
-            ->firstOrFail();
+        $academyCourse = $this->academyCourse($academyProvider);
         $coursePrice = CoursePrice::query()
             ->where('course_id', $academyCourse->id)
             ->whereHas('purchaseUnit', fn ($query) => $query->where('type', PurchaseUnitType::Month->value))
@@ -132,16 +129,44 @@ class CommerceSeeder extends BaseSeeder
         }
     }
 
+    private function academyCourse(Provider $provider): Course
+    {
+        return Course::query()
+            ->where('provider_id', $provider->id)
+            ->whereHas('academyTeacher.teacher.owner', fn ($query) => $query->where('phone', '01000000002'))
+            ->whereHas('accountSubject.gradeSubject', function ($query): void {
+                $query
+                    ->whereHas('grade', fn ($query) => $query->where('sort_order', 10))
+                    ->whereHas('track', fn ($query) => $query->where('code', 'general'))
+                    ->whereHas('subject', fn ($query) => $query->where('name', 'رياضيات'));
+            })
+            ->firstOrFail();
+    }
+
     private function providerPaymentMethods(): void
     {
         $paymentMethods = PaymentMethod::query()->get();
 
         Provider::query()->each(function (Provider $provider) use ($paymentMethods): void {
             foreach ($paymentMethods as $paymentMethod) {
-                ProviderPaymentMethod::query()->updateOrCreate([
+                if (in_array($paymentMethod->slug, [
+                    PaymentMethodSlugs::Bank->value,
+                    PaymentMethodSlugs::VodafoneCash->value,
+                    PaymentMethodSlugs::OrangeCash->value,
+                    PaymentMethodSlugs::ECash->value,
+                ], true)) {
+                    continue;
+                }
+
+                /** @var ProviderPaymentMethod $providerPaymentMethod */
+                $providerPaymentMethod = ProviderPaymentMethod::query()->withTrashed()->firstOrNew([
                     'provider_id' => $provider->id,
                     'payment_method_id' => $paymentMethod->id,
-                ], $this->providerPaymentMethodPayload($provider, $paymentMethod));
+                ]);
+
+                $providerPaymentMethod->fill($this->providerPaymentMethodPayload($provider, $paymentMethod));
+                $providerPaymentMethod->restore();
+                $providerPaymentMethod->save();
             }
         });
     }
@@ -185,10 +210,17 @@ class CommerceSeeder extends BaseSeeder
             ->where('slug', PaymentMethodSlugs::InstaPay->value)
             ->firstOrFail();
 
-        return ProviderPaymentMethod::query()->where([
+        /** @var ProviderPaymentMethod $providerPaymentMethod */
+        $providerPaymentMethod = ProviderPaymentMethod::query()->withTrashed()->firstOrNew([
             'provider_id' => $provider->id,
             'payment_method_id' => $paymentMethod->id,
-        ])->firstOrFail();
+        ]);
+
+        $providerPaymentMethod->fill($this->providerPaymentMethodPayload($provider, $paymentMethod));
+        $providerPaymentMethod->restore();
+        $providerPaymentMethod->save();
+
+        return $providerPaymentMethod;
     }
 
     private function orderStatus(Order $order, string $slug, User $createdBy): void

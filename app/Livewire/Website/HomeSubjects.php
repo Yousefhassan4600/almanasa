@@ -44,9 +44,9 @@ class HomeSubjects extends Component
     {
         return AccountSubject::query()
             ->with([
-                'gradeSubject:id,grade_id,subject_id',
-                'gradeSubject.subject:id,track_id,name,icon',
-                'gradeSubject.subject.track:id,name',
+                'gradeSubject:id,grade_id,track_id,subject_id',
+                'gradeSubject.track:id,name',
+                'gradeSubject.subject:id,name,icon',
             ])
             ->whereBelongsTo($provider)
             ->where('is_active', true)

@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Grades\Tables;
 
 use App\Filament\Base\BaseTable;
-use App\Models\Grade;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\HtmlString;
@@ -14,7 +13,8 @@ class GradesTable extends BaseTable
     {
         return [
             'educationStage',
-            'gradeSubjects.subject.track',
+            'gradeSubjects.track',
+            'gradeSubjects.subject',
         ];
     }
 
@@ -41,7 +41,7 @@ class GradesTable extends BaseTable
                     return new HtmlString(
                         "<div class='flex flex-wrap gap-1'>".
                             $record->gradeSubjects->map(function ($gradeSubject) {
-                                return "<span class='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200'>".e($gradeSubject->subject?->full_name ?? '').'</span>';
+                                return "<span class='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200'>".e($gradeSubject->full_name ?? '').'</span>';
                             })->implode('<br />').
                             '</div>'
                     );
@@ -75,24 +75,7 @@ class GradesTable extends BaseTable
     {
         return [
             EditAction::make()
-                ->label('')
-                ->mutateRecordDataUsing(function (array $data, Grade $record): array {
-                    $data['subject_ids'] = $record->gradeSubjects()
-                        ->pluck('subject_id')
-                        ->all();
-
-                    return $data;
-                })
-                ->using(function (Grade $record, array $data): Grade {
-                    $subjectIds = $data['subject_ids'] ?? [];
-
-                    unset($data['subject_ids']);
-
-                    $record->update($data);
-                    $record->syncSubjects($subjectIds);
-
-                    return $record;
-                }),
+                ->label(''),
         ];
     }
 }

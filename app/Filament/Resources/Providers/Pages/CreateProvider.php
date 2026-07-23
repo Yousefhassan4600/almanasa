@@ -12,6 +12,26 @@ class CreateProvider extends BaseCreateRecord
 {
     protected static string $resource = ProviderResource::class;
 
+    /**
+     * @var array<int, int|string>
+     */
+    protected array $gradeSubjectIds = [];
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $this->gradeSubjectIds = $data['grade_subject_ids'] ?? [];
+
+        unset($data['grade_subject_ids']);
+
+        $data['subject_id'] = null;
+
+        return $data;
+    }
+
     protected function afterCreate(): void
     {
         Account::query()->firstOrCreate([
@@ -22,6 +42,8 @@ class CreateProvider extends BaseCreateRecord
             'is_active' => true,
             'approved_at' => now(),
         ]);
+
+        $this->record->syncGradeSubjects($this->gradeSubjectIds);
     }
 
     private function accountType(): AccountType

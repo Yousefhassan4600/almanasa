@@ -57,8 +57,9 @@ class LessonPage extends Component
                         'course.provider.owner:id,first_name,last_name',
                         'course.academyTeacher.teacher.owner:id,first_name,last_name',
                         'course.accountSubject.gradeSubject.grade:id,education_stage_id,name',
-                        'course.accountSubject.gradeSubject.subject:id,track_id,name',
-                        'course.accountSubject.gradeSubject.subject.track:id,name',
+                        'course.accountSubject.gradeSubject:id,grade_id,track_id,subject_id',
+                        'course.accountSubject.gradeSubject.track:id,name',
+                        'course.accountSubject.gradeSubject.subject:id,name',
                         'items' => fn ($query) => $query
                             ->with('exam:id,course_id,title,duration_minutes')
                             ->oldest('sort_order')

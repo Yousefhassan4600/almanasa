@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Subjects\Tables;
 
 use App\Filament\Base\BaseTable;
-use App\Models\Subject;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -14,8 +13,8 @@ class SubjectsTable extends BaseTable
     protected function eagerLoads(): array
     {
         return [
-            'track',
             'gradeSubjects.grade.educationStage',
+            'gradeSubjects.track',
         ];
     }
 
@@ -28,8 +27,6 @@ class SubjectsTable extends BaseTable
                 ->label(__('admin.labels.Icon')),
             ImageColumn::make('image')
                 ->label(__('admin.labels.Image')),
-            TextColumn::make('track.name')
-                ->label(__('admin.labels.Track')),
             TextColumn::make('name')
                 ->label(__('admin.labels.Name')),
             TextColumn::make('description')
@@ -46,7 +43,7 @@ class SubjectsTable extends BaseTable
                     return new HtmlString(
                         "<div class='flex flex-wrap gap-1'>".
                             $record->gradeSubjects->map(function ($gradeSubject) {
-                                return "<span class='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200'>".e($gradeSubject->grade?->full_name ?? '').'</span>';
+                                return "<span class='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200'>".e(collect([$gradeSubject->grade?->full_name, $gradeSubject->track?->name])->filter()->join(' / ')).'</span>';
                             })->implode('<br />').
                             '</div>'
                     );
@@ -76,24 +73,7 @@ class SubjectsTable extends BaseTable
     {
         return [
             EditAction::make()
-                ->label('')
-                ->mutateRecordDataUsing(function (array $data, Subject $record): array {
-                    $data['grade_ids'] = $record->gradeSubjects()
-                        ->pluck('grade_id')
-                        ->all();
-
-                    return $data;
-                })
-                ->using(function (Subject $record, array $data): Subject {
-                    $gradeIds = $data['grade_ids'] ?? [];
-
-                    unset($data['grade_ids']);
-
-                    $record->update($data);
-                    $record->syncGrades($gradeIds);
-
-                    return $record;
-                }),
+                ->label(''),
         ];
     }
 }

@@ -33,12 +33,13 @@ class CoursesSeeder extends BaseSeeder
         $monthPurchaseUnit = PurchaseUnit::query()->where('type', PurchaseUnitType::Month->value)->firstOrFail();
         $termOnePeriod = CoursePeriod::query()->where('type', CoursePeriodType::Term1->value)->firstOrFail();
 
+        $this->deleteStandaloneTeacherCourses();
+
         Provider::query()
             ->whereIn('slug', [
                 'future-stars-academy',
-                'mona-physics-platform',
-                'science-gate-academy',
             ])
+            ->where('type', ProviderType::Academy)
             ->get()
             ->each(fn (Provider $provider) => $this->providerCourses(
                 provider: $provider,
@@ -46,6 +47,14 @@ class CoursesSeeder extends BaseSeeder
                 monthPurchaseUnit: $monthPurchaseUnit,
                 termOnePeriod: $termOnePeriod,
             ));
+    }
+
+    private function deleteStandaloneTeacherCourses(): void
+    {
+        Course::query()
+            ->whereHas('provider', fn ($query) => $query->where('type', ProviderType::StandaloneTeacher))
+            ->get()
+            ->each(fn (Course $course) => $course->delete());
     }
 
     private function providerCourses(
@@ -56,7 +65,8 @@ class CoursesSeeder extends BaseSeeder
     ): void {
         $provider->load([
             'accountSubjects.gradeSubject.grade.educationStage',
-            'accountSubjects.gradeSubject.subject.track',
+            'accountSubjects.gradeSubject.track',
+            'accountSubjects.gradeSubject.subject',
             'accountSubjects.teacherAssignments.academyTeacher.teacher.owner',
         ]);
 
@@ -185,20 +195,21 @@ class CoursesSeeder extends BaseSeeder
         }
 
         $grade = $accountSubject->gradeSubject?->grade;
+        $track = $accountSubject->gradeSubject?->track;
         $subject = $accountSubject->gradeSubject?->subject;
         $teacherName = $academyTeacher?->teacher?->owner?->name;
 
         $englishParts = array_filter([
             $grade?->getTranslation('name', 'en'),
-            $subject?->getTranslation('name', 'en'),
-            $subject?->track?->getTranslation('name', 'en'),
+            $subject?->name,
+            $track?->getTranslation('name', 'en'),
             $teacherName,
         ]);
 
         $arabicParts = array_filter([
             $grade?->getTranslation('name', 'ar'),
-            $subject?->getTranslation('name', 'ar'),
-            $subject?->track?->getTranslation('name', 'ar'),
+            $subject?->name,
+            $track?->getTranslation('name', 'ar'),
             $teacherName,
         ]);
 
@@ -211,6 +222,7 @@ class CoursesSeeder extends BaseSeeder
     private function courseDescription(Provider $provider, AccountSubject $accountSubject, ?AcademyTeacher $academyTeacher): array
     {
         $grade = $accountSubject->gradeSubject?->grade;
+        $track = $accountSubject->gradeSubject?->track;
         $subject = $accountSubject->gradeSubject?->subject;
         $teacherName = $academyTeacher?->teacher?->owner?->name;
 
@@ -218,16 +230,16 @@ class CoursesSeeder extends BaseSeeder
             collect([
                 $provider->name,
                 $grade?->getTranslation('name', 'en'),
-                $subject?->getTranslation('name', 'en'),
-                $subject?->track?->getTranslation('name', 'en'),
+                $subject?->name,
+                $track?->getTranslation('name', 'en'),
                 $teacherName ? "with {$teacherName}" : null,
             ])->filter()->join(' - ').' course with lessons, assignments, exams, and practice questions.',
             collect([
                 'كورس',
                 $provider->name,
                 $grade?->getTranslation('name', 'ar'),
-                $subject?->getTranslation('name', 'ar'),
-                $subject?->track?->getTranslation('name', 'ar'),
+                $subject?->name,
+                $track?->getTranslation('name', 'ar'),
                 $teacherName ? "مع {$teacherName}" : null,
             ])->filter()->join(' - ').' يحتوي على حصص وواجبات وامتحانات وتدريبات.',
         );
@@ -238,8 +250,8 @@ class CoursesSeeder extends BaseSeeder
         return $provider->slug === 'future-stars-academy'
             && $academyTeacher?->teacher?->owner?->phone === '01000000002'
             && $accountSubject->gradeSubject?->grade?->sort_order === 10
-            && $accountSubject->gradeSubject?->subject?->getTranslation('name', 'en') === 'Mathematics'
-            && $accountSubject->gradeSubject?->subject?->track?->code === 'general';
+            && $accountSubject->gradeSubject?->subject?->name === 'رياضيات'
+            && $accountSubject->gradeSubject?->track?->code === 'general';
     }
 
     private function courseOutcomes(Course $course): void

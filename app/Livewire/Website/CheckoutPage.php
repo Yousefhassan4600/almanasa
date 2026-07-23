@@ -306,7 +306,8 @@ class CheckoutPage extends Component
         return Cart::query()
             ->with([
                 'items' => fn ($query) => $query->oldest('id'),
-                'items.course.accountSubject.gradeSubject.subject:id,name,track_id',
+                'items.course.accountSubject.gradeSubject.track:id,name',
+                'items.course.accountSubject.gradeSubject.subject:id,name',
                 'items.course.prices.purchaseUnit',
                 'items.purchaseUnit:id,type,name,sort_order,is_active',
             ])

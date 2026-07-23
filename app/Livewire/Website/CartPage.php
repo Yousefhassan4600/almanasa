@@ -209,7 +209,8 @@ class CartPage extends Component
         return Cart::query()
             ->with([
                 'items' => fn ($query) => $query->oldest('id'),
-                'items.course.accountSubject.gradeSubject.subject:id,name,track_id',
+                'items.course.accountSubject.gradeSubject.track:id,name',
+                'items.course.accountSubject.gradeSubject.subject:id,name',
                 'items.course.academyTeacher.teacher.owner:id,first_name,last_name',
                 'items.course.provider.owner:id,first_name,last_name',
                 'items.coursePrice:id,course_id,purchase_unit_id,price,offer_price',

@@ -80,11 +80,11 @@ class SingleTeacherPage extends Component
 
         $query = AccountSubject::query()
             ->with([
-                'gradeSubject:id,grade_id,subject_id',
+                'gradeSubject:id,grade_id,track_id,subject_id',
                 'gradeSubject.grade:id,education_stage_id,name',
                 'gradeSubject.grade.educationStage:id,name',
-                'gradeSubject.subject:id,track_id,name,description,icon',
-                'gradeSubject.subject.track:id,name',
+                'gradeSubject.track:id,name',
+                'gradeSubject.subject:id,name,description,icon',
             ])
             ->whereBelongsTo($provider)
             ->where('is_active', true)
@@ -122,7 +122,8 @@ class SingleTeacherPage extends Component
                 'academyTeacher.teacher.owner:id,first_name,last_name',
                 'provider.owner:id,first_name,last_name',
                 'accountSubject.gradeSubject.grade.educationStage',
-                'accountSubject.gradeSubject.subject.track',
+                'accountSubject.gradeSubject.track',
+                'accountSubject.gradeSubject.subject',
                 'lessons' => fn ($query) => $query
                     ->with([
                         'coursePeriod:id,type,name,sort_order',

@@ -201,6 +201,7 @@ return [
         'Attemptable' => 'Attemptable',
         'Attemptable Id' => 'Attemptable Id',
         'Attemptable Type' => 'Attemptable Type',
+        'Banners' => 'Banners',
         'Basic Information' => 'Basic Information',
         'Billing Days' => 'Billing Days',
         'Billing Period Days' => 'Billing Period Days',
@@ -360,6 +361,7 @@ return [
         'Provider' => 'Provider',
         'Provider Code' => 'Provider Code',
         'Provider Id' => 'Provider ID',
+        'Provider Settings' => 'Provider Settings',
         'Purchase Type' => 'Purchase Type',
         'Purchase Unit' => 'Purchase Unit',
         'Question' => 'Question',
@@ -428,6 +430,9 @@ return [
         'X Link' => 'X Link',
         'Youtube Link' => 'YouTube Link',
     ],
+    'actions' => [
+        'Save Changes' => 'Save Changes',
+    ],
     'messages' => [
         'academy_teacher_already_assigned' => 'This user is already assigned as a teacher for the selected academy.',
         'account_type_provider_already_exists' => 'This user already has an account with the same type and provider.',
@@ -443,6 +448,7 @@ return [
         'parent_user_cannot_be_student' => 'The parent user cannot be the same as the student user.',
         'payment_method_already_configured' => 'This payment method is already configured for this provider.',
         'provider_code_already_exists' => 'This provider already has a code with the same value.',
+        'provider_settings_saved' => 'Provider settings saved successfully.',
         'selected_course_not_in_provider' => 'The selected course does not belong to the selected provider.',
         'selected_lesson_not_in_course' => 'The selected lesson does not belong to the selected course.',
         'select_all_permissions' => 'Enable all admin permissions for this role.',

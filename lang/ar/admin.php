@@ -201,6 +201,7 @@ return [
         'Attemptable' => 'العنصر المختبر',
         'Attemptable Id' => 'رقم العنصر المختبر',
         'Attemptable Type' => 'نوع العنصر المختبر',
+        'Banners' => 'البنرات',
         'Basic Information' => 'المعلومات الأساسية',
         'Billing Days' => 'أيام الفوترة',
         'Billing Period Days' => 'أيام فترة الفوترة',
@@ -360,6 +361,7 @@ return [
         'Provider' => 'المزود',
         'Provider Code' => 'كود المزود',
         'Provider Id' => 'رقم المزود',
+        'Provider Settings' => 'إعدادات المزود',
         'Purchase Type' => 'نوع الشراء',
         'Purchase Unit' => 'وحدة الشراء',
         'Question' => 'السؤال',
@@ -428,6 +430,9 @@ return [
         'X Link' => 'رابط إكس',
         'Youtube Link' => 'رابط يوتيوب',
     ],
+    'actions' => [
+        'Save Changes' => 'حفظ التغييرات',
+    ],
     'messages' => [
         'academy_teacher_already_assigned' => 'هذا المستخدم معين كمعلم لهذه الأكاديمية بالفعل.',
         'account_type_provider_already_exists' => 'هذا المستخدم لديه حساب بنفس النوع والمزود بالفعل.',
@@ -443,6 +448,7 @@ return [
         'parent_user_cannot_be_student' => 'لا يمكن أن يكون ولي الأمر هو نفس مستخدم الطالب.',
         'payment_method_already_configured' => 'طريقة الدفع هذه مضافة لهذا المزود بالفعل.',
         'provider_code_already_exists' => 'هذا المزود لديه كود بنفس القيمة بالفعل.',
+        'provider_settings_saved' => 'تم حفظ إعدادات المزود بنجاح.',
         'selected_course_not_in_provider' => 'الكورس المحدد لا يتبع المزود المحدد.',
         'selected_lesson_not_in_course' => 'الحصة المحددة لا تتبع الكورس المحدد.',
         'select_all_permissions' => 'تفعيل كل صلاحيات لوحة التحكم لهذا الدور.',

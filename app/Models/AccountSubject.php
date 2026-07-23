@@ -56,7 +56,7 @@ class AccountSubject extends Model
     {
         $gradeSubject = $this->relationLoaded('gradeSubject')
             ? $this->gradeSubject?->name
-            : $this->gradeSubject()->with(['grade', 'subject.track'])->first()?->name;
+            : $this->gradeSubject()->with(['grade', 'track', 'subject'])->first()?->name;
 
         return $gradeSubject;
     }

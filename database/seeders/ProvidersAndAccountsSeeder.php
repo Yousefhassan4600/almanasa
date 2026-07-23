@@ -30,13 +30,12 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
             ->where('name->en', 'Cairo')
             ->firstOrFail();
 
-        $secondaryOnePhysics = $this->gradeSubject('Secondary Stage', 10, 'Physics', 'scientific');
+        $secondaryTwoPhysics = $this->gradeSubject('Secondary Stage', 11, 'Physics', 'secondary_old_scientific');
 
         $saasOwner = $this->user('01000000000', 'Almanasa', 'Owner');
         $academyOwner = $this->user('01000000001', 'Academy', 'Owner');
-        $secondAcademyOwner = $this->user('01000000006', 'Science', 'Owner');
         $academyTeacherUser = $this->user('01000000002', 'Ahmed', 'Teacher');
-        $standaloneTeacherUser = $this->user('01000000003', 'Mona', 'Teacher');
+        $standaloneTeacherUser = $this->user('01203726375', 'محمد', 'خالد');
         $scienceTeacherUser = $this->user('01000000008', 'Youssef', 'Teacher');
         $studentUser = $this->user('01000000004', 'Omar', 'Student');
         $parentUser = $this->user('01000000005', 'Sara', 'Parent');
@@ -81,41 +80,7 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
 
         $academyCoverages = $this->syncProviderCoverage(
             providerId: $academyProvider->id,
-            gradeSubjects: GradeSubject::query()->with(['grade', 'subject.track'])->get(),
-        );
-
-        $secondAcademyProvider = $this->provider(
-            type: ProviderType::Academy,
-            owner: $secondAcademyOwner,
-            slug: 'science-gate-academy',
-            name: 'Science Gate Academy',
-            country: $egypt,
-            city: $cairo,
-            subdomain: 'science-gate',
-        );
-
-        $this->providerSubscription($secondAcademyProvider, $academyMonthlyOption);
-
-        $this->account(
-            type: AccountType::Academy,
-            owner: $secondAcademyOwner,
-            provider: $secondAcademyProvider,
-        );
-
-        $secondAcademyProvider->update([
-            'primary_color' => '#16a34a',
-            'secondary_color' => '#1f2937',
-            'completion_watch_percentage' => 70,
-            'contact_phone' => '01000002000',
-            'contact_whatsapp' => '01000002000',
-            'contact_email' => 'info@science-gate.test',
-            'facebook_link' => 'https://facebook.com/science-gate-academy',
-            'terms_conditions' => '<p>Enrollment is subject to academy approval and active subscription.</p>',
-        ]);
-
-        $secondAcademyCoverages = $this->syncProviderCoverage(
-            providerId: $secondAcademyProvider->id,
-            gradeSubjects: $this->secondaryGradeSubjects(),
+            gradeSubjects: GradeSubject::query()->with(['grade', 'track', 'subject'])->get(),
         );
 
         $academyTeachers = $this->academyTeachers($academyProvider->id, [
@@ -125,21 +90,14 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
 
         $this->assignTeachersToCoverages($academyTeachers, $academyCoverages);
 
-        $secondAcademyTeachers = $this->academyTeachers($secondAcademyProvider->id, [
-            $academyTeacherUser,
-            $scienceTeacherUser,
-        ]);
-
-        $this->assignTeachersToCoverages($secondAcademyTeachers, $secondAcademyCoverages);
-
         $standaloneTeacherProvider = $this->provider(
             type: ProviderType::StandaloneTeacher,
             owner: $standaloneTeacherUser,
-            slug: 'mona-physics-platform',
-            name: 'Mona Physics Platform',
+            slug: 'falta-platform',
+            name: 'Mr Falta',
             country: $egypt,
             city: $cairo,
-            subdomain: 'mona-physics',
+            subdomain: 'falta',
         );
 
         $this->providerSubscription($standaloneTeacherProvider, $teacherMonthlyOption);
@@ -151,21 +109,18 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
         );
 
         $standaloneTeacherProvider->update([
-            'subject_id' => $secondaryOnePhysics->subject_id,
             'primary_color' => '#2563eb',
             'secondary_color' => '#0f172a',
-            'completion_watch_percentage' => 80,
-            'contact_phone' => '01000003000',
-            'contact_whatsapp' => '01000003000',
-            'contact_email' => 'mona@mona-physics.test',
-            'facebook_link' => 'https://facebook.com/mona-physics',
-            'instagram_link' => 'https://instagram.com/mona-physics',
-            'terms_conditions' => '<p>Course access follows the teacher subscription and attendance policies.</p>',
+            'completion_watch_percentage' => 70,
+            'bio' => [
+                'en' => 'With over 15 years of experience teaching mathematics, Mr. Ahmed has successfully transformed the subject from a source of anxiety for students into an enjoyable and accessible one. His teaching method emphasizes a deep understanding of the rules rather than rote memorization, focusing on problem-solving skills and logical reasoning.',
+                'ar' => 'بخبرة تزيد عن 15 عاماً في تدريس مناهج الرياضيات، نجح مستر أحمد في تحويل المادة من "عقدة" لدى الطلاب إلى مادة ممتعة وسهلة. يعتمد في أسلوبه على الفهم العميق للقوانين بدلاً من الحفظ، مع التركيز على مهارات حل المشكلات والتفكير المنطقي.',
+            ],
         ]);
 
         $this->syncProviderCoverage(
             providerId: $standaloneTeacherProvider->id,
-            gradeSubjects: $this->physicsSecondaryGradeSubjects(),
+            gradeSubjects: $this->standaloneTeacherGradeSubjects(),
         );
 
         $this->removeAcademyTeacherAssignmentsForUser($standaloneTeacherUser);
@@ -183,8 +138,8 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
             'gender' => 'male',
             'country_id' => $egypt->id,
             'city_id' => $cairo->id,
-            'education_stage_id' => $secondaryOnePhysics->grade->education_stage_id,
-            'grade_id' => $secondaryOnePhysics->grade_id,
+            'education_stage_id' => $secondaryTwoPhysics->grade->education_stage_id,
+            'grade_id' => $secondaryTwoPhysics->grade_id,
             'school_name' => 'Future Stars Secondary School',
         ]);
 
@@ -245,14 +200,50 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
         $track = Track::query()->where('code', $trackCode)->firstOrFail();
 
         $subject = Subject::query()
-            ->where('track_id', $track->id)
-            ->where('name->en', $subjectName)
+            ->where('name', $this->subjectName($subjectName))
             ->firstOrFail();
 
         return GradeSubject::query()
             ->where('grade_id', $grade->id)
+            ->where('track_id', $track->id)
             ->where('subject_id', $subject->id)
             ->firstOrFail();
+    }
+
+    private function subjectName(string $englishName): string
+    {
+        return match ($englishName) {
+            'Arabic Language' => 'عربي',
+            'Arabic' => 'عربي',
+            'Mathematics' => 'رياضيات',
+            'Math' => 'Math',
+            'English Language' => 'English (O.L)',
+            'English (O.L)' => 'English (O.L)',
+            'English (A.L)' => 'English (A.L)',
+            'Social Studies' => 'دراسات',
+            'Science' => 'علوم',
+            'French Language' => 'French',
+            'French' => 'French',
+            'Italian Language' => 'Italian',
+            'Italian' => 'Italian',
+            'German' => 'German',
+            'History' => 'تاريخ',
+            'Geography' => 'جغرافيا',
+            'Chemistry' => 'كيمياء',
+            'Physics' => 'فيزياء',
+            'Biology' => 'أحياء',
+            'Philosophy and Logic' => 'فلسفة ومنطق',
+            'Psychology and Sociology' => 'علم نفس',
+            'Pure Mathematics' => 'رياضة بحتة',
+            'Pure Math' => 'Pure Math',
+            'Applied Mathematics' => 'رياضة تطبيقية',
+            'Applied Math' => 'Applied Math',
+            'Statistics' => 'إحصاء',
+            'Accounting' => 'محاسبة',
+            'Business Management' => 'إدارة أعمال',
+            'Economy' => 'اقتصاد',
+            default => $englishName,
+        };
     }
 
     private function accountSubject(int $providerId, int $gradeSubjectId): AccountSubject
@@ -319,28 +310,21 @@ class ProvidersAndAccountsSeeder extends BaseSeeder
     /**
      * @return Collection<int, GradeSubject>
      */
-    private function secondaryGradeSubjects(): Collection
+    private function standaloneTeacherGradeSubjects(): Collection
     {
-        return GradeSubject::query()
-            ->whereHas('grade', fn ($query) => $query->whereIn('sort_order', [10, 11, 12]))
-            ->with(['grade', 'subject.track'])
-            ->get();
-    }
-
-    /**
-     * @return Collection<int, GradeSubject>
-     */
-    private function physicsSecondaryGradeSubjects(): Collection
-    {
-        return GradeSubject::query()
-            ->whereHas('grade', fn ($query) => $query->whereIn('sort_order', [10, 11, 12]))
-            ->whereHas('subject', function ($query): void {
-                $query
-                    ->where('name->en', 'Physics')
-                    ->whereHas('track', fn ($query) => $query->where('code', 'scientific'));
-            })
-            ->with(['grade', 'subject.track'])
-            ->get();
+        return collect([
+            $this->gradeSubject('Elementary Stage', 4, 'Math', 'general'),
+            $this->gradeSubject('Elementary Stage', 5, 'Math', 'general'),
+            $this->gradeSubject('Elementary Stage', 6, 'Math', 'general'),
+            $this->gradeSubject('Preparatory Stage', 7, 'Math', 'general'),
+            $this->gradeSubject('Preparatory Stage', 8, 'Math', 'general'),
+            $this->gradeSubject('Preparatory Stage', 9, 'Math', 'general'),
+            $this->gradeSubject('Secondary Stage', 10, 'Math', 'general'),
+            $this->gradeSubject('Secondary Stage', 11, 'Math', 'secondary_new_medicine_life_sciences'),
+            $this->gradeSubject('Secondary Stage', 12, 'Math', 'secondary_old_scientific_math'),
+            $this->gradeSubject('Secondary Stage', 12, 'Math', 'secondary_new_business'),
+            $this->gradeSubject('Secondary Stage', 12, 'Math', 'secondary_new_engineering_computer_science'),
+        ]);
     }
 
     /**

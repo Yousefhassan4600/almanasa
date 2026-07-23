@@ -39,7 +39,6 @@ return new class extends Migration
 
         Schema::create('subjects', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('track_id')->constrained('tracks')->cascadeOnUpdate()->restrictOnDelete();
             $table->text('name');
             $table->string('icon')->nullable();
             $table->string('image')->nullable();
@@ -52,13 +51,15 @@ return new class extends Migration
         Schema::create('grade_subjects', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('grade_id')->constrained('grades')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('track_id')->constrained('tracks')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('subject_id')->constrained('subjects')->cascadeOnUpdate()->restrictOnDelete();
             $table->softDeletes();
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->unique([
                 0 => 'grade_id',
-                1 => 'subject_id',
+                1 => 'track_id',
+                2 => 'subject_id',
             ]);
         });
     }

@@ -43,9 +43,9 @@ class SubjectsPage extends Component
 
         return AccountSubject::query()
             ->with([
-                'gradeSubject:id,grade_id,subject_id',
-                'gradeSubject.subject:id,track_id,name,icon,description',
-                'gradeSubject.subject.track:id,name',
+                'gradeSubject:id,grade_id,track_id,subject_id',
+                'gradeSubject.track:id,name',
+                'gradeSubject.subject:id,name,icon,description',
             ])
             ->withCount([
                 'teacherAssignments as active_teachers_count' => fn ($query) => $query->where('is_active', true),

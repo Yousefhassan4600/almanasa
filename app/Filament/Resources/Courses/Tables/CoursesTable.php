@@ -14,7 +14,8 @@ class CoursesTable extends BaseTable
             'provider',
             'academyTeacher.teacher.owner',
             'accountSubject.gradeSubject.grade.educationStage',
-            'accountSubject.gradeSubject.subject.track',
+            'accountSubject.gradeSubject.track',
+            'accountSubject.gradeSubject.subject',
         ];
     }
 

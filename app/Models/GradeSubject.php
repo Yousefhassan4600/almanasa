@@ -16,6 +16,7 @@ class GradeSubject extends Model
 
     protected $fillable = [
         'grade_id',
+        'track_id',
         'subject_id',
         'deleted_by',
     ];
@@ -28,6 +29,11 @@ class GradeSubject extends Model
     public function grade(): BelongsTo
     {
         return $this->belongsTo(Grade::class, 'grade_id');
+    }
+
+    public function track(): BelongsTo
+    {
+        return $this->belongsTo(Track::class, 'track_id');
     }
 
     public function subject(): BelongsTo
@@ -50,9 +56,9 @@ class GradeSubject extends Model
         $grade = $this->relationLoaded('grade') ? $this->grade : $this->grade()->with('educationStage')->first();
         $grade?->loadMissing('educationStage');
 
-        $subject = $this->relationLoaded('subject') ? $this->subject : $this->subject()->with('track')->first();
-        $subject?->loadMissing('track');
+        $track = $this->relationLoaded('track') ? $this->track : $this->track()->first();
+        $subject = $this->relationLoaded('subject') ? $this->subject : $this->subject()->first();
 
-        return collect([$grade?->full_name, $subject?->full_name])->filter()->join(' / ');
+        return collect([$grade?->full_name, $track?->name, $subject?->name])->filter()->join(' / ');
     }
 }

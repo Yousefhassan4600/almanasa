@@ -163,6 +163,39 @@ class Provider extends Model
         return $this->hasMany(AccountSubject::class);
     }
 
+    /**
+     * @param  array<int, int|string>  $gradeSubjectIds
+     */
+    public function syncGradeSubjects(array $gradeSubjectIds): void
+    {
+        $gradeSubjectIds = collect($gradeSubjectIds)
+            ->filter()
+            ->map(fn (int|string $gradeSubjectId): int => (int) $gradeSubjectId)
+            ->unique()
+            ->values();
+
+        GradeSubject::query()
+            ->whereKey($gradeSubjectIds)
+            ->get(['id'])
+            ->each(function (GradeSubject $gradeSubject): void {
+                /** @var AccountSubject $accountSubject */
+                $accountSubject = $this->accountSubjects()->withTrashed()->firstOrNew([
+                    'grade_subject_id' => $gradeSubject->id,
+                ]);
+
+                $accountSubject->is_active = true;
+                $accountSubject->restore();
+                $accountSubject->save();
+            });
+
+        $this->accountSubjects()
+            ->when(
+                $gradeSubjectIds->isNotEmpty(),
+                fn ($query) => $query->whereNotIn('grade_subject_id', $gradeSubjectIds),
+            )
+            ->delete();
+    }
+
     public function banners(): HasMany
     {
         return $this->hasMany(Banner::class);

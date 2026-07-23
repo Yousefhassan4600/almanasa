@@ -18,237 +18,295 @@ class EducationCatalogSeeder extends BaseSeeder
             'secondary' => $this->stage('Secondary Stage', 'المرحلة الثانوية', 3),
         ];
 
-        $tracks = [
-            'general' => $this->track('general', 'General', 'عام', 0),
-            'scientific' => $this->track('scientific', 'Scientific', 'علمي', 1),
-            'literary' => $this->track('literary', 'Literary', 'أدبي', 2),
-            'scientific_math' => $this->track('scientific_math', 'Scientific Mathematics', 'علمي رياضيات', 3),
-            'scientific_sciences' => $this->track('scientific_sciences', 'Scientific Sciences', 'علمي علوم', 4),
-        ];
+        $tracks = $this->tracks();
+        $grades = $this->grades($stages);
+        $gradeTracks = $this->gradeTracks();
+        $validGradeSubjectIds = [];
 
-        foreach ($this->catalog() as $gradeData) {
-            $grade = $this->grade(
-                $stages[$gradeData['stage']],
-                $gradeData['name_en'],
-                $gradeData['name_ar'],
-                $gradeData['sort_order'],
-            );
+        foreach ($this->subjectCoverages() as $subjectKey => $coverageKeys) {
+            $subject = $this->subject($subjectKey);
 
-            $subjectIds = [];
+            foreach ($coverageKeys as $coverageKey) {
+                $gradeTrack = $gradeTracks[$coverageKey];
 
-            foreach ($gradeData['subjects'] as $subjectData) {
-                $subject = $this->subject(
-                    $tracks[$subjectData['track']],
-                    $subjectData['key'],
-                );
-
-                $this->gradeSubject($grade, $subject);
-                $subjectIds[] = $subject->id;
+                $validGradeSubjectIds[] = $this->gradeSubject(
+                    $grades[$gradeTrack['grade']],
+                    $tracks[$gradeTrack['track']],
+                    $subject,
+                )->id;
             }
-
-            $this->deleteMissingGradeSubjects($grade, $subjectIds);
         }
 
-        $this->deleteObsoleteSecondarySplitGrades($stages['secondary']);
+        $this->deleteMissingGradeSubjects($validGradeSubjectIds);
         $this->deleteUnusedSubjects();
+        $this->deleteUnusedTracks();
     }
 
     /**
-     * @return array<int, array{
-     *     stage: string,
-     *     name_en: string,
-     *     name_ar: string,
-     *     sort_order: int,
-     *     subjects: array<int, array{key: string, track: string}>
-     * }>
+     * @return array<string, Track>
      */
-    private function catalog(): array
+    private function tracks(): array
     {
-        $earlyPrimarySubjects = [
-            $this->subjectData('arabic'),
-            $this->subjectData('mathematics'),
-            $this->subjectData('english'),
+        return [
+            'general' => $this->track('general', 'General', 'عام', 0),
+            'secondary_old_scientific' => $this->track('secondary_old_scientific', 'Secondary Old System Scientific', 'ثانوية نظام قديم علمي', 1),
+            'secondary_old_literary' => $this->track('secondary_old_literary', 'Secondary Old System Literary', 'ثانوية نظام قديم أدبي', 2),
+            'secondary_old_scientific_math' => $this->track('secondary_old_scientific_math', 'Secondary Old System Scientific Math', 'ثانوية نظام قديم علمي رياضة', 3),
+            'secondary_old_scientific_science' => $this->track('secondary_old_scientific_science', 'Secondary Old System Scientific Science', 'ثانوية نظام قديم علمي علوم', 4),
+            'secondary_new_literature_arts' => $this->track('secondary_new_literature_arts', 'Secondary New System Literature and Arts Track', 'بكالوريا مسار الآداب والفنون', 5),
+            'secondary_new_business' => $this->track('secondary_new_business', 'Secondary New System Business Track', 'بكالوريا مسار الأعمال', 6),
+            'secondary_new_medicine_life_sciences' => $this->track('secondary_new_medicine_life_sciences', 'Secondary New System Medicine and Life Sciences Track', 'بكالوريا مسار الطب وعلوم الحياة', 7),
+            'secondary_new_engineering_computer_science' => $this->track('secondary_new_engineering_computer_science', 'Secondary New System Engineering and Computer Science Track', 'بكالوريا الهندسة وعلوم الحاسب', 8),
+        ];
+    }
+
+    /**
+     * @param  array<string, EducationStage>  $stages
+     * @return array<string, Grade>
+     */
+    private function grades(array $stages): array
+    {
+        return [
+            'elementary_1' => $this->grade($stages['elementary'], 'First Elementary', 'الصف الأول الابتدائي', 1),
+            'elementary_2' => $this->grade($stages['elementary'], 'Second Elementary', 'الصف الثاني الابتدائي', 2),
+            'elementary_3' => $this->grade($stages['elementary'], 'Third Elementary', 'الصف الثالث الابتدائي', 3),
+            'elementary_4' => $this->grade($stages['elementary'], 'Fourth Elementary', 'الصف الرابع الابتدائي', 4),
+            'elementary_5' => $this->grade($stages['elementary'], 'Fifth Elementary', 'الصف الخامس الابتدائي', 5),
+            'elementary_6' => $this->grade($stages['elementary'], 'Sixth Elementary', 'الصف السادس الابتدائي', 6),
+            'preparatory_1' => $this->grade($stages['preparatory'], 'First Preparatory', 'الصف الأول الإعدادي', 7),
+            'preparatory_2' => $this->grade($stages['preparatory'], 'Second Preparatory', 'الصف الثاني الإعدادي', 8),
+            'preparatory_3' => $this->grade($stages['preparatory'], 'Third Preparatory', 'الصف الثالث الإعدادي', 9),
+            'secondary_1' => $this->grade($stages['secondary'], 'First Secondary', 'الصف الأول الثانوي', 10),
+            'secondary_2' => $this->grade($stages['secondary'], 'Second Secondary', 'الصف الثاني الثانوي', 11),
+            'secondary_3' => $this->grade($stages['secondary'], 'Third Secondary', 'الصف الثالث الثانوي', 12),
+        ];
+    }
+
+    /**
+     * @return array<string, array{grade: string, track: string}>
+     */
+    private function gradeTracks(): array
+    {
+        $gradeTracks = [];
+
+        foreach (range(1, 6) as $gradeNumber) {
+            $gradeTracks[$this->coverageKey("elementary_{$gradeNumber}", 'general')] = [
+                'grade' => "elementary_{$gradeNumber}",
+                'track' => 'general',
+            ];
+        }
+
+        foreach (range(1, 3) as $gradeNumber) {
+            $gradeTracks[$this->coverageKey("preparatory_{$gradeNumber}", 'general')] = [
+                'grade' => "preparatory_{$gradeNumber}",
+                'track' => 'general',
+            ];
+        }
+
+        $gradeTracks[$this->coverageKey('secondary_1', 'general')] = [
+            'grade' => 'secondary_1',
+            'track' => 'general',
         ];
 
-        $upperPrimarySubjects = [
-            ...$earlyPrimarySubjects,
-            $this->subjectData('social_studies'),
-            $this->subjectData('science'),
+        foreach (
+            [
+                'secondary_old_scientific',
+                'secondary_old_literary',
+                'secondary_new_literature_arts',
+                'secondary_new_business',
+                'secondary_new_medicine_life_sciences',
+                'secondary_new_engineering_computer_science',
+            ] as $trackCode
+        ) {
+            $gradeTracks[$this->coverageKey('secondary_2', $trackCode)] = [
+                'grade' => 'secondary_2',
+                'track' => $trackCode,
+            ];
+        }
+
+        foreach (
+            [
+                'secondary_old_scientific_math',
+                'secondary_old_scientific_science',
+                'secondary_old_literary',
+                'secondary_new_literature_arts',
+                'secondary_new_business',
+                'secondary_new_medicine_life_sciences',
+                'secondary_new_engineering_computer_science',
+            ] as $trackCode
+        ) {
+            $gradeTracks[$this->coverageKey('secondary_3', $trackCode)] = [
+                'grade' => 'secondary_3',
+                'track' => $trackCode,
+            ];
+        }
+
+        return $gradeTracks;
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    private function subjectCoverages(): array
+    {
+        $allGradeTracks = array_keys($this->gradeTracks());
+
+        $frenchCoverage = [
+            ...$this->generalElementary(3, 4, 5, 6),
+            ...$this->generalPreparatory(1, 2, 3),
+            ...$this->secondary(1, 'general'),
+            ...$this->secondary(2, 'secondary_old_scientific', 'secondary_old_literary', 'secondary_new_literature_arts'),
+            ...$this->secondary(3, 'secondary_old_scientific_math', 'secondary_old_scientific_science', 'secondary_old_literary'),
         ];
 
-        $secondaryCommonLanguageSubjects = [
-            $this->subjectData('arabic'),
-            $this->subjectData('english'),
-            $this->subjectData('french'),
-            $this->subjectData('italian'),
+        $italianGermanCoverage = [
+            ...$this->generalPreparatory(1, 2, 3),
+            ...$this->secondary(1, 'general'),
+            ...$this->secondary(2, 'secondary_old_scientific', 'secondary_old_literary', 'secondary_new_literature_arts'),
+            ...$this->secondary(3, 'secondary_old_scientific_math', 'secondary_old_scientific_science', 'secondary_old_literary'),
         ];
 
-        $secondaryScientificSubjects = [
-            $this->subjectData('mathematics'),
-            $this->subjectData('chemistry', 'scientific'),
-            $this->subjectData('physics', 'scientific'),
-            $this->subjectData('biology', 'scientific'),
+        $mathCoverage = [
+            ...$this->generalElementary(1, 2, 3, 4, 5, 6),
+            ...$this->generalPreparatory(1, 2, 3),
+            ...$this->secondary(1, 'general'),
+            ...$this->secondary(2, 'secondary_new_medicine_life_sciences'),
+            ...$this->secondary(3, 'secondary_old_scientific_math', 'secondary_new_business', 'secondary_new_engineering_computer_science'),
         ];
 
-        $secondaryLiterarySubjects = [
-            $this->subjectData('history', 'literary'),
-            $this->subjectData('geography', 'literary'),
-            $this->subjectData('philosophy_logic', 'literary'),
-            $this->subjectData('psychology_sociology', 'literary'),
+        $pureMathCoverage = [
+            ...$this->secondary(2, 'secondary_old_scientific', 'secondary_old_literary'),
+        ];
+
+        $scienceCoverage = [
+            ...$this->generalElementary(4, 5, 6),
+            ...$this->generalPreparatory(1, 2, 3),
         ];
 
         return [
-            [
-                'stage' => 'elementary',
-                'name_en' => 'First Elementary',
-                'name_ar' => 'الصف الأول الابتدائي',
-                'sort_order' => 1,
-                'subjects' => $earlyPrimarySubjects,
+            'arabic' => $allGradeTracks,
+            'english_ol' => $allGradeTracks,
+            'english_al' => $allGradeTracks,
+            'french' => $frenchCoverage,
+            'italian' => $italianGermanCoverage,
+            'german' => $italianGermanCoverage,
+            'math_ar' => $mathCoverage,
+            'math_en' => $mathCoverage,
+            'pure_math_ar' => $pureMathCoverage,
+            'pure_math_en' => $pureMathCoverage,
+            'applied_math_ar' => $this->secondary(2, 'secondary_old_scientific'),
+            'applied_math_en' => $this->secondary(2, 'secondary_old_scientific'),
+            'science_ar' => $scienceCoverage,
+            'science_en' => $scienceCoverage,
+            'integrated_science_ar' => $this->secondary(1, 'general'),
+            'integrated_science_en' => $this->secondary(1, 'general'),
+            'discover_ar' => $this->generalElementary(1, 2, 3),
+            'discover_en' => $this->generalElementary(1, 2, 3),
+            'chemistry_ar' => [
+                ...$this->secondary(2, 'secondary_old_scientific', 'secondary_new_engineering_computer_science'),
+                ...$this->secondary(3, 'secondary_old_scientific_math', 'secondary_old_scientific_science', 'secondary_new_medicine_life_sciences'),
             ],
-            [
-                'stage' => 'elementary',
-                'name_en' => 'Second Elementary',
-                'name_ar' => 'الصف الثاني الابتدائي',
-                'sort_order' => 2,
-                'subjects' => $earlyPrimarySubjects,
+            'chemistry_en' => [
+                ...$this->secondary(2, 'secondary_old_scientific', 'secondary_new_engineering_computer_science'),
+                ...$this->secondary(3, 'secondary_old_scientific_math', 'secondary_old_scientific_science', 'secondary_new_medicine_life_sciences'),
             ],
-            [
-                'stage' => 'elementary',
-                'name_en' => 'Third Elementary',
-                'name_ar' => 'الصف الثالث الابتدائي',
-                'sort_order' => 3,
-                'subjects' => $earlyPrimarySubjects,
+            'physics_ar' => [
+                ...$this->secondary(2, 'secondary_old_scientific', 'secondary_new_medicine_life_sciences'),
+                ...$this->secondary(3, 'secondary_old_scientific_math', 'secondary_old_scientific_science', 'secondary_new_engineering_computer_science'),
             ],
-            [
-                'stage' => 'elementary',
-                'name_en' => 'Fourth Elementary',
-                'name_ar' => 'الصف الرابع الابتدائي',
-                'sort_order' => 4,
-                'subjects' => $upperPrimarySubjects,
+            'physics_en' => [
+                ...$this->secondary(2, 'secondary_old_scientific', 'secondary_new_medicine_life_sciences'),
+                ...$this->secondary(3, 'secondary_old_scientific_math', 'secondary_old_scientific_science', 'secondary_new_engineering_computer_science'),
             ],
-            [
-                'stage' => 'elementary',
-                'name_en' => 'Fifth Elementary',
-                'name_ar' => 'الصف الخامس الابتدائي',
-                'sort_order' => 5,
-                'subjects' => $upperPrimarySubjects,
+            'biology_ar' => [
+                ...$this->secondary(3, 'secondary_old_scientific_science', 'secondary_new_medicine_life_sciences'),
             ],
-            [
-                'stage' => 'elementary',
-                'name_en' => 'Sixth Elementary',
-                'name_ar' => 'الصف السادس الابتدائي',
-                'sort_order' => 6,
-                'subjects' => $upperPrimarySubjects,
+            'biology_en' => [
+                ...$this->secondary(3, 'secondary_old_scientific_science', 'secondary_new_medicine_life_sciences'),
             ],
-            [
-                'stage' => 'preparatory',
-                'name_en' => 'First Preparatory',
-                'name_ar' => 'الصف الأول الإعدادي',
-                'sort_order' => 7,
-                'subjects' => $upperPrimarySubjects,
+            'social_studies' => [
+                ...$this->generalElementary(4, 5, 6),
+                ...$this->generalPreparatory(1, 2, 3),
             ],
-            [
-                'stage' => 'preparatory',
-                'name_en' => 'Second Preparatory',
-                'name_ar' => 'الصف الثاني الإعدادي',
-                'sort_order' => 8,
-                'subjects' => $upperPrimarySubjects,
+            'history' => [
+                ...$this->secondary(1, 'general'),
+                ...$this->secondary(2, 'secondary_old_scientific', 'secondary_old_literary', 'secondary_new_business', 'secondary_new_engineering_computer_science', 'secondary_new_medicine_life_sciences', 'secondary_new_literature_arts'),
+                ...$this->secondary(3, 'secondary_old_literary'),
             ],
-            [
-                'stage' => 'preparatory',
-                'name_en' => 'Third Preparatory',
-                'name_ar' => 'الصف الثالث الإعدادي',
-                'sort_order' => 9,
-                'subjects' => [
-                    ...$upperPrimarySubjects,
-                    $this->subjectData('french'),
-                    $this->subjectData('italian'),
-                ],
+            'geography' => [
+                ...$this->secondary(2, 'secondary_old_literary'),
+                ...$this->secondary(3, 'secondary_old_literary', 'secondary_new_literature_arts'),
             ],
-            [
-                'stage' => 'secondary',
-                'name_en' => 'First Secondary',
-                'name_ar' => 'الصف الأول الثانوي',
-                'sort_order' => 10,
-                'subjects' => [
-                    $this->subjectData('arabic'),
-                    $this->subjectData('mathematics'),
-                    $this->subjectData('english'),
-                    $this->subjectData('french'),
-                    $this->subjectData('italian'),
-                    $this->subjectData('history', 'literary'),
-                    $this->subjectData('geography', 'literary'),
-                    $this->subjectData('chemistry', 'scientific'),
-                    $this->subjectData('physics', 'scientific'),
-                    $this->subjectData('biology', 'scientific'),
-                    $this->subjectData('philosophy_logic', 'literary'),
-                    $this->subjectData('psychology_sociology', 'literary'),
-                ],
+            'philosophy_logic' => $this->secondary(1, 'general'),
+            'philosophy' => $this->secondary(3, 'secondary_old_literary', 'secondary_new_business'),
+            'psychology' => [
+                ...$this->secondary(2, 'secondary_old_literary', 'secondary_new_literature_arts'),
+                ...$this->secondary(3, 'secondary_old_literary'),
             ],
-            [
-                'stage' => 'secondary',
-                'name_en' => 'Second Secondary',
-                'name_ar' => 'الصف الثاني الثانوي',
-                'sort_order' => 11,
-                'subjects' => [
-                    ...$secondaryCommonLanguageSubjects,
-                    ...$secondaryScientificSubjects,
-                    ...$secondaryLiterarySubjects,
-                ],
+            'ict' => $this->generalElementary(4, 5, 6),
+            'computer' => $this->generalPreparatory(1, 2, 3),
+            'programming' => [
+                ...$this->secondary(1, 'general'),
+                ...$this->secondary(2, 'secondary_new_engineering_computer_science'),
             ],
-            [
-                'stage' => 'secondary',
-                'name_en' => 'Third Secondary',
-                'name_ar' => 'الصف الثالث الثانوي',
-                'sort_order' => 12,
-                'subjects' => [
-                    ...$secondaryCommonLanguageSubjects,
-                    $this->subjectData('chemistry', 'scientific'),
-                    $this->subjectData('physics', 'scientific'),
-                    $this->subjectData('biology', 'scientific'),
-                    $this->subjectData('pure_mathematics', 'scientific_math'),
-                    $this->subjectData('applied_mathematics', 'scientific_math'),
-                    $this->subjectData('geology', 'scientific_sciences'),
-                    ...$secondaryLiterarySubjects,
-                ],
-            ],
+            'accounting_ar' => $this->secondary(2, 'secondary_new_business'),
+            'accounting_en' => $this->secondary(2, 'secondary_new_business'),
+            'statistics_ar' => $this->secondary(3, 'secondary_old_literary', 'secondary_new_literature_arts'),
+            'statistics_en' => $this->secondary(3, 'secondary_old_literary', 'secondary_new_literature_arts'),
+            'business_management_ar' => $this->secondary(2, 'secondary_new_business'),
+            'business_management_en' => $this->secondary(2, 'secondary_new_business'),
+            'economy_ar' => $this->secondary(3, 'secondary_new_business'),
+            'economy_en' => $this->secondary(3, 'secondary_new_business'),
         ];
     }
 
     /**
-     * @return array{key: string, track: string}
-     */
-    private function subjectData(string $subjectKey, string $trackCode = 'general'): array
-    {
-        return [
-            'key' => $subjectKey,
-            'track' => $trackCode,
-        ];
-    }
-
-    /**
-     * @return array<string, array{en: string, ar: string}>
+     * @return array<string, array{en: string, ar: string, name: string}>
      */
     private function subjectNames(): array
     {
         return [
-            'arabic' => ['en' => 'Arabic Language', 'ar' => 'اللغة العربية'],
-            'mathematics' => ['en' => 'Mathematics', 'ar' => 'الرياضيات'],
-            'english' => ['en' => 'English Language', 'ar' => 'اللغة الإنجليزية'],
-            'social_studies' => ['en' => 'Social Studies', 'ar' => 'الدراسات الاجتماعية'],
-            'science' => ['en' => 'Science', 'ar' => 'العلوم'],
-            'french' => ['en' => 'French Language', 'ar' => 'اللغة الفرنسية'],
-            'italian' => ['en' => 'Italian Language', 'ar' => 'اللغة الإيطالية'],
-            'history' => ['en' => 'History', 'ar' => 'التاريخ'],
-            'geography' => ['en' => 'Geography', 'ar' => 'الجغرافيا'],
-            'chemistry' => ['en' => 'Chemistry', 'ar' => 'الكيمياء'],
-            'physics' => ['en' => 'Physics', 'ar' => 'الفيزياء'],
-            'biology' => ['en' => 'Biology', 'ar' => 'الأحياء'],
-            'philosophy_logic' => ['en' => 'Philosophy and Logic', 'ar' => 'فلسفة و منطق'],
-            'psychology_sociology' => ['en' => 'Psychology and Sociology', 'ar' => 'علم نفس واجتماع'],
-            'pure_mathematics' => ['en' => 'Pure Mathematics', 'ar' => 'الرياضيات البحتة'],
-            'applied_mathematics' => ['en' => 'Applied Mathematics', 'ar' => 'الرياضيات التكاملية'],
-            'geology' => ['en' => 'Geology', 'ar' => 'جيولوجيا'],
+            'arabic' => ['en' => 'Arabic', 'ar' => 'عربي', 'name' => 'عربي'],
+            'english_ol' => ['en' => 'English (O.L)', 'ar' => 'English (O.L)', 'name' => 'English (O.L)'],
+            'english_al' => ['en' => 'English (A.L)', 'ar' => 'English (A.L)', 'name' => 'English (A.L)'],
+            'french' => ['en' => 'French', 'ar' => 'French', 'name' => 'French'],
+            'italian' => ['en' => 'Italian', 'ar' => 'Italian', 'name' => 'Italian'],
+            'german' => ['en' => 'German', 'ar' => 'German', 'name' => 'German'],
+            'math_ar' => ['en' => 'Mathematics', 'ar' => 'رياضيات', 'name' => 'رياضيات'],
+            'math_en' => ['en' => 'Math', 'ar' => 'Math', 'name' => 'Math'],
+            'pure_math_ar' => ['en' => 'Pure Mathematics', 'ar' => 'رياضة بحتة', 'name' => 'رياضة بحتة'],
+            'pure_math_en' => ['en' => 'Pure Math', 'ar' => 'Pure Math', 'name' => 'Pure Math'],
+            'applied_math_ar' => ['en' => 'Applied Mathematics', 'ar' => 'رياضة تطبيقية', 'name' => 'رياضة تطبيقية'],
+            'applied_math_en' => ['en' => 'Applied Math', 'ar' => 'Applied Math', 'name' => 'Applied Math'],
+            'science_ar' => ['en' => 'Science', 'ar' => 'علوم', 'name' => 'علوم'],
+            'science_en' => ['en' => 'Science', 'ar' => 'Science', 'name' => 'Science'],
+            'integrated_science_ar' => ['en' => 'Integrated Science', 'ar' => 'علوم متكاملة', 'name' => 'علوم متكاملة'],
+            'integrated_science_en' => ['en' => 'Integrated Science', 'ar' => 'Integrated Science', 'name' => 'Integrated Science'],
+            'discover_ar' => ['en' => 'Discover', 'ar' => 'اكتشف', 'name' => 'اكتشف'],
+            'discover_en' => ['en' => 'Discover', 'ar' => 'Discover', 'name' => 'Discover'],
+            'chemistry_ar' => ['en' => 'Chemistry', 'ar' => 'كيمياء', 'name' => 'كيمياء'],
+            'chemistry_en' => ['en' => 'Chemistry', 'ar' => 'Chemistry', 'name' => 'Chemistry'],
+            'physics_ar' => ['en' => 'Physics', 'ar' => 'فيزياء', 'name' => 'فيزياء'],
+            'physics_en' => ['en' => 'Physics', 'ar' => 'Physics', 'name' => 'Physics'],
+            'biology_ar' => ['en' => 'Biology', 'ar' => 'أحياء', 'name' => 'أحياء'],
+            'biology_en' => ['en' => 'Biology', 'ar' => 'Biology', 'name' => 'Biology'],
+            'social_studies' => ['en' => 'Social Studies', 'ar' => 'دراسات', 'name' => 'دراسات'],
+            'history' => ['en' => 'History', 'ar' => 'تاريخ', 'name' => 'تاريخ'],
+            'geography' => ['en' => 'Geography', 'ar' => 'جغرافيا', 'name' => 'جغرافيا'],
+            'philosophy_logic' => ['en' => 'Philosophy and Logic', 'ar' => 'فلسفة ومنطق', 'name' => 'فلسفة ومنطق'],
+            'philosophy' => ['en' => 'Philosophy', 'ar' => 'فلسفة', 'name' => 'فلسفة'],
+            'psychology' => ['en' => 'Psychology', 'ar' => 'علم نفس', 'name' => 'علم نفس'],
+            'ict' => ['en' => 'ICT', 'ar' => 'ICT', 'name' => 'ICT'],
+            'computer' => ['en' => 'Computer', 'ar' => 'حاسب آلي', 'name' => 'حاسب آلي'],
+            'programming' => ['en' => 'Programming', 'ar' => 'برمجة', 'name' => 'برمجة'],
+            'accounting_ar' => ['en' => 'Accounting', 'ar' => 'محاسبة', 'name' => 'محاسبة'],
+            'accounting_en' => ['en' => 'Accounting', 'ar' => 'Accounting', 'name' => 'Accounting'],
+            'statistics_ar' => ['en' => 'Statistics', 'ar' => 'إحصاء', 'name' => 'إحصاء'],
+            'statistics_en' => ['en' => 'Statistics', 'ar' => 'Statistics', 'name' => 'Statistics'],
+            'business_management_ar' => ['en' => 'Business Management', 'ar' => 'إدارة أعمال', 'name' => 'إدارة أعمال'],
+            'business_management_en' => ['en' => 'Business Management', 'ar' => 'Business Management', 'name' => 'Business Management'],
+            'economy_ar' => ['en' => 'Economy', 'ar' => 'اقتصاد', 'name' => 'اقتصاد'],
+            'economy_en' => ['en' => 'Economy', 'ar' => 'Economy', 'name' => 'Economy'],
         ];
     }
 
@@ -312,25 +370,21 @@ class EducationCatalogSeeder extends BaseSeeder
         return $track;
     }
 
-    private function subject(Track $track, string $subjectKey): Subject
+    private function subject(string $subjectKey): Subject
     {
         $name = $this->subjectNames()[$subjectKey];
 
         /** @var Subject|null $subject */
         $subject = Subject::query()
             ->withTrashed()
-            ->where('track_id', $track->id)
-            ->get()
-            ->first(fn (Subject $subject): bool => $subject->getTranslation('name', 'ar') === $name['ar']);
+            ->where('name', $name['name'])
+            ->first();
 
-        $subject ??= new Subject([
-            'track_id' => $track->id,
-        ]);
+        $subject ??= new Subject;
 
         $subject->fill([
-            'track_id' => $track->id,
-            'name' => $this->translation($name['en'], $name['ar']),
-            'description' => $this->translation($name['en'], $name['ar']),
+            'name' => $name['name'],
+            'description' => $name['name'],
         ]);
 
         $subject->restore();
@@ -339,13 +393,14 @@ class EducationCatalogSeeder extends BaseSeeder
         return $subject;
     }
 
-    private function gradeSubject(Grade $grade, Subject $subject): GradeSubject
+    private function gradeSubject(Grade $grade, Track $track, Subject $subject): GradeSubject
     {
         /** @var GradeSubject $gradeSubject */
         $gradeSubject = GradeSubject::query()
             ->withTrashed()
             ->firstOrNew([
                 'grade_id' => $grade->id,
+                'track_id' => $track->id,
                 'subject_id' => $subject->id,
             ]);
 
@@ -356,26 +411,52 @@ class EducationCatalogSeeder extends BaseSeeder
     }
 
     /**
-     * @param  array<int, int>  $subjectIds
+     * @return array<int, string>
      */
-    private function deleteMissingGradeSubjects(Grade $grade, array $subjectIds): void
+    private function generalElementary(int ...$gradeNumbers): array
     {
-        $grade->gradeSubjects()
-            ->whereNotIn('subject_id', $subjectIds)
-            ->delete();
+        return array_map(
+            fn (int $gradeNumber): string => $this->coverageKey("elementary_{$gradeNumber}", 'general'),
+            $gradeNumbers,
+        );
     }
 
-    private function deleteObsoleteSecondarySplitGrades(EducationStage $secondary): void
+    /**
+     * @return array<int, string>
+     */
+    private function generalPreparatory(int ...$gradeNumbers): array
     {
-        Grade::query()
-            ->withTrashed()
-            ->where('education_stage_id', $secondary->id)
-            ->where('sort_order', '>', 12)
+        return array_map(
+            fn (int $gradeNumber): string => $this->coverageKey("preparatory_{$gradeNumber}", 'general'),
+            $gradeNumbers,
+        );
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function secondary(int $gradeNumber, string ...$trackCodes): array
+    {
+        return array_map(
+            fn (string $trackCode): string => $this->coverageKey("secondary_{$gradeNumber}", $trackCode),
+            $trackCodes,
+        );
+    }
+
+    private function coverageKey(string $gradeKey, string $trackCode): string
+    {
+        return "{$gradeKey}|{$trackCode}";
+    }
+
+    /**
+     * @param  array<int, int>  $gradeSubjectIds
+     */
+    private function deleteMissingGradeSubjects(array $gradeSubjectIds): void
+    {
+        GradeSubject::query()
+            ->whereNotIn('id', $gradeSubjectIds)
             ->get()
-            ->each(function (Grade $grade): void {
-                $grade->gradeSubjects()->delete();
-                $grade->delete();
-            });
+            ->each(fn (GradeSubject $gradeSubject) => $gradeSubject->delete());
     }
 
     private function deleteUnusedSubjects(): void
@@ -384,5 +465,13 @@ class EducationCatalogSeeder extends BaseSeeder
             ->whereDoesntHave('gradeSubjects')
             ->get()
             ->each(fn (Subject $subject) => $subject->delete());
+    }
+
+    private function deleteUnusedTracks(): void
+    {
+        Track::query()
+            ->whereDoesntHave('gradeSubjects')
+            ->get()
+            ->each(fn (Track $track) => $track->delete());
     }
 }

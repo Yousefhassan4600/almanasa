@@ -45,10 +45,10 @@ class MyLessonsPage extends Component
                 'course.academyTeacher.teacher:id,owner_user_id',
                 'course.academyTeacher.teacher.owner:id,first_name,last_name',
                 'course.accountSubject:id,grade_subject_id',
-                'course.accountSubject.gradeSubject:id,grade_id,subject_id',
+                'course.accountSubject.gradeSubject:id,grade_id,track_id,subject_id',
                 'course.accountSubject.gradeSubject.grade:id,name',
-                'course.accountSubject.gradeSubject.subject:id,track_id,name,icon',
-                'course.accountSubject.gradeSubject.subject.track:id,name',
+                'course.accountSubject.gradeSubject.track:id,name',
+                'course.accountSubject.gradeSubject.subject:id,name,icon',
                 'course.lessons' => fn ($query) => $query
                     ->where('is_active', true)
                     ->with(['items' => fn ($query) => $query

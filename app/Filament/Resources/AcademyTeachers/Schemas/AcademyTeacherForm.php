@@ -104,7 +104,8 @@ class AcademyTeacherForm
                             ->with([
                                 'provider',
                                 'gradeSubject.grade.educationStage',
-                                'gradeSubject.subject.track',
+                                'gradeSubject.track',
+                                'gradeSubject.subject',
                             ])
                     )
                     ->getOptionLabelFromRecordUsing(fn (AccountSubject $record): string => $record->name)

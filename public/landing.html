@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edu Learning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="tsconfig.js"></script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 90px;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-tr from-white to-primary-50 min-h-screen font-sans antialiased ">
+    <header class="shadow-xl bg-white sticky top-0 z-50">
+        <nav class="p-4 lg:p-6 my-container flex items-center justify-between">
+
+            <div class="flex items-center gap-4">
+                <button id="openSidebarBtn" class="block lg:hidden text-gray-700 hover:text-primary transition-colors">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+                    </svg>
+                </button>
+
+                <a href="#home" class="text-primary font-bold text-xl lg:text-2xl whitespace-nowrap">Edu
+                    Learning</a>
+            </div>
+
+            <ul class="hidden lg:flex items-center gap-4 xl:gap-6 text-sm xl:text-base whitespace-nowrap">
+                <li><a href="#home" class="nav-link text-primary font-bold transition-all duration-300">الرئيسية</a>
+                </li>
+                <li><a href="#about"
+                        class="nav-link text-gray-700 hover:text-primary font-medium transition-all duration-300">من
+                        نحن</a></li>
+                <li><a href="#features"
+                        class="nav-link text-gray-700 hover:text-primary font-medium transition-all duration-300">المميزات</a>
+                </li>
+                <li><a href="#showcase"
+                        class="nav-link text-gray-700 hover:text-primary font-medium transition-all duration-300">واجهة
+                        المستخدم</a></li>
+                <li><a href="#testimonials"
+                        class="nav-link text-gray-700 hover:text-primary font-medium transition-all duration-300">آراء
+                        العملاء</a></li>
+                <li><a href="#download"
+                        class="nav-link text-gray-700 hover:text-primary font-medium transition-all duration-300">تحميل
+                        التطبيق</a></li>
+                <li><a href="#faq"
+                        class="nav-link text-gray-700 hover:text-primary font-medium transition-all duration-300">الأسئلة
+                        الشائعة</a></li>
+            </ul>
+
+            <div class="flex items-center gap-2 lg:gap-4" dir="rtl">
+                <a href="register.html"
+                    class="hidden lg:flex bg-primary text-white rounded-[12px] py-2.5 px-4 text-sm lg:text-base font-semibold transition-all hover:bg-primary-700 active:scale-95 items-center justify-center whitespace-nowrap">
+                    تسجيل سنتر
+                </a>
+
+                <a href="login.html"
+                    class="hidden lg:flex bg-transparent text-primary border-2 border-primary py-2.5 px-4 text-sm lg:text-base font-semibold rounded-[12px] transition-all hover:bg-primary/5 active:scale-95 items-center justify-center whitespace-nowrap">
+                    تسجيل معلم
+                </a>
+            </div>
+        </nav>
+        <div id="sidebarOverlay"
+            class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-300 opacity-0"></div>
+
+        <div id="mobileSidebar"
+            class="fixed top-0 right-0 bottom-0 w-[300px] bg-white z-50 p-6 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out lg:hidden flex flex-col justify-between overflow-y-auto"
+            dir="rtl">
+            <div>
+                <div class="flex items-center justify-between border-b pb-4 mb-6">
+                    <p class="text-primary font-bold text-xl">Edu Learning</p>
+                    <button id="closeSidebarBtn" class="text-gray-500 hover:text-red-500 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <ul class="space-y-4 text-right">
+                    <li><a href="#home"
+                            class="mobile-nav-link block py-2 text-[#5D3FD3] font-semibold text-lg">الرئيسية</a></li>
+                    <li><a href="#about" class="mobile-nav-link block py-2 text-gray-700 font-semibold text-lg">من
+                            نحن</a></li>
+                    <li><a href="#features"
+                            class="mobile-nav-link block py-2 text-gray-700 font-semibold text-lg">المميزات</a></li>
+                    <li><a href="#showcase" class="mobile-nav-link block py-2 text-gray-700 font-semibold text-lg">واجهة
+                            المستخدم</a></li>
+                    <li><a href="#testimonials"
+                            class="mobile-nav-link block py-2 text-gray-700 font-semibold text-lg">آراء العملاء</a></li>
+                    <li><a href="#download" class="mobile-nav-link block py-2 text-gray-700 font-semibold text-lg">تحميل
+                            التطبيق</a></li>
+                    <li><a href="#faq" class="mobile-nav-link block py-2 text-gray-700 font-semibold text-lg">الأسئلة
+                            الشائعة</a></li>
+                </ul>
+                <div class="space-y-3 mt-8 border-t pt-4 flex flex-col">
+                    <a href="register.html"
+                        class="w-full bg-primary text-center text-white rounded-[12px] py-3 px-6 font-semibold transition-all hover:bg-primary-700">
+                        تسجيل سنتر
+                    </a>
+                    <a href="login.html"
+                        class="w-full bg-transparent text-center text-primary border-2 border-primary py-3 px-6 rounded-[12px] font-semibold transition-all hover:bg-primary/5">تسجيل
+                        معلم</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- hero -->
+    <section id="home" class="w-full max-w-7xl mx-auto px-6 py-12 md:py-24" dir="rtl">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+            <div class="relative order-1 lg:order-1 flex flex-col items-center justify-center">
+                <div
+                    class="absolute top-0 left-4 md:left-12 bg-white/90 backdrop-blur-md p-3 md:p-4 rounded-2xl shadow-xl shadow-primary-900/5 border border-white flex items-center gap-3 z-20 animate-bounce [animation-duration:3s]">
+                    <div class="bg-primary-100 p-2.5 rounded-xl">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-primary font-extrabold text-base md:text-lg">+50K</div>
+                        <div class="text-gray-500 text-xs md:text-sm">طالب نشط</div>
+                    </div>
+                </div>
+
+                <div
+                    class="w-11/12 max-w-md md:max-w-lg rounded-3xl overflow-hidden shadow-2xl border-4 border-white transform -rotate-2 hover:rotate-0 transition duration-500">
+                    <img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+                        alt="لوحة التحكم للابتوب" class="w-full h-auto object-cover">
+                </div>
+
+                <div
+                    class="absolute bottom-16 right-0 md:right-8 bg-white/90 backdrop-blur-md p-3 md:p-4 rounded-2xl shadow-xl shadow-primary-900/5 border border-white flex items-center gap-3 z-20 animate-bounce [animation-duration:4s]">
+                    <div class="bg-primary-100 p-2.5 rounded-xl">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-primary font-extrabold text-base md:text-lg">+500</div>
+                        <div class="text-gray-500 text-xs md:text-sm">معلم خبير</div>
+                    </div>
+                </div>
+
+                <div
+                    class="w-7/12 max-w-[220px] rounded-2xl overflow-hidden shadow-xl border-4 border-white mt-[-40px] z-10 mr-auto ml-12 transform rotate-3 hover:rotate-0 transition duration-500">
+                    <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                        alt="تطبيق الموبايل" class="w-full h-auto object-cover">
+                </div>
+
+            </div>
+
+            <div class="order-2 lg:order-2 text-center lg:text-right space-y-6 md:space-y-8">
+
+                <h1
+                    class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.2] md:leading-[1.25]">
+                    حوّل مركزك التعليمي <br>
+                    <span class="text-primary bg-clip-text">إلى تجربة رقمية متكاملة</span>
+                </h1>
+
+                <p class="text-gray-600 text-base md:text-lg lg:text-xl leading-relaxed max-w-xl mx-auto lg:mx-0">
+                    منصة واحدة لإدارة الفيديوهات، الامتحانات، الواجبات ومتابعة مستوى الطلاب بسهولة واحترافية عالية.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center pt-4">
+                    <button
+                        class="bg-primary text-white font-bold text-lg px-8 py-4 rounded-2xl shadow-lg shadow-primary/30 hover:bg-primary-700 hover:shadow-xl hover:translate-y-[-2px] transition-all duration-300 w-full sm:w-auto">
+                        ابدأ الآن
+                    </button>
+
+                    <button
+                        class="bg-primary-50 text-primary font-bold text-lg px-8 py-4 rounded-2xl border border-primary-200 hover:bg-primary-100 hover:border-primary-300 transition-all duration-300 w-full sm:w-auto">
+                        شاهد المميزات
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+    <!-- who us -->
+    <section id="about" class="w-full max-w-7xl mx-auto px-6 py-16 md:py-24" dir="rtl">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div class="relative order-1 lg:order-2 flex flex-col items-center">
+
+                <div class="w-full max-w-xl rounded-[2rem] overflow-hidden shadow-2xl">
+                    <img src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+                        alt="التحول الرقمي في التعليم"
+                        class="w-full h-auto object-cover min-h-[350px] md:min-h-[450px]">
+                </div>
+
+                <div
+                    class="absolute -bottom-6 left-4 md:left-6 bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-2xl shadow-primary-900/10 border border-white max-w-[280px] sm:max-w-[320px] z-10">
+                    <p class="text-gray-700 font-medium text-sm md:text-base leading-relaxed text-right">
+                        "حولنا مركزنا بالكامل للنظام الرقمي في أقل من أسبوع بفضل إيدوكيت"
+                    </p>
+                    <div class="mt-3 text-left">
+                        <span class="text-primary font-bold text-sm md:text-base">- د. أحمد علي</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="order-2 lg:order-1 text-center lg:text-right space-y-6">
+
+                <div class="inline-block bg-primary-100 text-primary font-bold px-4 py-1.5 rounded-full text-sm">
+                    من نحن؟
+                </div>
+
+                <h2 class="text-3xl sm:text-4xl font-black text-gray-950 leading-tight">
+                    نقود التحول الرقمي في التعليم العربي
+                </h2>
+                <p class="text-gray-600 text-base md:text-lg leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                    نحن في إيدوكيت نؤمن أن التكنولوجيا ليست مجرد وسيلة، بل هي الجسر الذي يربط الطالب بالمعرفة بأكثر
+                    الطرق فعالية. صممنا هذه المنصة لتكون الشريك التقني لكل معلم ومركز تعليمي يسعى للتميز، من خلال توفير
+                    أدوات ذكية تغطي كافة جوانب العملية التعليمية.
+                </p>
+
+                <div class="pt-4 space-y-4 max-w-xl mx-auto lg:mx-0">
+
+                    <div
+                        class="flex items-center gap-4 bg-gray-50/50 p-3 rounded-xl hover:bg-primary-50/50 transition duration-300">
+                        <div class="bg-primary-100 p-2.5 rounded-xl shrink-0">
+                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                                </path>
+                            </svg>
+                        </div>
+                        <span class="text-gray-900 font-bold text-base md:text-lg">أمان تام لبياناتك ومحتواك
+                            العلمي</span>
+                    </div>
+
+                    <div
+                        class="flex items-center gap-4 bg-gray-50/50 p-3 rounded-xl hover:bg-primary-50/50 transition duration-300">
+                        <div class="bg-primary-100 p-2.5 rounded-xl shrink-0">
+                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z">
+                                </path>
+                            </svg>
+                        </div>
+                        <span class="text-gray-900 font-bold text-base md:text-lg">سرعة فائقة في معالجة الفيديوهات
+                            والبيانات</span>
+                    </div>
+
+                    <div
+                        class="flex items-center gap-4 bg-gray-50/50 p-3 rounded-xl hover:bg-primary-50/50 transition duration-300">
+                        <div class="bg-primary-100 p-2.5 rounded-xl shrink-0">
+                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z">
+                                </path>
+                            </svg>
+                        </div>
+                        <span class="text-gray-900 font-bold text-base md:text-lg">واجهة مستخدم هي الأفضل في
+                            السوق</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+    <!-- benefits -->
+    <section id="features" class="w-full max-w-7xl mx-auto px-6 py-16 md:py-24 font-sans" dir="rtl">
+
+        <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+            <h2 class="text-3xl sm:text-4xl font-black text-gray-950">
+                مميزات صُممت لراحتك
+            </h2>
+            <p class="text-gray-500 text-base md:text-lg leading-relaxed">
+                حلول ذكية مخصصة لكل أطراف العملية التعليمية لضمان أقصى استفادة وأقل مجهود.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <div
+                class="bg-white border border-gray-100 rounded-[2rem] p-8 shadow-sm hover:shadow-xl hover:border-primary-100 transition duration-300 flex flex-col items-start text-right relative overflow-hidden group">
+                <div
+                    class="bg-primary-50 text-primary-600 p-4 rounded-2xl mb-6 group-hover:scale-110 transition duration-300">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-950 mb-6">للمعلمين</h3>
+                <ul class="space-y-4 w-full">
+                    <li class="flex items-center gap-3 text-gray-600 font-medium">
+                        <span class="text-primary-600 shrink-0">✓</span>
+                        رفع فيديوهات مشفرة
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-600 font-medium">
+                        <span class="text-primary-600 shrink-0">✓</span>
+                        بنك أسئلة ذكي
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-600 font-medium">
+                        <span class="text-primary-600 shrink-0">✓</span>
+                        تصحيح تلقائي فوري
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-600 font-medium">
+                        <span class="text-primary-600 shrink-0">✓</span>
+                        تقارير أداء تحليلية
+                    </li>
+                </ul>
+            </div>
+
+            <div
+                class="bg-white border border-gray-100 rounded-[2rem] p-8 shadow-sm hover:shadow-xl hover:border-primary-100 transition duration-300 flex flex-col items-start text-right relative overflow-hidden group">
+                <div
+                    class="bg-primary-50 text-primary-600 p-4 rounded-2xl mb-6 group-hover:scale-110 transition duration-300">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-950 mb-6">للطلاب</h3>
+                <ul class="space-y-4 w-full">
+                    <li class="flex items-center gap-3 text-gray-600 font-medium">
+                        <span class="text-primary-600 shrink-0">✓</span>
+                        مشاهدة بدقة عالية
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-600 font-medium">
+                        <span class="text-primary-600 shrink-0">✓</span>
+                        حل الواجبات تفاعلياً
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-600 font-medium">
+                        <span class="text-primary-600 shrink-0">✓</span>
+                        تتبع التقدم الدراسي
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-600 font-medium">
+                        <span class="text-primary-600 shrink-0">✓</span>
+                        تنبيهات بمواعيد الدروس
+                    </li>
+                </ul>
+            </div>
+
+            <div
+                class="bg-white border border-gray-100 rounded-[2rem] p-8 shadow-sm hover:shadow-xl hover:border-primary-100 transition duration-300 flex flex-col items-start text-right relative overflow-hidden group">
+                <div
+                    class="bg-amber-50 text-amber-600 p-4 rounded-2xl mb-6 group-hover:scale-110 transition duration-300">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-950 mb-6">للمراكز</h3>
+                <ul class="space-y-4 w-full">
+                    <li class="flex items-center gap-3 text-gray-600 font-medium">
+                        <span class="text-amber-600 shrink-0">✓</span>
+                        إدارة الموظفين والطلاب
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-600 font-medium">
+                        <span class="text-amber-600 shrink-0">✓</span>
+                        نظام مالي متكامل
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-600 font-medium">
+                        <span class="text-amber-600 shrink-0">✓</span>
+                        تقارير أرباح يومية
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-600 font-medium">
+                        <span class="text-amber-600 shrink-0">✓</span>
+                        دعم فني على مدار الساعة
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </section>
+    <!-- counter -->
+    <section class="w-full bg-primary py-12 md:py-16 font-sans text-white" dir="rtl">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 text-center items-center justify-center">
+
+                <div class="flex flex-col items-center space-y-2">
+                    <div class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight">
+                        +50K
+                    </div>
+                    <div class="text-sm sm:text-base text-primary-100/90 font-medium">
+                        طالب نشط
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center space-y-2">
+                    <div class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight">
+                        +500
+                    </div>
+                    <div class="text-sm sm:text-base text-primary-100/90 font-medium">
+                        معلم خبير
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center space-y-2">
+                    <div class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight">
+                        150
+                    </div>
+                    <div class="text-sm sm:text-base text-primary-100/90 font-medium">
+                        مركز تعليمي
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center space-y-2">
+                    <div class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight">
+                        +1M
+                    </div>
+                    <div class="text-sm sm:text-base text-primary-100/90 font-medium">
+                        مشاهدة شهرية
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+    <section id="showcase" class="w-full bg-gradient-to-b from-white to-primary-50/30 py-16 md:py-24 font-sans"
+        dir="rtl">
+        <div class="max-w-7xl mx-auto px-6">
+
+            <div class="text-center max-w-3xl mx-auto mb-12 space-y-4">
+                <h2 class="text-3xl sm:text-4xl font-black text-gray-950">
+                    واجهة مستخدم عصرية وأنيقة
+                </h2>
+                <p class="text-gray-500 text-base md:text-lg leading-relaxed">
+                    تجربة مستخدم سلسة تجعل التعلم متعة حقيقية.
+                </p>
+            </div>
+
+            <div class="relative max-w-5xl mx-auto">
+
+                <div
+                    class="bg-white p-2 sm:p-4 rounded-[2.5rem] shadow-[0_20px_50px_rgba(93,62,189,0.15)] border border-gray-100 overflow-hidden transform hover:scale-[1.01] transition duration-500">
+                    <div class="rounded-[2rem] overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                            alt="واجهة لوحة التحكم إيدوكيت" class="w-full h-auto object-cover">
+                    </div>
+                </div>
+                <div class="absolute -inset-4 bg-primary-200/20 rounded-[3rem] blur-2xl -z-10 pointer-events-none">
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+    <!-- cta -->
+    <section id="testimonials" class="w-full bg-[#f6f8ff] py-16 md:py-24 font-sans" dir="rtl">
+        <div class="max-w-7xl mx-auto px-6">
+
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-black text-gray-950">
+                    ماذا يقول عملاؤنا؟
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+                <div
+                    class="bg-white border border-gray-100 rounded-[2rem] p-8 shadow-sm hover:shadow-md transition duration-300 flex flex-col justify-between text-right">
+                    <div>
+                        <div class="flex items-center gap-4 mb-6">
+                            <img class="w-16 h-16 rounded-full object-cover shrink-0 border-2 border-primary-100"
+                                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+                                alt="أ. محمد الشمري">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-950">أ. محمد الشمري</h3>
+                                <p class="text-primary text-sm font-semibold">معلم لغة عربية</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 font-medium leading-relaxed">
+                            "أفضل منصة تعاملت معها على الإطلاق، السرعة في رفع الفيديوهات وسهولة عمل الامتحانات وفرت عليّ
+                            الكثير من الوقت."
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white border border-primary-100 rounded-[2rem] p-8 shadow-md shadow-primary-900/5 hover:shadow-lg transition duration-300 flex flex-col justify-between text-right transform lg:translate-y-[-8px]">
+                    <div>
+                        <div class="flex items-center gap-4 mb-6">
+                            <img class="w-16 h-16 rounded-full object-cover shrink-0 border-2 border-primary-100"
+                                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+                                alt="أ. سارة خالد">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-950">أ. سارة خالد</h3>
+                                <p class="text-primary text-sm font-semibold">مديرة مركز تعليمي</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 font-medium leading-relaxed">
+                            "النظام المالي وإدارة الموظفين جعلني أتحكم في مركزي بضغطة زر واحدة ومن أي مكان في العالم."
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white border border-gray-100 rounded-[2rem] p-8 shadow-sm hover:shadow-md transition duration-300 flex flex-col justify-between text-right">
+                    <div>
+                        <div class="flex items-center gap-4 mb-6">
+                            <img class="w-16 h-16 rounded-full object-cover shrink-0 border-2 border-primary-100"
+                                src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+                                alt="م. خالد العتيبي">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-950">م. خالد العتيبي</h3>
+                                <p class="text-primary text-sm font-semibold">مدرس فيزياء</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 font-medium leading-relaxed">
+                            "حماية المحتوى هي أهم ميزة بالنسبة لي، المنصة توفر تشفير كامل يمنع تسريب الفيديوهات تماماً."
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+    <!-- download links -->
+    <section id="download" class="w-full max-w-7xl mx-auto px-4 py-12 font-sans" dir="rtl">
+
+        <div
+            class="bg-primary rounded-[2.5rem] p-8 md:p-16 text-white grid grid-cols-1 lg:grid-cols-2 gap-12 items-center overflow-hidden relative shadow-2xl shadow-primary/20">
+
+            <div class="space-y-6 text-center lg:text-right z-10">
+
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-black leading-[1.25] tracking-tight">
+                    تعلّم في أي وقت وفي <br class="hidden sm:inline"> أي مكان
+                </h2>
+
+                <p
+                    class="text-primary-100/90 text-base md:text-lg max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+                    حمّل تطبيق إيدوكيت الآن واستمتع بتجربة تعليمية فريدة وسلسة على هاتفك المحمول.
+                </p>
+                <div class="flex flex-wrap gap-4 justify-center lg:justify-start pt-4">
+
+                    <a href="#"
+                        class="bg-white text-gray-900 px-6 py-3 rounded-2xl flex items-center gap-3 shadow-md hover:bg-gray-50 transition duration-300 w-full sm:w-[190px] group select-none">
+                        <svg class="w-6 h-6 shrink-0 text-gray-900 group-hover:scale-110 transition duration-300"
+                            viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M3.609 1.814L13.783 12 3.609 22.186A2.22 2.22 0 0 1 3 20.598V3.402c0-.66.223-1.222.609-1.588zm10.88 10.89l2.768 2.769-13.064 7.456 10.296-10.225zm4.01-4.032l2.96 1.688a2.127 2.127 0 0 1 0 3.68l-2.96 1.688-2.769-2.769 2.769-2.769zm-1.242-1.248L14.49 11.233 4.193 1.012l13.064 7.456z" />
+                        </svg>
+                        <div class="flex flex-col items-start leading-none">
+                            <span class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider mb-1">Get it
+                                on</span>
+                            <span class="text-base font-bold tracking-tight">Google Play</span>
+                        </div>
+                    </a>
+
+                    <a href="#"
+                        class="bg-white text-gray-900 px-6 py-3 rounded-2xl flex items-center gap-3 shadow-md hover:bg-gray-50 transition duration-300 w-full sm:w-[200px] group select-none">
+                        <svg class="w-6 h-6 shrink-0 text-gray-900 group-hover:scale-110 transition duration-300"
+                            viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.56 2.95-1.39z" />
+                        </svg>
+                        <div class="flex flex-col items-start leading-none">
+                            <span class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider mb-2">Download
+                                on the</span>
+                            <span class="text-base font-bold tracking-tight">App Store</span>
+                        </div>
+                    </a>
+
+                </div>
+            </div>
+
+            <div class="relative flex justify-center items-center lg:justify-end">
+                <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                    alt="تطبيق إيدوكيت" class="w-full h-auto rounded-[2.5rem] border-4 border-white/20">
+            </div>
+            <div class="absolute w-64 h-64 bg-white/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+        </div>
+
+        </div>
+    </section>
+    <section id="faq" class="w-full max-w-4xl mx-auto px-6 py-16 md:py-24 font-sans" dir="rtl">
+
+        <div class="text-center mb-12">
+            <h2 class="text-3xl sm:text-4xl font-black text-gray-950">
+                الأسئلة الشائعة
+            </h2>
+        </div>
+
+        <div class="space-y-4">
+
+            <div
+                class="faq-item bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden transition-all duration-300">
+                <button onclick="toggleFaq(this)"
+                    class="w-full flex items-center justify-between p-6 text-right font-bold text-gray-900 hover:text-primary transition-colors duration-200 focus:outline-none">
+                    <span class="text-base sm:text-lg">كيف يمكنني البدء في استخدام المنصة؟</span>
+                    <svg class="faq-arrow w-5 h-5 text-gray-500 transform transition-transform duration-300 shrink-0 mr-4"
+                        fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div class="faq-content max-h-0 opacity-0 transition-all duration-300 ease-in-out bg-gray-50/50">
+                    <p class="p-6 text-gray-600 leading-relaxed text-sm sm:text-base border-t border-gray-50">
+                        يمكنك البدء مباشرة عبر إنشاء حساب جديد كمعلم أو كمركز تعليمي، ثم إدخال بياناتك وتجهيز صفوفك
+                        الافتراضية ورفع دروسك في أقل من 10 دقائق.
+                    </p>
+                </div>
+            </div>
+
+            <div
+                class="faq-item bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden transition-all duration-300">
+                <button onclick="toggleFaq(this)"
+                    class="w-full flex items-center justify-between p-6 text-right font-bold text-gray-900 hover:text-primary transition-colors duration-200 focus:outline-none">
+                    <span class="text-base sm:text-lg">هل محتواي العلمي محمي من السرقة؟</span>
+                    <svg class="faq-arrow w-5 h-5 text-gray-500 transform transition-transform duration-300 shrink-0 mr-4"
+                        fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div class="faq-content max-h-0 opacity-0 transition-all duration-300 ease-in-out bg-gray-50/50">
+                    <p class="p-6 text-gray-600 leading-relaxed text-sm sm:text-base border-t border-gray-50">
+                        نعم بالتأكيد، نحن نستخدم أحدث بروتوكولات التشفير وحماية الفيديو (DRM) لمنع المحاولات التقنية
+                        لتنزيل أو تسجيل الشاشة، لضمان الحفاظ على كامل حقوقك الفكرية.
+                    </p>
+                </div>
+            </div>
+
+            <div
+                class="faq-item bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden transition-all duration-300">
+                <button onclick="toggleFaq(this)"
+                    class="w-full flex items-center justify-between p-6 text-right font-bold text-gray-900 hover:text-primary transition-colors duration-200 focus:outline-none">
+                    <span class="text-base sm:text-lg">ما هي وسائل الدفع المدعومة؟</span>
+                    <svg class="faq-arrow w-5 h-5 text-gray-500 transform transition-transform duration-300 shrink-0 mr-4"
+                        fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div class="faq-content max-h-0 opacity-0 transition-all duration-300 ease-in-out bg-gray-50/50">
+                    <p class="p-6 text-gray-600 leading-relaxed text-sm sm:text-base border-t border-gray-50">
+                        نوفر لك كافة بوابات الدفع المحلية والعالمية (مثل المحافظ الإلكترونية، كروت المدى، فوري، الفيزا،
+                        والماستركارد) لتسهيل عمليات الاشتراك على طلابك من أي مكان.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <script>
+        function toggleFaq(button) {
+            const currentItem = button.closest('.faq-item');
+            const currentContent = currentItem.querySelector('.faq-content');
+            const currentArrow = currentItem.querySelector('.faq-arrow');
+
+            const allItems = document.querySelectorAll('.faq-item');
+
+            allItems.forEach(item => {
+                const content = item.querySelector('.faq-content');
+                const arrow = item.querySelector('.faq-arrow');
+
+                if (item === currentItem) {
+                    if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                        content.style.maxHeight = '0px';
+                        content.style.opacity = '0';
+                        arrow.classList.remove('rotate-180');
+                        item.classList.remove('border-primary-200', 'shadow-md');
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        content.style.opacity = '1';
+                        arrow.classList.add('rotate-180');
+                        item.classList.add('border-primary-200', 'shadow-md');
+                    }
+                } else {
+                    content.style.maxHeight = '0px';
+                    content.style.opacity = '0';
+                    arrow.classList.remove('rotate-180');
+                    item.classList.remove('border-primary-200', 'shadow-md');
+                }
+            });
+        }
+    </script>
+    <footer class="w-full bg-[#f6f8ff] py-12 md:py-16 font-sans border-t border-gray-100" dir="rtl">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col items-center text-center space-y-8">
+
+            <div class="text-3xl md:text-4xl font-black text-primary tracking-tight">
+                إيدوكيت
+            </div>
+            <nav
+                class="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-gray-600 font-bold text-sm sm:text-base">
+                <a href="#" class="hover:text-primary transition-colors duration-200">الدعم الفني</a>
+                <a href="#" class="hover:text-primary transition-colors duration-200">الأسئلة الشائعة</a>
+                <a href="#" class="hover:text-primary transition-colors duration-200">سياسة الخصوصية</a>
+                <a href="#" class="hover:text-primary transition-colors duration-200">الشروط والأحكام</a>
+            </nav>
+
+            <div class="flex items-center justify-center gap-4">
+                <a href="tel:+"
+                    class="w-10 h-10 rounded-full bg-primary-100 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300 shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z">
+                        </path>
+                    </svg>
+                </a>
+
+                <a href="mailto:"
+                    class="w-10 h-10 rounded-full bg-primary-100 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300 shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206">
+                        </path>
+                    </svg>
+                </a>
+
+                <a href="#"
+                    class="w-10 h-10 rounded-full bg-primary-100 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300 shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="text-gray-500 font-medium text-xs sm:text-sm pt-4 border-t border-gray-200/50 w-full max-w-md">
+                جميع الحقوق محفوظة © ٢٠٢٤ إيدوكيت
+            </div>
+
+        </div>
+    </footer>
+    <script>
+        const openBtn = document.getElementById("openSidebarBtn");
+        const closeBtn = document.getElementById("closeSidebarBtn");
+        const sidebar = document.getElementById("mobileSidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+
+        function closeSidebar() {
+            if (sidebar) sidebar.classList.add("translate-x-full");
+            if (overlay) {
+                overlay.classList.remove("opacity-100");
+                setTimeout(() => overlay.classList.add("hidden"), 300);
+            }
+        }
+
+        if (openBtn && sidebar && overlay) {
+            openBtn.addEventListener("click", () => {
+                sidebar.classList.remove("translate-x-full");
+                overlay.classList.remove("hidden");
+                setTimeout(() => overlay.classList.add("opacity-100"), 10);
+            });
+        }
+        if (closeBtn) closeBtn.addEventListener("click", closeSidebar);
+        if (overlay) overlay.addEventListener("click", closeSidebar);
+
+        const mobileDropdownBtn = document.getElementById("mobileDropdownBtn");
+        const mobileDropdownContent = document.getElementById(
+            "mobileDropdownContent",
+        );
+        const mobileArrow = document.getElementById("mobileArrow");
+
+        if (mobileDropdownBtn && mobileDropdownContent) {
+            mobileDropdownBtn.addEventListener("click", () => {
+                mobileDropdownContent.classList.toggle("hidden");
+                if (mobileArrow) mobileArrow.classList.toggle("rotate-180");
+            });
+        }
+
+        const mobileNavLinks = document.querySelectorAll(".mobile-nav-link");
+        mobileNavLinks.forEach(link => {
+            link.addEventListener("click", closeSidebar);
+        });
+
+        const sections = document.querySelectorAll("section[id]");
+        const navLinks = document.querySelectorAll(".nav-link");
+
+        function highlightNav() {
+            let scrollY = window.pageYOffset || document.documentElement.scrollTop;
+            let currentSectionId = "";
+
+            sections.forEach(section => {
+                const sectionHeight = section.offsetHeight;
+                const sectionTop = section.offsetTop - 120;
+
+                if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+                    currentSectionId = section.getAttribute("id");
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove("text-primary", "font-bold");
+                link.classList.add("text-gray-700", "font-medium");
+                if (link.getAttribute("href") === `#${currentSectionId}`) {
+                    link.classList.remove("text-gray-700", "font-medium");
+                    link.classList.add("text-primary", "font-bold");
+                }
+            });
+
+            mobileNavLinks.forEach(link => {
+                link.classList.remove("text-[#5D3FD3]");
+                link.classList.add("text-gray-700");
+                if (link.getAttribute("href") === `#${currentSectionId}`) {
+                    link.classList.remove("text-gray-700");
+                    link.classList.add("text-[#5D3FD3]");
+                }
+            });
+        }
+
+        window.addEventListener("scroll", highlightNav);
+        window.addEventListener("load", highlightNav);
+    </script>
+</body>
+
+</html>

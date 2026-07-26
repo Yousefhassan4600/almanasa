@@ -55,7 +55,7 @@ class LessonPage extends Component
             ->with([
                 'assignment:id,course_id,title,description,duration_minutes,num_of_questions,num_of_attempts',
                 'exam:id,course_id,title,description,duration_minutes,max_degree,num_of_questions,num_of_attempts',
-                'lesson' => fn ($query) => $query
+                'lesson' => fn($query) => $query
                     ->with([
                         'coursePeriod:id,type,name,sort_order',
                         'course:id,provider_id,account_subject_id,academy_teacher_id,title',
@@ -65,7 +65,7 @@ class LessonPage extends Component
                         'course.accountSubject.gradeSubject:id,grade_id,track_id,subject_id',
                         'course.accountSubject.gradeSubject.track:id,name',
                         'course.accountSubject.gradeSubject.subject:id,name',
-                        'items' => fn ($query) => $query
+                        'items' => fn($query) => $query
                             ->with('exam:id,course_id,title,duration_minutes')
                             ->oldest('sort_order')
                             ->oldest('id'),
@@ -73,9 +73,9 @@ class LessonPage extends Component
             ])
             ->whereHas(
                 'lesson.course',
-                fn (Builder $query): Builder => $query->whereBelongsTo($provider),
+                fn(Builder $query): Builder => $query->whereBelongsTo($provider),
             )
-            ->when($this->itemId, fn (Builder $query): Builder => $query->whereKey($this->itemId))
+            ->when($this->itemId, fn(Builder $query): Builder => $query->whereKey($this->itemId))
             ->first();
     }
 
@@ -101,7 +101,7 @@ class LessonPage extends Component
             ->where('attemptable_id', $assessment->id)
             ->whereHas(
                 'currentStatus.type',
-                fn (Builder $query): Builder => $query->whereIn('slug', ['submitted', 'graded']),
+                fn(Builder $query): Builder => $query->whereIn('slug', ['submitted', 'graded']),
             )
             ->count();
 
@@ -162,6 +162,6 @@ class LessonPage extends Component
             return 3600;
         }
 
-        return ($durationMinutes * 60) + 900;
+        return ($durationMinutes * 60) + 7200;
     }
 }

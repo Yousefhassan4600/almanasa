@@ -82,11 +82,11 @@ class BunnyStreamService
             return null;
         }
 
-        if (! $this->embedTokenAuthenticationEnabled()) {
+        if (! $this->embedTokenAuthenticationEnabled() && ! $this->debugEnabled()) {
             return $this->embedUrl($videoId);
         }
 
-        $expires = now()->addSeconds(max(60, $ttlSeconds))->timestamp;
+        $expires = now()->addSeconds($this->signedEmbedTtlSeconds($ttlSeconds))->timestamp;
         $token = hash('sha256', $this->embedTokenKey().$videoId.$expires);
 
         return $this->embedUrl($videoId).'?'.http_build_query([
@@ -182,5 +182,19 @@ class BunnyStreamService
     private function embedTokenAuthenticationEnabled(): bool
     {
         return (bool) config('services.bunny_stream.embed_token_authentication_enabled', true);
+    }
+
+    private function debugEnabled(): bool
+    {
+        return (bool) config('services.bunny_stream.debug', false);
+    }
+
+    private function signedEmbedTtlSeconds(int $ttlSeconds): int
+    {
+        $ttlSeconds = max(60, $ttlSeconds);
+
+        return $this->debugEnabled()
+            ? max($ttlSeconds, 86400)
+            : $ttlSeconds;
     }
 }

@@ -422,7 +422,6 @@ class CoursesSeeder extends BaseSeeder
                 1 => [
                     'type' => LessonTypeEnum::Video,
                     'title' => $this->translation('Introduction to Real Numbers', 'مقدمة في الأعداد الحقيقية'),
-                    'video_url' => 'courses/lesson_1/videos/01KXJYXHWGK3J6W8T2J7FT5338.mp4',
                     'duration_minutes' => 30,
                     'is_free' => true,
                 ],

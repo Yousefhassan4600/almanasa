@@ -144,6 +144,7 @@ return new class extends Migration
             $table->string('type');
             $table->text('title');
             $table->text('description')->nullable();
+            $table->string('bunny_video_id')->nullable();
             $table->string('video_url')->nullable();
             $table->string('file_url')->nullable();
             $table->string('link_url')->nullable();

@@ -28,6 +28,8 @@ class LessonsTable extends BaseTable
             TextColumn::make('id')
                 ->label(__('admin.labels.#'))
                 ->sortable(),
+            TextColumn::make('name')
+                ->label(__('admin.labels.Name')),
             TextColumn::make('title')
                 ->label(__('admin.labels.Title'))
                 ->searchable()

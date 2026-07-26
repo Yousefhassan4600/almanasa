@@ -23,6 +23,7 @@ class LessonItem extends Model
         'type',
         'title',
         'description',
+        'bunny_video_id',
         'video_url',
         'file_url',
         'link_url',

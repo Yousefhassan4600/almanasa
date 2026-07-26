@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Website;
 
+use App\Enums\LessonTypeEnum;
 use App\Models\Assignment;
 use App\Models\Course;
 use App\Models\Exam;
@@ -9,11 +10,13 @@ use App\Models\LessonItem;
 use App\Models\Provider;
 use App\Models\StudentAttempt;
 use App\Models\Subscription;
+use App\Services\BunnyStreamService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use RuntimeException;
 
 class LessonPage extends Component
 {
@@ -32,14 +35,16 @@ class LessonPage extends Component
     {
         $provider = Provider::query()->findOrFail($this->providerId);
         $lessonItem = $this->lessonItem($provider);
+        $hasCourseSubscription = $lessonItem?->lesson?->course
+            ? $this->hasActiveCourseSubscription($lessonItem->lesson->course)
+            : false;
 
         return view('livewire.website.lesson-page', [
             'provider' => $provider,
             'lessonItem' => $lessonItem,
             'lessonItems' => $lessonItem?->lesson?->items ?? collect(),
-            'hasCourseSubscription' => $lessonItem?->lesson?->course
-                ? $this->hasActiveCourseSubscription($lessonItem->lesson->course)
-                : false,
+            'hasCourseSubscription' => $hasCourseSubscription,
+            'signedVideoUrl' => $this->signedVideoUrl($lessonItem, $hasCourseSubscription, app(BunnyStreamService::class)),
             'attempts' => $this->attempts($lessonItem?->assignment ?? $lessonItem?->exam),
         ]);
     }
@@ -118,5 +123,45 @@ class LessonPage extends Component
         return Subscription::query()
             ->activeForStudentCourse($studentUserId, $course)
             ->exists();
+    }
+
+    private function signedVideoUrl(?LessonItem $lessonItem, bool $hasCourseSubscription, BunnyStreamService $bunnyStream): ?string
+    {
+        if (! $lessonItem || $lessonItem->type !== LessonTypeEnum::Video) {
+            return null;
+        }
+
+        $videoReference = $lessonItem->bunny_video_id ?: $lessonItem->video_url;
+
+        if (blank($videoReference)) {
+            return null;
+        }
+
+        if (! ($lessonItem->lesson?->isCurrentlyOpen() ?? false) || ! $lessonItem->isCurrentlyOpen()) {
+            return null;
+        }
+
+        if (! $lessonItem->is_free && ! $hasCourseSubscription) {
+            return null;
+        }
+
+        try {
+            return $bunnyStream->signedEmbedUrl($videoReference, $this->videoTokenTtlSeconds($lessonItem));
+        } catch (RuntimeException $exception) {
+            report($exception);
+
+            return null;
+        }
+    }
+
+    private function videoTokenTtlSeconds(LessonItem $lessonItem): int
+    {
+        $durationMinutes = (int) ($lessonItem->duration_minutes ?? 0);
+
+        if ($durationMinutes <= 0) {
+            return 3600;
+        }
+
+        return ($durationMinutes * 60) + 900;
     }
 }

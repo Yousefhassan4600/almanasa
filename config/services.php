@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'bunny_stream' => [
+        'library_id' => env('BUNNY_STREAM_LIBRARY_ID'),
+        'api_key' => env('BUNNY_STREAM_API_KEY'),
+        'embed_token_key' => env('BUNNY_STREAM_EMBED_TOKEN_KEY', env('BUNNY_STREAM_API_KEY')),
+        'embed_token_authentication_enabled' => (bool) env('BUNNY_STREAM_EMBED_TOKEN_AUTHENTICATION_ENABLED', true),
+        'base_url' => env('BUNNY_STREAM_BASE_URL', 'https://video.bunnycdn.com'),
+        'embed_base_url' => env('BUNNY_STREAM_EMBED_BASE_URL', 'https://iframe.mediadelivery.net/embed'),
+        'upload_expiration_seconds' => (int) env('BUNNY_STREAM_UPLOAD_EXPIRATION_SECONDS', 86400),
+    ],
+
 ];

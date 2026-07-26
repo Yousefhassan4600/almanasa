@@ -6,6 +6,7 @@ use App\Concerns\FiltersByTenant;
 use App\Enums\CoursePeriodType;
 use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -34,6 +35,10 @@ class Lesson extends Model
         'course',
     ];
 
+    protected $appends = [
+        'name',
+    ];
+
     public array $translatable = [
         'title',
         'description',
@@ -47,6 +52,11 @@ class Lesson extends Model
             'num_of_video_views' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    protected function name(): Attribute
+    {
+        return Attribute::get(fn (): string => 'Course'.$this->course_id.'-Lesson'.$this->id);
     }
 
     public function course(): BelongsTo

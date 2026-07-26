@@ -25,6 +25,8 @@ class LessonsTable extends BaseTable
                 ->label(__('admin.labels.#'))
                 ->searchable()
                 ->sortable(),
+            TextColumn::make('name')
+                ->label(__('admin.labels.Name')),
             TextColumn::make('title')
                 ->label(__('admin.labels.Title'))
                 ->searchable(),
@@ -32,10 +34,10 @@ class LessonsTable extends BaseTable
                 ->label(__('admin.labels.Course')),
             TextColumn::make('course.provider.name')
                 ->label(__('admin.labels.Provider'))
-                ->visible(fn(): bool => CurrentAccount::isSaasOwner()),
+                ->visible(fn (): bool => CurrentAccount::isSaasOwner()),
             TextColumn::make('course.academyTeacher.teacher.owner.name')
                 ->label(__('admin.labels.Teacher'))
-                ->visible(fn(): bool => ! CurrentAccount::isAcademyTeacher() && ! CurrentAccount::isStandaloneTeacher()),
+                ->visible(fn (): bool => ! CurrentAccount::isAcademyTeacher() && ! CurrentAccount::isStandaloneTeacher()),
             TextColumn::make('coursePeriod.name')
                 ->label(__('admin.labels.Period')),
             TextColumn::make('starts_at')

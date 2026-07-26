@@ -143,8 +143,19 @@
                         </div>
                     @elseif ($contentType === 'video')
                         <div class="relative bg-black rounded-3xl overflow-hidden aspect-video shadow-lg">
-                            @if (filled($lessonItem->video_url))
-                                <video class="w-full h-full" src="{{ $lessonItem->video_url }}" controls controlsList="nodownload"></video>
+                            @if (filled($signedVideoUrl ?? null))
+                                <iframe
+                                    src="{{ $signedVideoUrl }}"
+                                    class="absolute inset-0 w-full h-full"
+                                    style="border: 0;"
+                                    allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                                    allowfullscreen
+                                ></iframe>
+                            @elseif (filled($lessonItem->video_url))
+                                <div class="w-full h-full flex flex-col items-center justify-center text-white gap-3 text-center px-6">
+                                    <i class="fa-solid fa-shield-halved text-5xl text-white/70"></i>
+                                    <p class="text-sm font-bold">تعذر تجهيز رابط تشغيل الفيديو المحمي حالياً.</p>
+                                </div>
                             @else
                                 <div class="w-full h-full flex flex-col items-center justify-center text-white gap-3">
                                     <i class="fa-regular fa-circle-play text-5xl text-white/70"></i>

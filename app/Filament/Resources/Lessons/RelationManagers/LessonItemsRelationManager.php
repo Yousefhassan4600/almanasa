@@ -11,10 +11,12 @@ use App\Models\LessonItem;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ViewField;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -47,20 +49,16 @@ class LessonItemsRelationManager extends BaseRelationManager
                     ->live()
                     ->required()
                     ->columnSpanFull(),
-                FileUpload::make('video_url')
-                    ->label(__('admin.labels.Video'))
-                    ->acceptedFileTypes([
-                        'video/mp4',
-                    ])
-                    ->disk('public')
-                    ->visibility('public')
-                    ->directory(fn (): string => 'courses/lesson_'.$this->getOwnerRecord()->getKey().'/videos')
-                    ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::Video->value)
-                    ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Video->value)
-                    ->columnSpanFull(),
+                Hidden::make('bunny_video_id'),
+                $this->bunnyVideoUploadField(
+                    courseId: $this->getOwnerRecord()->course_id,
+                    lessonId: $this->getOwnerRecord()->getKey(),
+                ),
                 FileUpload::make('file_url')
                     ->label(__('admin.labels.File'))
-                    ->directory(fn (): string => 'courses/lesson_'.$this->getOwnerRecord()->getKey().'/files')
+                    ->disk('public')
+                    ->visibility('public')
+                    ->directory(fn (): string => 'courses/'.$this->getOwnerRecord()->name.'/files')
                     ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::File->value)
                     ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::File->value)
                     ->columnSpanFull(),
@@ -162,6 +160,20 @@ class LessonItemsRelationManager extends BaseRelationManager
             ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Assignments->value)
             ->searchable()
             ->preload()
+            ->columnSpanFull();
+    }
+
+    private function bunnyVideoUploadField(int|string|null $courseId, int|string|null $lessonId): ViewField
+    {
+        return ViewField::make('video_url')
+            ->label(__('admin.labels.Video'))
+            ->view('filament.forms.components.bunny-video-upload')
+            ->viewData([
+                'courseId' => $courseId,
+                'lessonId' => $lessonId,
+            ])
+            ->visible(fn (Get $get): bool => $get('type') === LessonTypeEnum::Video->value)
+            ->required(fn (Get $get): bool => $get('type') === LessonTypeEnum::Video->value)
             ->columnSpanFull();
     }
 

@@ -1,8 +1,18 @@
 <?php
 
 use App\Http\Controllers\AcademySiteController;
+use App\Http\Controllers\Admin\BunnyStreamTusUploadController;
+use App\Http\Controllers\Admin\BunnyStreamVideoController;
 use App\Http\Controllers\ProviderWebsiteAuthController;
 use Illuminate\Support\Facades\Route;
+
+Route::post('/admin/bunny-stream/tus-upload', BunnyStreamTusUploadController::class)
+    ->middleware(['auth', 'current.account:dashboard'])
+    ->name('admin.bunny-stream.tus-upload');
+
+Route::delete('/admin/bunny-stream/videos', [BunnyStreamVideoController::class, 'destroy'])
+    ->middleware(['auth', 'current.account:dashboard'])
+    ->name('admin.bunny-stream.videos.destroy');
 
 Route::domain('{accountSubdomain}.'.config('almanasa.root_domain'))->group(function (): void {
     Route::get('/login', [AcademySiteController::class, '__invoke'])

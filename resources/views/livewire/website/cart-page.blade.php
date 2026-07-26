@@ -71,10 +71,14 @@
                         <div class="space-y-4">
                             @foreach ($items as $item)
                                 @php
-                                    $subject = $item->course?->accountSubject?->gradeSubject?->subject;
+                                    $gradeSubject = $item->course?->accountSubject?->gradeSubject;
+                                    $subject = $gradeSubject?->subject;
+                                    $track = $gradeSubject?->track;
                                     $subjectName = $subject
-                                        ? ($subject->getTranslation('name', 'ar', false) ?: $subject->name)
+                                        ? $subject->name
                                         : null;
+                                    $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
+                                    $subjectDetails = collect([$subjectName, $trackName])->filter()->join(' - ');
                                 @endphp
 
                                 <div wire:key="cart-item-{{ $item->id }}" class="border border-gray-100 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all relative overflow-hidden">
@@ -91,9 +95,9 @@
                                             <p class="text-[11px] text-gray-400 font-semibold mt-0.5">
                                                 {{ $teacherName($item->course) }}
                                             </p>
-                                            @if ($subjectName)
+                                            @if ($subjectDetails)
                                                 <p class="text-[11px] text-gray-400 font-semibold mt-0.5">
-                                                    {{ $subjectName }}
+                                                    {{ $subjectDetails }}
                                                 </p>
                                             @endif
                                         </div>

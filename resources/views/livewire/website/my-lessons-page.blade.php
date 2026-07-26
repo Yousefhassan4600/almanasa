@@ -108,10 +108,10 @@
                                     $accountSubject = $course?->accountSubject;
                                     $gradeSubject = $accountSubject?->gradeSubject;
                                     $subject = $gradeSubject?->subject;
-                                    $track = $subject?->track;
+                                    $track = $gradeSubject?->track;
                                     $teacher = $course?->academyTeacher;
                                     $isStandaloneTeacher = $course?->provider?->type === ProviderType::StandaloneTeacher;
-                                    $subjectName = $subject?->getTranslation('name', 'ar', false) ?: $subject?->name ?: $course?->title ?: 'مادة';
+                                    $subjectName = $subject?->name ?: $course?->title ?: 'مادة';
                                     $courseTitle = $course?->getTranslation('title', 'ar', false) ?: $course?->title ?: $subjectName;
                                     $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
                                     $teacherName = $isStandaloneTeacher

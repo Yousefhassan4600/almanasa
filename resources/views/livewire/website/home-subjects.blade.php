@@ -38,10 +38,13 @@
                     >
                         @foreach ($subjects as $accountSubject)
                             @php
-                                $subject = $accountSubject->gradeSubject?->subject;
+                                $gradeSubject = $accountSubject->gradeSubject;
+                                $subject = $gradeSubject?->subject;
+                                $track = $gradeSubject?->track;
                                 $subjectName = $subject
-                                    ? ($subject->getTranslation('name', 'ar', false) ?: $subject->name)
+                                    ? $subject->name
                                     : $accountSubject->name;
+                                $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
                                 $style = $styleFor($subjectName);
                             @endphp
 
@@ -64,6 +67,11 @@
                                 >
                                     {{ $subjectName }}
                                 </span>
+                                @if ($trackName)
+                                    <span class="mt-1 text-[10px] sm:text-xs font-bold text-gray-400 whitespace-nowrap">
+                                        {{ $trackName }}
+                                    </span>
+                                @endif
                             </a>
                         @endforeach
 

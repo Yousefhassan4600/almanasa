@@ -10,12 +10,12 @@
     $accountSubject = $course?->accountSubject;
     $grade = $accountSubject?->gradeSubject?->grade;
     $subject = $accountSubject?->gradeSubject?->subject;
-    $track = $subject?->track;
+    $track = $accountSubject?->gradeSubject?->track;
     $lessonTitle = $lesson?->getTranslation('title', 'ar', false) ?: $lesson?->title;
     $itemTitle = $lessonItem?->getTranslation('title', 'ar', false) ?: $lessonItem?->title;
     $itemDescription = $lessonItem?->getTranslation('description', 'ar', false) ?: $lessonItem?->description;
     $courseTitle = $course?->getTranslation('title', 'ar', false) ?: $course?->title;
-    $subjectName = $subject?->getTranslation('name', 'ar', false) ?: $subject?->name;
+    $subjectName = $subject?->name;
     $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
     $teacherName = $isStandaloneTeacher
         ? ($course?->provider?->owner?->name ?: 'المعلم')

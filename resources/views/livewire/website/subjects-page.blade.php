@@ -92,14 +92,15 @@
                     @foreach ($subjects as $accountSubject)
                         @php
                             $subject = $accountSubject->gradeSubject?->subject;
+                            $track = $accountSubject->gradeSubject?->track;
                             $subjectName = $subject
-                                ? ($subject->getTranslation('name', 'ar', false) ?: $subject->name)
+                                ? $subject->name
                                 : $accountSubject->name;
                             $subjectDescription = $subject
-                                ? ($subject->getTranslation('description', 'ar', false) ?: $subject->description)
+                                ? $subject->description
                                 : null;
-                            $trackName = $subject?->track
-                                ? ($subject->track->getTranslation('name', 'ar', false) ?: $subject->track->name)
+                            $trackName = $track
+                                ? ($track->getTranslation('name', 'ar', false) ?: $track->name)
                                 : null;
                             $style = $styleFor($subjectName);
                         @endphp

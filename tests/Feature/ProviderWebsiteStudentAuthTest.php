@@ -48,6 +48,7 @@ use App\Models\GradeSubject;
 use App\Models\Lesson;
 use App\Models\LessonItem;
 use App\Models\Order;
+use App\Models\OrderStatusType;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Provider;
@@ -2257,6 +2258,185 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('إعادة الامتحان', false);
     }
 
+    public function test_standalone_teacher_my_lessons_displays_subscribed_courses_with_provider_teacher(): void
+    {
+        $fixture = $this->standaloneTeacherCourseFixture();
+        $provider = $fixture['provider'];
+        $studentUser = $fixture['studentUser'];
+        $accountSubject = $fixture['accountSubject'];
+        $course = $fixture['course'];
+
+        $period = CoursePeriod::query()->create([
+            'type' => CoursePeriodType::Term1->value,
+            'name' => ['en' => 'Term 1', 'ar' => 'الترم الأول'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $lesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $period->id,
+            'title' => ['en' => 'Motion', 'ar' => 'الحركة'],
+            'is_active' => true,
+        ]);
+        $lessonItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'First Physics Lesson', 'ar' => 'أول درس فيزياء'],
+            'is_active' => true,
+            'is_free' => false,
+        ]);
+
+        Subscription::query()->create([
+            'student_user_id' => $studentUser->id,
+            'provider_id' => $provider->id,
+            'course_id' => $course->id,
+            'purchase_unit_id' => $fixture['monthPurchaseUnit']->id,
+            'purchase_type' => PurchaseType::SingleCourse->value,
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addWeek(),
+        ]);
+
+        $this->actingAs($studentUser)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/my_lessons')
+            ->assertOk()
+            ->assertSeeLivewire(MyLessonsPage::class)
+            ->assertSee('كورس الفيزياء', false)
+            ->assertSee('Mona Physics', false)
+            ->assertSee('نشط', false)
+            ->assertSee('href="/lesson?item='.$lessonItem->id.'"', false)
+            ->assertSee('href="/single_teacher?subject='.$accountSubject->id.'"', false)
+            ->assertDontSee('teacher=', false);
+    }
+
+    public function test_standalone_teacher_cart_uses_purchase_units_and_provider_teacher_name(): void
+    {
+        $fixture = $this->standaloneTeacherCourseFixture();
+        $provider = $fixture['provider'];
+        $studentUser = $fixture['studentUser'];
+        $course = $fixture['course'];
+        $monthPurchaseUnit = $fixture['monthPurchaseUnit'];
+        $termPurchaseUnit = $fixture['termPurchaseUnit'];
+
+        $this->actingAs($studentUser)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/cart?course='.$course->id)
+            ->assertOk()
+            ->assertSeeLivewire(CartPage::class)
+            ->assertSee('كورس الفيزياء', false)
+            ->assertSee('Mona Physics', false)
+            ->assertSee('شهر', false)
+            ->assertSee('ترم', false)
+            ->assertSee('120 ج.م', false)
+            ->assertDontSee('90 ج.م', false);
+
+        $cart = Cart::query()
+            ->whereBelongsTo($provider)
+            ->whereBelongsTo($studentUser, 'student')
+            ->firstOrFail();
+
+        $this->assertDatabaseHas(CartItem::class, [
+            'cart_id' => $cart->id,
+            'course_id' => $course->id,
+            'purchase_unit_id' => $monthPurchaseUnit->id,
+            'unit_price' => 120,
+            'total' => 120,
+        ]);
+
+        Livewire::actingAs($studentUser)
+            ->test(CartPage::class, ['providerId' => $provider->id])
+            ->call('selectPurchaseUnit', $termPurchaseUnit->id)
+            ->assertSee('500 ج.م', false)
+            ->assertDontSee('400 ج.م', false);
+
+        $this->assertDatabaseHas(CartItem::class, [
+            'cart_id' => $cart->id,
+            'course_id' => $course->id,
+            'purchase_unit_id' => $termPurchaseUnit->id,
+            'unit_price' => 500,
+            'total' => 500,
+        ]);
+    }
+
+    public function test_standalone_teacher_checkout_order_creates_subscription_after_approval(): void
+    {
+        $fixture = $this->standaloneTeacherCourseFixture();
+        $provider = $fixture['provider'];
+        $studentUser = $fixture['studentUser'];
+        $course = $fixture['course'];
+        $termPurchaseUnit = $fixture['termPurchaseUnit'];
+
+        OrderStatusType::query()->create([
+            'slug' => 'paid',
+            'name' => ['en' => 'Paid', 'ar' => 'مدفوع'],
+            'sort_order' => 2,
+            'is_active' => true,
+        ]);
+        $paymentMethod = PaymentMethod::query()->create([
+            'slug' => PaymentMethodSlugs::Code->value,
+            'name' => ['en' => 'Code', 'ar' => 'كود'],
+            'sort_order' => 1,
+            'is_active' => true,
+            'is_code' => true,
+        ]);
+        $providerPaymentMethod = ProviderPaymentMethod::query()->create([
+            'provider_id' => $provider->id,
+            'payment_method_id' => $paymentMethod->id,
+            'account_number' => 'CODE-555',
+            'account_holder' => 'Mona Physics',
+        ]);
+
+        $this->actingAs($studentUser)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/checkout?course='.$course->id)
+            ->assertOk()
+            ->assertSeeLivewire(CheckoutPage::class)
+            ->assertSee('نوع الاشتراك', false)
+            ->assertSee('كورس الفيزياء', false)
+            ->assertSee('كود', false)
+            ->assertSee('120.00 ج.م', false)
+            ->assertDontSee('90.00 ج.م', false);
+
+        Livewire::actingAs($studentUser)
+            ->test(CheckoutPage::class, ['providerId' => $provider->id])
+            ->call('selectPurchaseUnit', $termPurchaseUnit->id)
+            ->assertSee('500.00 ج.م', false)
+            ->assertDontSee('400.00 ج.م', false)
+            ->set('selectedProviderPaymentMethodId', $providerPaymentMethod->id)
+            ->call('submitOrder')
+            ->assertHasNoErrors()
+            ->assertSee('تم إرسال الطلب', false)
+            ->assertSee('في انتظار موافقة الإدارة', false);
+
+        $order = Order::query()
+            ->with('items')
+            ->whereBelongsTo($provider)
+            ->whereBelongsTo($studentUser, 'student')
+            ->firstOrFail();
+
+        $this->assertDatabaseHas('order_items', [
+            'order_id' => $order->id,
+            'course_id' => $course->id,
+            'purchase_unit_id' => $termPurchaseUnit->id,
+            'unit_price' => 500,
+            'total' => 500,
+        ]);
+
+        $payment = Payment::query()->whereBelongsTo($order)->firstOrFail();
+        $payment->update(['is_paid' => true]);
+
+        $this->assertDatabaseHas(Subscription::class, [
+            'provider_id' => $provider->id,
+            'student_user_id' => $studentUser->id,
+            'course_id' => $course->id,
+            'purchase_unit_id' => $termPurchaseUnit->id,
+            'purchase_type' => PurchaseType::SingleCourse->value,
+        ]);
+
+        $this->actingAs($studentUser)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/my_lessons')
+            ->assertOk()
+            ->assertSee('كورس الفيزياء', false)
+            ->assertSee('نشط', false);
+    }
+
     public function test_home_cta_links_guests_to_login(): void
     {
         $provider = $this->provider();
@@ -2471,6 +2651,94 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'is_active' => true,
             'approved_at' => now(),
         ]);
+    }
+
+    /**
+     * @return array{
+     *     provider: Provider,
+     *     studentUser: User,
+     *     accountSubject: AccountSubject,
+     *     course: Course,
+     *     monthPurchaseUnit: PurchaseUnit,
+     *     termPurchaseUnit: PurchaseUnit,
+     * }
+     */
+    private function standaloneTeacherCourseFixture(): array
+    {
+        $provider = $this->provider('mona-physics', ProviderType::StandaloneTeacher);
+        $provider->owner()->update([
+            'first_name' => 'Mona',
+            'last_name' => 'Physics',
+        ]);
+        Account::query()->create([
+            'provider_id' => $provider->id,
+            'owner_user_id' => $provider->owner_user_id,
+            'type' => AccountType::StandaloneTeacher,
+            'is_active' => true,
+            'approved_at' => now(),
+        ]);
+
+        $studentUser = User::factory()->create();
+        $this->studentAccount($provider, $studentUser);
+
+        $stage = EducationStage::query()->create(['name' => 'Secondary', 'sort_order' => 1]);
+        $grade = Grade::query()->create(['education_stage_id' => $stage->id, 'name' => 'Grade 1', 'sort_order' => 1]);
+        $this->studentProfile($studentUser, $grade);
+
+        $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
+        $subject = Subject::query()->create([
+            'track_id' => $track->id,
+            'name' => ['en' => 'Physics', 'ar' => 'الفيزياء'],
+        ]);
+        $accountSubject = AccountSubject::query()->create([
+            'provider_id' => $provider->id,
+            'grade_subject_id' => GradeSubject::query()->create([
+                'grade_id' => $grade->id,
+                'subject_id' => $subject->id,
+            ])->id,
+            'is_active' => true,
+        ]);
+        $course = Course::query()->create([
+            'provider_id' => $provider->id,
+            'account_subject_id' => $accountSubject->id,
+            'academy_teacher_id' => null,
+            'title' => ['en' => 'Physics Course', 'ar' => 'كورس الفيزياء'],
+        ]);
+        $monthPurchaseUnit = PurchaseUnit::query()->create([
+            'type' => PurchaseUnitType::Month->value,
+            'name' => ['en' => 'Month', 'ar' => 'شهر'],
+            'period_days' => 30,
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $termPurchaseUnit = PurchaseUnit::query()->create([
+            'type' => PurchaseUnitType::Term->value,
+            'name' => ['en' => 'Term', 'ar' => 'ترم'],
+            'period_days' => 90,
+            'sort_order' => 2,
+            'is_active' => true,
+        ]);
+        CoursePrice::query()->create([
+            'course_id' => $course->id,
+            'purchase_unit_id' => $monthPurchaseUnit->id,
+            'price' => 120,
+            'offer_price' => 90,
+        ]);
+        CoursePrice::query()->create([
+            'course_id' => $course->id,
+            'purchase_unit_id' => $termPurchaseUnit->id,
+            'price' => 500,
+            'offer_price' => 400,
+        ]);
+
+        return [
+            'provider' => $provider,
+            'studentUser' => $studentUser,
+            'accountSubject' => $accountSubject,
+            'course' => $course,
+            'monthPurchaseUnit' => $monthPurchaseUnit,
+            'termPurchaseUnit' => $termPurchaseUnit,
+        ];
     }
 
     private function studentProfile(User $user, ?Grade $grade = null): StudentProfile

@@ -272,9 +272,21 @@
                     @if ($items->isNotEmpty())
                         <div class="space-y-4 mb-6">
                             @foreach ($items as $item)
+                                @php
+                                    $gradeSubject = $item->course?->accountSubject?->gradeSubject;
+                                    $subject = $gradeSubject?->subject;
+                                    $track = $gradeSubject?->track;
+                                    $subjectName = $subject ? $subject->name : null;
+                                    $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
+                                    $subjectDetails = collect([$subjectName, $trackName])->filter()->join(' - ');
+                                @endphp
+
                                 <div class="flex justify-between gap-3 text-sm">
                                     <div>
                                         <h3 class="font-black text-blue-950">{{ $item->title }}</h3>
+                                        @if ($subjectDetails)
+                                            <p class="text-xs font-bold text-gray-400 mt-1">{{ $subjectDetails }}</p>
+                                        @endif
                                         <p class="text-xs font-bold text-gray-400 mt-1">{{ $item->purchaseUnit?->getTranslation('name', 'ar', false) ?: $item->purchaseUnit?->type?->value }}</p>
                                     </div>
                                     <span class="font-black whitespace-nowrap" style="color: {{ $themeColor }}">{{ $money($item->unit_price) }}</span>

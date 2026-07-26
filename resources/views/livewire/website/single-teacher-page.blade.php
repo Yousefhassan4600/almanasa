@@ -8,16 +8,16 @@
     $subject = $accountSubject?->gradeSubject?->subject;
     $grade = $accountSubject?->gradeSubject?->grade;
     $stage = $grade?->educationStage;
-    $track = $subject?->track;
+    $track = $accountSubject?->gradeSubject?->track;
     $teacherName = $isStandaloneTeacher
         ? ($teacher?->owner?->name ?: $provider?->owner?->name ?: 'معلم')
         : ($teacher?->teacher?->owner?->name ?: 'معلم');
     $teacherImage = (! $isStandaloneTeacher && $teacher?->image)
         ? asset('storage/'.$teacher->image)
         : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200';
-    $courseTitle = $course?->getTranslation('title', 'ar', false) ?: $course?->title ?: ($subject?->getTranslation('name', 'ar', false) ?: 'الكورس');
+    $courseTitle = $course?->getTranslation('title', 'ar', false) ?: $course?->title ?: ($subject?->name ?: 'الكورس');
     $courseDescription = $course?->getTranslation('description', 'ar', false) ?: $course?->description;
-    $subjectName = $subject?->getTranslation('name', 'ar', false) ?: $subject?->name;
+    $subjectName = $subject?->name;
     $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
     $gradeName = $grade?->name;
     $stageName = $stage?->name;

@@ -7,9 +7,10 @@
     $subject = $accountSubject?->gradeSubject?->subject;
     $grade = $accountSubject?->gradeSubject?->grade;
     $stage = $grade?->educationStage;
-    $subjectName = $subject ? ($subject->getTranslation('name', 'ar', false) ?: $subject->name) : 'المادة';
-    $subjectDescription = $subject ? ($subject->getTranslation('description', 'ar', false) ?: $subject->description) : null;
-    $trackName = $subject?->track ? ($subject->track->getTranslation('name', 'ar', false) ?: $subject->track->name) : null;
+    $track = $accountSubject?->gradeSubject?->track;
+    $subjectName = $subject ? $subject->name : 'المادة';
+    $subjectDescription = $subject ? $subject->description : null;
+    $trackName = $track ? ($track->getTranslation('name', 'ar', false) ?: $track->name) : null;
 @endphp
 
 <div>

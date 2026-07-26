@@ -82,17 +82,19 @@ class BunnyStreamService
             return null;
         }
 
-        if (! $this->embedTokenAuthenticationEnabled() && ! $this->debugEnabled()) {
-            return $this->embedUrl($videoId);
+        $parameters = $this->embedPlayerParameters();
+
+        if ($this->embedTokenAuthenticationEnabled() || $this->debugEnabled()) {
+            $expires = now()->addSeconds($this->signedEmbedTtlSeconds($ttlSeconds))->timestamp;
+
+            $parameters = [
+                'token' => hash('sha256', $this->embedTokenKey().$videoId.$expires),
+                'expires' => $expires,
+                ...$parameters,
+            ];
         }
 
-        $expires = now()->addSeconds($this->signedEmbedTtlSeconds($ttlSeconds))->timestamp;
-        $token = hash('sha256', $this->embedTokenKey().$videoId.$expires);
-
-        return $this->embedUrl($videoId).'?'.http_build_query([
-            'token' => $token,
-            'expires' => $expires,
-        ]);
+        return $this->embedUrl($videoId).'?'.http_build_query($parameters);
     }
 
     public function videoIdFrom(?string $videoUrlOrId): ?string
@@ -196,5 +198,16 @@ class BunnyStreamService
         return $this->debugEnabled()
             ? max($ttlSeconds, 86400)
             : $ttlSeconds;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function embedPlayerParameters(): array
+    {
+        return [
+            'autoplay' => 'false',
+            'preload' => 'false',
+        ];
     }
 }

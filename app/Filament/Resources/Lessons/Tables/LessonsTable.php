@@ -32,10 +32,10 @@ class LessonsTable extends BaseTable
                 ->label(__('admin.labels.Course')),
             TextColumn::make('course.provider.name')
                 ->label(__('admin.labels.Provider'))
-                ->visible(fn (): bool => CurrentAccount::isSaasOwner()),
+                ->visible(fn(): bool => CurrentAccount::isSaasOwner()),
             TextColumn::make('course.academyTeacher.teacher.owner.name')
                 ->label(__('admin.labels.Teacher'))
-                ->visible(fn (): bool => ! CurrentAccount::isAcademyTeacher() && ! CurrentAccount::isStandaloneTeacher()),
+                ->visible(fn(): bool => ! CurrentAccount::isAcademyTeacher() && ! CurrentAccount::isStandaloneTeacher()),
             TextColumn::make('coursePeriod.name')
                 ->label(__('admin.labels.Period')),
             TextColumn::make('starts_at')
@@ -53,16 +53,6 @@ class LessonsTable extends BaseTable
             ToggleColumn::make('is_active')
                 ->label(__('admin.labels.Active')),
         ];
-    }
-
-    protected function getDefaultSort(): ?string
-    {
-        return 'sort_order';
-    }
-
-    protected function getDefaultOrder(): ?string
-    {
-        return 'asc';
     }
 
     protected function extraFilters(): array

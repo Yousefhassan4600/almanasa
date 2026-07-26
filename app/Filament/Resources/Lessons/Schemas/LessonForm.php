@@ -20,11 +20,11 @@ class LessonForm
             ->components([
                 Select::make('course_id')
                     ->label(__('admin.labels.Course'))
-                    ->options(fn (): array => Course::query()
+                    ->options(fn(): array => Course::query()
                         ->with(['provider', 'academyTeacher.teacher.owner'])
-                        ->tap(fn ($query) => CurrentAccount::scopeCoursesToCurrentAccount($query))
+                        ->tap(fn($query) => CurrentAccount::scopeCoursesToCurrentAccount($query))
                         ->get()
-                        ->mapWithKeys(fn (Course $course): array => [
+                        ->mapWithKeys(fn(Course $course): array => [
                             $course->id => collect([
                                 $course->title,
                                 $course->provider?->name,
@@ -37,11 +37,11 @@ class LessonForm
                     ->required(),
                 Select::make('course_period_id')
                     ->label(__('admin.labels.Course Period'))
-                    ->options(fn (): array => CoursePeriod::query()
+                    ->options(fn(): array => CoursePeriod::query()
                         ->where('is_active', true)
                         ->orderBy('sort_order')
                         ->get()
-                        ->mapWithKeys(fn (CoursePeriod $coursePeriod): array => [
+                        ->mapWithKeys(fn(CoursePeriod $coursePeriod): array => [
                             $coursePeriod->id => $coursePeriod->name,
                         ])
                         ->all())
@@ -67,6 +67,7 @@ class LessonForm
                     ->numeric()
                     ->integer()
                     ->default(1)
+                    ->maxValue(2)
                     ->minValue(0)
                     ->columnSpanFull(),
                 Toggle::make('is_active')

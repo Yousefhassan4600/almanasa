@@ -247,6 +247,8 @@ return [
         'Difficulty' => 'Difficulty',
         'Duration' => 'Duration',
         'Duration Minutes' => 'Duration Minutes',
+        'Duration Seconds' => 'Duration Seconds',
+        'Seconds' => 'Seconds',
         'EGP' => 'EGP',
         'Easy Questions' => 'Easy Questions',
         'Education Stage' => 'Education Stage',

@@ -422,21 +422,21 @@ class CoursesSeeder extends BaseSeeder
                 1 => [
                     'type' => LessonTypeEnum::Video,
                     'title' => $this->translation('Introduction to Real Numbers', 'مقدمة في الأعداد الحقيقية'),
-                    'duration_minutes' => 30,
+                    'duration_seconds' => 1800,
                     'is_free' => true,
                 ],
                 2 => [
                     'type' => LessonTypeEnum::Link,
                     'title' => $this->translation('Second Explanation: Practical Applications', 'الشرح الثاني: تطبيقات عملية'),
                     'link_url' => 'https://www.youtube.com/',
-                    'duration_minutes' => 25,
+                    'duration_seconds' => 1500,
                     'is_free' => false,
                 ],
                 3 => [
                     'type' => LessonTypeEnum::Assignments,
                     'title' => $this->translation('Homework', 'الواجب المنزلي'),
                     'assignment_id' => $homeworkAssignment->id,
-                    'duration_minutes' => 30,
+                    'duration_seconds' => 1800,
                     'is_free' => false,
                 ],
                 4 => [
@@ -449,7 +449,7 @@ class CoursesSeeder extends BaseSeeder
                     'type' => LessonTypeEnum::Exams,
                     'title' => $this->translation('Lesson Exam', 'امتحان الحصة'),
                     'exam_id' => $lessonExam->id,
-                    'duration_minutes' => 20,
+                    'duration_seconds' => 1200,
                     'is_free' => false,
                 ],
             ] as $sortOrder => $item

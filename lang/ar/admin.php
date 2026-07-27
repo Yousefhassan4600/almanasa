@@ -247,6 +247,8 @@ return [
         'Difficulty' => 'الصعوبة',
         'Duration' => 'المدة',
         'Duration Minutes' => 'المدة بالدقائق',
+        'Duration Seconds' => 'المدة بالثواني',
+        'Seconds' => 'ثانية',
         'EGP' => 'ج.م',
         'Easy Questions' => 'الأسئلة السهلة',
         'Education Stage' => 'المرحلة التعليمية',

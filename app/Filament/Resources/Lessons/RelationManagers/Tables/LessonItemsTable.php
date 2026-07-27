@@ -36,8 +36,8 @@ class LessonItemsTable extends BaseTable
             TextColumn::make('exam.title')
                 ->label(__('admin.labels.Exam'))
                 ->badge(),
-            TextColumn::make('duration_minutes')
-                ->label(__('admin.labels.Duration Minutes'))
+            TextColumn::make('duration_seconds')
+                ->label(__('admin.labels.Duration Seconds'))
                 ->badge()
                 ->sortable(),
             TextColumn::make('starts_at')

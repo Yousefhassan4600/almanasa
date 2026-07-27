@@ -27,6 +27,27 @@
     $lessonItemType = $lessonItem?->type instanceof \App\Enums\LessonTypeEnum ? $lessonItem->type->value : (string) $lessonItem?->type;
     $lessonAssignments = collect([$lessonItem?->assignment])->filter();
     $lessonExams = collect([$lessonItem?->exam])->filter();
+    $formatDurationSeconds = function (?int $seconds): ?string {
+        if (blank($seconds) || $seconds <= 0) {
+            return null;
+        }
+
+        if ($seconds < 60) {
+            return $seconds.' ثانية';
+        }
+
+        $minutes = intdiv($seconds, 60);
+        $remainingSeconds = $seconds % 60;
+
+        if ($remainingSeconds === 0) {
+            return $minutes.' دقيقة';
+        }
+
+        return sprintf('%d:%02d دقيقة', $minutes, $remainingSeconds);
+    };
+    $formatDurationMinutes = fn (?int $minutes): ?string => filled($minutes) && $minutes > 0
+        ? $minutes.' دقيقة'
+        : null;
 
     $linkUrl = filled($lessonItem?->link_url)
         ? (Str::startsWith($lessonItem->link_url, ['http://', 'https://']) ? $lessonItem->link_url : url($lessonItem->link_url))
@@ -76,14 +97,21 @@
     };
     $activeLessonItemIsOpen = $lessonItemIsOpen($lessonItem);
     $activeLessonItemAvailabilityText = $lessonItemAvailabilityText($lessonItem);
+    $isAuthenticated = auth()->check();
     $hasCourseAccess = (bool) ($hasCourseSubscription ?? false);
-    $activeLessonItemHasAccess = (bool) ($lessonItem?->is_free || $hasCourseAccess);
+    $activeLessonItemHasAccess = $isAuthenticated && (bool) ($lessonItem?->is_free || $hasCourseAccess);
     $attemptLimit = $attempts['limit'] ?? null;
     $usedAttempts = $attempts['used'] ?? 0;
     $remainingAttempts = $attempts['remaining'] ?? null;
     $attemptsText = $attemptLimit === null
         ? 'غير محدود'
         : $usedAttempts.' / '.$attemptLimit.($remainingAttempts === 0 ? ' — انتهت المحاولات' : ' — متبقي '.$remainingAttempts);
+    $videoProgressPercentage = (int) ($studentVideoProgress?->progress_percentage ?? 0);
+    $videoProgressId = $studentVideoProgress?->id;
+    $videoLastPositionSeconds = (int) ($studentVideoProgress?->last_position_seconds ?? 0);
+    $videoWatchedSeconds = (int) ($studentVideoProgress?->watched_seconds ?? 0);
+    $videoCompletedWatchCount = (int) ($completedVideoWatchCount ?? 0);
+    $videoViewLimit = filled($lesson?->num_of_video_views) && $lesson->num_of_video_views > 0 ? (int) $lesson->num_of_video_views : null;
 @endphp
 
 <div class="bg-white" dir="rtl">
@@ -136,21 +164,171 @@
                                 <i class="fa-solid fa-lock"></i>
                             </div>
                             <h1 class="text-xl sm:text-2xl font-black text-blue-950">{{ $itemTitle }}</h1>
-                            <p class="text-sm text-gray-500 font-semibold mt-3">هذا العنصر متاح للمشتركين في الكورس فقط.</p>
-                            <a href="/checkout?course={{ $course?->id }}" class="inline-flex mt-4 text-white text-sm font-bold py-3 px-8 rounded-xl transition-all" style="background-color: {{ $activeColor }}" onmouseover="this.style.backgroundColor='{{ $activeHoverColor }}'" onmouseout="this.style.backgroundColor='{{ $activeColor }}'">
-                                اشترك الآن
+                            <p class="text-sm text-gray-500 font-semibold mt-3">
+                                {{ $isAuthenticated ? 'هذا العنصر متاح للمشتركين في الكورس فقط.' : 'يجب تسجيل الدخول أولاً لمشاهدة محتوى الدرس.' }}
+                            </p>
+                            <a href="{{ $isAuthenticated ? '/checkout?course='.$course?->id : '/login' }}" class="inline-flex mt-4 text-white text-sm font-bold py-3 px-8 rounded-xl transition-all" style="background-color: {{ $activeColor }}" onmouseover="this.style.backgroundColor='{{ $activeHoverColor }}'" onmouseout="this.style.backgroundColor='{{ $activeColor }}'">
+                                {{ $isAuthenticated ? 'اشترك الآن' : 'تسجيل الدخول' }}
                             </a>
                         </div>
                     @elseif ($contentType === 'video')
+                        @once
+                            <script src="https://assets.mediadelivery.net/playerjs/playerjs-latest.min.js"></script>
+                        @endonce
+
+                        <div
+                            x-data="{
+                                progress: {{ $videoProgressPercentage }},
+                                progressId: @js($videoProgressId),
+                                lastPosition: {{ $videoLastPositionSeconds }},
+                                watchedSeconds: {{ $videoWatchedSeconds }},
+                                watchedSinceLastSave: 0,
+                                previousPosition: null,
+                                duration: {{ (int) ($lessonItem->duration_seconds ?? 0) }},
+                                player: null,
+                                playerInitAttempts: 0,
+                                saving: false,
+                                saveTimer: null,
+                                viewLimitReached: @js((bool) ($videoViewLimitReached ?? false)),
+                                init() {
+                                    this.$nextTick(() => this.initBunnyPlayer());
+
+                                    window.addEventListener('beforeunload', () => {
+                                        this.saveProgress(true);
+                                    });
+                                },
+                                initBunnyPlayer() {
+                                    const iframe = this.$refs.bunnyPlayer;
+
+                                    if (! iframe) {
+                                        return;
+                                    }
+
+                                    if (! window.playerjs) {
+                                        this.playerInitAttempts += 1;
+
+                                        if (this.playerInitAttempts <= 40) {
+                                            window.setTimeout(() => this.initBunnyPlayer(), 250);
+                                        }
+
+                                        return;
+                                    }
+
+                                    const player = new playerjs.Player(iframe);
+                                    this.player = player;
+
+                                    player.on('ready', () => {
+                                        player.getDuration((duration) => {
+                                            const parsedDuration = Number(duration);
+
+                                            if (Number.isFinite(parsedDuration) && parsedDuration > 0) {
+                                                this.duration = Math.ceil(parsedDuration);
+                                            }
+
+                                            if (this.lastPosition > 3 && this.duration > 0 && this.lastPosition < this.duration - 5) {
+                                                player.setCurrentTime(this.lastPosition);
+                                            }
+                                        });
+                                    });
+
+                                    player.on('timeupdate', (payload) => {
+                                        let data = payload;
+
+                                        if (typeof payload === 'string') {
+                                            try {
+                                                data = JSON.parse(payload);
+                                            } catch (error) {
+                                                return;
+                                            }
+                                        }
+                                        const currentPosition = Number(data?.seconds ?? 0);
+                                        const duration = Number(data?.duration ?? this.duration ?? 0);
+
+                                        if (! Number.isFinite(currentPosition) || currentPosition < 0) {
+                                            return;
+                                        }
+
+                                        if (Number.isFinite(duration) && duration > 0) {
+                                            this.duration = Math.ceil(duration);
+                                        }
+
+                                        if (this.previousPosition !== null) {
+                                            const delta = currentPosition - this.previousPosition;
+
+                                            if (delta > 0 && delta <= 5) {
+                                                this.watchedSinceLastSave += delta;
+                                                this.watchedSeconds += delta;
+                                                this.updateLocalProgress();
+                                            }
+                                        }
+
+                                        this.previousPosition = currentPosition;
+                                        this.lastPosition = Math.ceil(currentPosition);
+
+                                        if (this.watchedSinceLastSave >= 10) {
+                                            this.saveProgress();
+                                        }
+                                    });
+
+                                    player.on('pause', () => this.saveProgress(true));
+                                    player.on('ended', () => this.saveProgress(true, true));
+                                },
+                                updateLocalProgress() {
+                                    if (! Number.isFinite(this.duration) || this.duration <= 0) {
+                                        return;
+                                    }
+
+                                    this.progress = Math.min(100, Math.floor((this.watchedSeconds / this.duration) * 100));
+                                },
+                                saveProgress(force = false, ended = false) {
+                                    if (this.saving || (! force && this.watchedSinceLastSave < 10)) {
+                                        return;
+                                    }
+
+                                    const watchedDelta = Math.ceil(this.watchedSinceLastSave);
+                                    this.watchedSinceLastSave = 0;
+                                    this.saving = true;
+
+                                    this.$wire.$call(
+                                        'saveVideoProgress',
+                                        {{ (int) $lessonItem->id }},
+                                        this.lastPosition,
+                                        this.duration,
+                                        watchedDelta,
+                                        ended,
+                                        this.progressId,
+                                    ).then((response) => {
+                                        this.progressId = response.progressId ?? this.progressId;
+                                        this.progress = response.progressPercentage ?? this.progress;
+                                        this.lastPosition = response.lastPositionSeconds ?? this.lastPosition;
+                                        this.watchedSeconds = response.watchedSeconds ?? this.watchedSeconds;
+                                        this.viewLimitReached = response.viewLimitReached ?? false;
+                                    }).finally(() => {
+                                        this.saving = false;
+                                    });
+                                },
+                            }"
+                            class="space-y-4"
+                        >
                         <div class="relative bg-black rounded-3xl overflow-hidden aspect-video shadow-lg">
                             @if (filled($signedVideoUrl ?? null))
                                 <iframe
+                                    x-ref="bunnyPlayer"
+                                    id="bunny-player-{{ $lessonItem->id }}"
                                     src="{{ $signedVideoUrl }}"
                                     class="absolute inset-0 w-full h-full"
                                     style="border: 0;"
                                     allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                                     allowfullscreen
                                 ></iframe>
+                            @elseif ($videoViewLimitReached ?? false)
+                                <div class="w-full h-full flex flex-col items-center justify-center text-white gap-3 text-center px-6">
+                                    <i class="fa-solid fa-circle-check text-5xl text-white/70"></i>
+                                    <p class="text-sm font-bold">تم استهلاك عدد مرات مشاهدة هذا الفيديو.</p>
+                                    @if ($videoViewLimit)
+                                        <p class="text-xs text-white/60">عدد المشاهدات المكتملة: {{ $videoCompletedWatchCount }} / {{ $videoViewLimit }}</p>
+                                    @endif
+                                </div>
                             @elseif (filled($lessonItem->video_url))
                                 <div class="w-full h-full flex flex-col items-center justify-center text-white gap-3 text-center px-6">
                                     <i class="fa-solid fa-shield-halved text-5xl text-white/70"></i>
@@ -167,15 +345,22 @@
                         <div class="bg-gray-50 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div class="flex items-center gap-2 text-xs font-bold text-gray-500">
                                 <span>مدة العنصر:</span>
-                                <span class="text-gray-700">{{ $lessonItem->duration_minutes ? $lessonItem->duration_minutes.' دقيقة' : 'غير محددة' }}</span>
+                                <span class="text-gray-700">{{ $formatDurationSeconds($lessonItem->duration_seconds) ?? 'غير محددة' }}</span>
                             </div>
                             <div class="flex items-center gap-3 flex-1 sm:max-w-md">
-                                <span class="text-xs font-black" style="color: {{ $activeColor }}">0%</span>
+                                <span class="text-xs font-black" style="color: {{ $activeColor }}" x-text="`${progress}%`">{{ $videoProgressPercentage }}%</span>
                                 <div class="w-full h-2 rounded-full overflow-hidden" style="background-color: {{ $activeSoftColor }}">
-                                    <div class="h-full rounded-full" style="width: 0%; background-color: {{ $activeColor }}"></div>
+                                    <div class="h-full rounded-full transition-all" x-bind:style="`width: ${progress}%; background-color: {{ $activeColor }}`"></div>
                                 </div>
                                 <span class="text-xs font-bold text-gray-400 whitespace-nowrap">تقدم المشاهدة الفعلي</span>
                             </div>
+                            @if ($videoViewLimit)
+                                <div class="text-xs font-bold text-gray-400">
+                                    المشاهدات المكتملة:
+                                    <span class="text-gray-700">{{ $videoCompletedWatchCount }} / {{ $videoViewLimit }}</span>
+                                </div>
+                            @endif
+                        </div>
                         </div>
                     @elseif ($contentType === 'assignment')
                         <div class="border-r-[6px] rounded-[24px] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm" style="background-color: {{ $activeSoftColor }}; border-color: {{ $activeColor }}">
@@ -186,7 +371,7 @@
                                 <div>
                                     <h1 class="text-xl sm:text-2xl font-black text-gray-800">{{ $itemTitle }}</h1>
                                     <span class="text-xs text-gray-400 block mt-1 font-semibold">
-                                        مدة الحل: {{ $lessonAssignments->max('duration_minutes') ?? $lessonItem->duration_minutes ?? '—' }} دقيقة
+                                        مدة الحل: {{ $formatDurationMinutes($lessonAssignments->max('duration_minutes')) ?? $formatDurationSeconds($lessonItem->duration_seconds) ?? '—' }}
                                     </span>
                                     <span class="text-xs text-gray-400 block mt-1 font-semibold">
                                         عدد المحاولات: {{ $attemptsText }}
@@ -210,7 +395,7 @@
                                 <div>
                                     <h1 class="text-xl sm:text-2xl font-black text-gray-800">{{ $itemTitle }}</h1>
                                     <span class="text-xs text-gray-400 block mt-1 font-semibold">
-                                        مدة الاختبار: {{ $lessonExams->max('duration_minutes') ?? $lessonItem->duration_minutes ?? '—' }} دقيقة
+                                        مدة الاختبار: {{ $formatDurationMinutes($lessonExams->max('duration_minutes')) ?? $formatDurationSeconds($lessonItem->duration_seconds) ?? '—' }}
                                     </span>
                                     <span class="text-xs text-gray-400 block mt-1 font-semibold">
                                         عدد المحاولات: {{ $attemptsText }}
@@ -344,7 +529,7 @@
                                             <div class="text-right">
                                                 <h4 class="text-xs font-bold {{ $isActive ? '' : 'text-blue-950' }}" style="{{ $isActive ? 'color: '.$activeColor : '' }}">{{ $playlistTitle }}</h4>
                                                 <span class="text-[10px] {{ $isActive ? '' : 'text-gray-400' }} block mt-0.5" style="{{ $isActive ? 'color: '.$activeColor : '' }}">
-                                                    {{ ! $lessonIsOpen ? 'غير متاح الآن' : ($playlistAvailabilityText ?: ($playlistItem->duration_minutes ? $playlistItem->duration_minutes.' دقيقة' : 'مغلق')) }}
+                                                    {{ ! $lessonIsOpen ? 'غير متاح الآن' : ($playlistAvailabilityText ?: ($formatDurationSeconds($playlistItem->duration_seconds) ?? 'مغلق')) }}
                                                 </span>
                                             </div>
                                         </div>
@@ -365,7 +550,7 @@
                                             <div class="text-right">
                                                 <h4 class="text-xs font-bold {{ $isActive ? '' : 'text-blue-950' }}" style="{{ $isActive ? 'color: '.$activeColor : '' }}">{{ $playlistTitle }}</h4>
                                                 <span class="text-[10px] {{ $isActive ? '' : 'text-gray-400' }} block mt-0.5" style="{{ $isActive ? 'color: '.$activeColor : '' }}">
-                                                    {{ $playlistItem->duration_minutes ? $playlistItem->duration_minutes.' دقيقة' : 'مجاني' }}
+                                                    {{ $formatDurationSeconds($playlistItem->duration_seconds) ?? 'مجاني' }}
                                                 </span>
                                             </div>
                                         </div>

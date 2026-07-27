@@ -92,6 +92,32 @@ return new class extends Migration
             ]);
         });
 
+        Schema::create('student_video_progress', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('student_user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('course_id')->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('lesson_id')->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('lesson_item_id')->constrained('lesson_items')->cascadeOnUpdate()->restrictOnDelete();
+            $table->unsignedInteger('watch_number')->default(1);
+            $table->unsignedInteger('duration_seconds')->default(0);
+            $table->unsignedInteger('watched_seconds')->default(0);
+            $table->unsignedInteger('last_position_seconds')->default(0);
+            $table->unsignedTinyInteger('progress_percentage')->default(0);
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamp('last_watched_at')->nullable();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+            $table->index([
+                0 => 'student_user_id',
+                1 => 'lesson_item_id',
+            ], 'student_video_progress_student_item_idx');
+            $table->index([
+                0 => 'course_id',
+                1 => 'lesson_id',
+            ], 'student_video_progress_course_lesson_idx');
+        });
+
         Schema::create('lesson_progress_statuses', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('lesson_progress_id')->constrained('lesson_progress')->cascadeOnUpdate()->restrictOnDelete();
@@ -127,6 +153,8 @@ return new class extends Migration
         Schema::dropIfExists('course_reviews');
 
         Schema::dropIfExists('lesson_progress_statuses');
+
+        Schema::dropIfExists('student_video_progress');
 
         Schema::dropIfExists('lesson_progress');
 

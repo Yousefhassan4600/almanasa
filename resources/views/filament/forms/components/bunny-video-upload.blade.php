@@ -7,9 +7,9 @@
     $bunnyVideoIdStatePath = str_contains($statePath, '.')
         ? str($statePath)->beforeLast('.')->append('.bunny_video_id')->toString()
         : 'bunny_video_id';
-    $durationMinutesStatePath = str_contains($statePath, '.')
-        ? str($statePath)->beforeLast('.')->append('.duration_minutes')->toString()
-        : 'duration_minutes';
+    $durationSecondsStatePath = str_contains($statePath, '.')
+        ? str($statePath)->beforeLast('.')->append('.duration_seconds')->toString()
+        : 'duration_seconds';
 @endphp
 
 <x-dynamic-component
@@ -20,7 +20,7 @@
         x-data="{
             state: $wire.{{ $applyStateBindingModifiers("\$entangle('{$getStatePath()}')") }},
             bunnyVideoIdState: $wire.{{ $applyStateBindingModifiers("\$entangle('{$bunnyVideoIdStatePath}')") }},
-            durationMinutesState: $wire.{{ $applyStateBindingModifiers("\$entangle('{$durationMinutesStatePath}')") }},
+            durationSecondsState: $wire.{{ $applyStateBindingModifiers("\$entangle('{$durationSecondsStatePath}')") }},
             uploading: false,
             progress: 0,
             error: null,
@@ -46,7 +46,7 @@
                 return videoId;
             },
 
-            videoDurationMinutes(file) {
+            videoDurationSeconds(file) {
                 return new Promise((resolve) => {
                     const video = document.createElement('video');
                     const objectUrl = URL.createObjectURL(file);
@@ -54,7 +54,7 @@
                     video.preload = 'metadata';
                     video.onloadedmetadata = () => {
                         URL.revokeObjectURL(objectUrl);
-                        resolve(Number.isFinite(video.duration) ? Math.ceil(video.duration / 60) : null);
+                        resolve(Number.isFinite(video.duration) ? Math.ceil(video.duration) : null);
                     };
                     video.onerror = () => {
                         URL.revokeObjectURL(objectUrl);
@@ -142,10 +142,10 @@
                 const previousVideoId = this.bunnyVideoIdState || this.extractBunnyVideoId(this.state);
 
                 try {
-                    const durationMinutes = await this.videoDurationMinutes(file);
+                    const durationSeconds = await this.videoDurationSeconds(file);
 
-                    if (durationMinutes) {
-                        this.durationMinutesState = durationMinutes;
+                    if (durationSeconds) {
+                        this.durationSecondsState = durationSeconds;
                     }
 
                     await this.loadTus();

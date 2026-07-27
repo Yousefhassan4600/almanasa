@@ -69,6 +69,7 @@ class Provider extends Model
             'pause_website' => 'boolean',
             'is_active' => 'boolean',
             'use_custom_domain' => 'boolean',
+            'completion_watch_percentage' => 'integer',
         ];
     }
 

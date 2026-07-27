@@ -148,7 +148,7 @@ return new class extends Migration
             $table->string('video_url')->nullable();
             $table->string('file_url')->nullable();
             $table->string('link_url')->nullable();
-            $table->integer('duration_minutes')->nullable();
+            $table->integer('duration_seconds')->nullable();
             $table->timestamp('starts_at')->nullable();
             $table->timestamp('ends_at')->nullable();
             $table->boolean('is_active')->default(true);

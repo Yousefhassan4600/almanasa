@@ -69,9 +69,11 @@ class LessonItemsRelationManager extends BaseRelationManager
                     ->columnSpanFull(),
                 $this->singleAssignmentSelect($this->getOwnerRecord()->course_id),
                 $this->singleExamSelect($this->getOwnerRecord()->course_id),
-                TextInput::make('duration_minutes')
-                    ->label(__('admin.labels.Duration Minutes'))
+                TextInput::make('duration_seconds')
+                    ->label(__('admin.labels.Duration Seconds'))
                     ->numeric()
+                    ->integer()
+                    ->suffix(__('admin.labels.Seconds'))
                     ->columnSpanFull(),
                 DateTimePicker::make('starts_at')
                     ->label(__('admin.labels.Starts At')),

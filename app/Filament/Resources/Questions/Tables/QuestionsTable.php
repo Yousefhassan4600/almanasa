@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Questions\Tables;
 
 use App\Filament\Base\BaseTable;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 
 class QuestionsTable extends BaseTable
@@ -20,6 +21,9 @@ class QuestionsTable extends BaseTable
             TextColumn::make('id')
                 ->label(__('admin.labels.#'))
                 ->sortable(),
+            ImageColumn::make('media')
+                ->label(__('admin.labels.Image'))
+                ->searchable(),
             TextColumn::make('title')
                 ->label(__('admin.labels.Title'))
                 ->searchable()

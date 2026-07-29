@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Website;
+namespace App\Actions\StudentPortal;
 
 use App\Enums\AccountType;
 use App\Models\Account;

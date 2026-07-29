@@ -2,9 +2,8 @@
 
 namespace App\Livewire\Website;
 
-use App\Models\AccountSubject;
+use App\Actions\StudentPortal\Catalog\ListAccountSubjects;
 use App\Models\Provider;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -15,6 +14,13 @@ class SubjectsPage extends Component
     public int $providerId;
 
     public string $search = '';
+
+    private ListAccountSubjects $listAccountSubjects;
+
+    public function boot(ListAccountSubjects $listAccountSubjects): void
+    {
+        $this->listAccountSubjects = $listAccountSubjects;
+    }
 
     public function render(): mixed
     {
@@ -27,46 +33,10 @@ class SubjectsPage extends Component
 
         return view('livewire.website.subjects-page', [
             'provider' => $provider,
-            'subjects' => $this->subjects($provider, $gradeId),
+            'subjects' => $this->listAccountSubjects->handle($provider, $gradeId, $this->search, withActiveTeachersCount: true),
             'gradeName' => $profile?->grade?->name,
             'stageName' => $profile?->grade?->educationStage?->name,
             'hasGradeFilter' => filled($gradeId),
         ]);
-    }
-
-    /**
-     * @return Collection<int, AccountSubject>
-     */
-    private function subjects(Provider $provider, ?int $gradeId): Collection
-    {
-        $search = trim($this->search);
-
-        return AccountSubject::query()
-            ->with([
-                'gradeSubject:id,grade_id,track_id,subject_id',
-                'gradeSubject.track:id,name',
-                'gradeSubject.subject:id,name,icon,description',
-            ])
-            ->withCount([
-                'teacherAssignments as active_teachers_count' => fn ($query) => $query->where('is_active', true),
-            ])
-            ->whereBelongsTo($provider)
-            ->where('is_active', true)
-            ->when(
-                $gradeId,
-                fn ($query) => $query->whereHas(
-                    'gradeSubject',
-                    fn ($query) => $query->where('grade_id', $gradeId),
-                ),
-            )
-            ->when(
-                $search !== '',
-                fn ($query) => $query->whereHas(
-                    'gradeSubject.subject',
-                    fn ($query) => $query->where('name', 'like', '%'.$search.'%'),
-                ),
-            )
-            ->whereHas('gradeSubject.subject')
-            ->get();
     }
 }

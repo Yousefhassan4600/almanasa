@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Website;
 
-use App\Enums\ProviderType;
+use App\Actions\StudentPortal\Layout\LoadHomeCta;
 use App\Models\Provider;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
@@ -13,18 +13,17 @@ class HomeCta extends Component
     #[Locked]
     public int $providerId;
 
+    private LoadHomeCta $loadHomeCta;
+
+    public function boot(LoadHomeCta $loadHomeCta): void
+    {
+        $this->loadHomeCta = $loadHomeCta;
+    }
+
     public function render(): mixed
     {
         $provider = Provider::query()->findOrFail($this->providerId);
 
-        return view('livewire.website.home-cta', [
-            'isVisible' => ! Auth::check(),
-            'assetPath' => $provider->type === ProviderType::StandaloneTeacher
-                ? config('almanasa.teacher_template_asset_path')
-                : config('almanasa.academy_template_asset_path'),
-            'isTeacher' => $provider->type === ProviderType::StandaloneTeacher,
-            'themeColor' => $provider->websitePrimaryColor(),
-            'secondaryThemeColor' => $provider->websiteSecondaryColor(),
-        ]);
+        return view('livewire.website.home-cta', $this->loadHomeCta->handle($provider, Auth::check()));
     }
 }

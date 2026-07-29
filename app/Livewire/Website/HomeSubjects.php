@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Website;
 
-use App\Models\AccountSubject;
+use App\Actions\StudentPortal\Catalog\ListAccountSubjects;
 use App\Models\Provider;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +13,13 @@ class HomeSubjects extends Component
 {
     #[Locked]
     public int $providerId;
+
+    private ListAccountSubjects $listAccountSubjects;
+
+    public function boot(ListAccountSubjects $listAccountSubjects): void
+    {
+        $this->listAccountSubjects = $listAccountSubjects;
+    }
 
     public function render(): mixed
     {
@@ -31,34 +38,9 @@ class HomeSubjects extends Component
 
         return view('livewire.website.home-subjects', [
             'provider' => $provider,
-            'subjects' => $this->subjects($provider, $gradeId),
+            'subjects' => $this->listAccountSubjects->handle($provider, $gradeId, limit: 7),
             'hasGradeFilter' => filled($gradeId),
             'isAuthenticated' => true,
         ]);
-    }
-
-    /**
-     * @return Collection<int, AccountSubject>
-     */
-    private function subjects(Provider $provider, ?int $gradeId): Collection
-    {
-        return AccountSubject::query()
-            ->with([
-                'gradeSubject:id,grade_id,track_id,subject_id',
-                'gradeSubject.track:id,name',
-                'gradeSubject.subject:id,name,icon',
-            ])
-            ->whereBelongsTo($provider)
-            ->where('is_active', true)
-            ->when(
-                $gradeId,
-                fn ($query) => $query->whereHas(
-                    'gradeSubject',
-                    fn ($query) => $query->where('grade_id', $gradeId),
-                ),
-            )
-            ->whereHas('gradeSubject.subject')
-            ->limit(7)
-            ->get();
     }
 }

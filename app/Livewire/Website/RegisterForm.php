@@ -2,15 +2,16 @@
 
 namespace App\Livewire\Website;
 
+use App\Actions\StudentPortal\Auth\CompleteStudentRegistration;
+use App\Actions\StudentPortal\Auth\LoadRegistrationOptions;
+use App\Actions\StudentPortal\Layout\LoadProviderTheme;
 use App\Enums\Gender;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\EducationStage;
 use App\Models\Grade;
-use App\Models\Provider;
 use App\Models\StudentProfile;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -45,6 +46,22 @@ class RegisterForm extends Component
 
     public $avatar = null;
 
+    private CompleteStudentRegistration $completeStudentRegistration;
+
+    private LoadRegistrationOptions $loadRegistrationOptions;
+
+    private LoadProviderTheme $loadProviderTheme;
+
+    public function boot(
+        CompleteStudentRegistration $completeStudentRegistration,
+        LoadRegistrationOptions $loadRegistrationOptions,
+        LoadProviderTheme $loadProviderTheme,
+    ): void {
+        $this->completeStudentRegistration = $completeStudentRegistration;
+        $this->loadRegistrationOptions = $loadRegistrationOptions;
+        $this->loadProviderTheme = $loadProviderTheme;
+    }
+
     public function mount(int $providerId)
     {
         $this->providerId = $providerId;
@@ -65,49 +82,19 @@ class RegisterForm extends Component
 
         abort_unless($user, 403);
 
-        DB::transaction(function () use ($data, $user): void {
-            $avatarPath = $this->avatar
-                ? $this->avatar->store('students/avatars', 'public')
-                : null;
-
-            $user->forceFill([
-                'first_name' => $data['firstName'],
-                'last_name' => $data['lastName'],
-                'date_of_birth' => $data['dateOfBirth'],
-            ])->save();
-
-            StudentProfile::query()->create([
-                'user_id' => $user->id,
-                'email' => $data['email'],
-                'avatar' => $avatarPath,
-                'gender' => $data['gender'],
-                'country_id' => $data['countryId'],
-                'city_id' => $data['cityId'],
-                'education_stage_id' => $data['educationStageId'],
-                'grade_id' => $data['gradeId'],
-                'school_name' => $data['schoolName'],
-            ]);
-        });
+        $this->completeStudentRegistration->handle($user, $data, $this->avatar);
 
         return $this->redirect('/', navigate: false);
     }
 
     public function render(): mixed
     {
+        $theme = $this->loadProviderTheme->handle($this->providerId);
+
         return view('livewire.website.register-form', [
-            'provider' => Provider::query()->findOrFail($this->providerId),
-            'themeColor' => $this->themeColor(),
-            'countries' => Country::query()->orderBy('name')->get(),
-            'cities' => City::query()
-                ->when($this->countryId, fn ($query) => $query->where('country_id', $this->countryId))
-                ->orderBy('name')
-                ->get(),
-            'educationStages' => EducationStage::query()->orderBy('sort_order')->get(),
-            'grades' => Grade::query()
-                ->when($this->educationStageId, fn ($query) => $query->where('education_stage_id', $this->educationStageId))
-                ->orderBy('sort_order')
-                ->get(),
-            'genders' => Gender::options(),
+            'provider' => $theme['provider'],
+            'themeColor' => $theme['themeColor'],
+            ...$this->loadRegistrationOptions->handle($this->countryId, $this->educationStageId),
         ]);
     }
 
@@ -132,10 +119,5 @@ class RegisterForm extends Component
             'schoolName' => ['required', 'string', 'max:255'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
-    }
-
-    private function themeColor(): string
-    {
-        return Provider::query()->findOrFail($this->providerId)->websitePrimaryColor();
     }
 }

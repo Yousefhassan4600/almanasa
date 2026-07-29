@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('provider_id')->constrained('providers')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('account_subject_id')->constrained('account_subjects')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('academy_teacher_id')->nullable()->constrained('academy_teachers')->cascadeOnUpdate()->restrictOnDelete();
-            $table->text('title');
+            $table->string('title');
             $table->text('description')->nullable();
             $table->string('thumbnail')->nullable();
             $table->integer('weekly_lectures_count')->nullable();
@@ -30,7 +30,7 @@ return new class extends Migration
         Schema::create('course_outcomes', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('course_id')->constrained('courses')->cascadeOnUpdate()->restrictOnDelete();
-            $table->text('title');
+            $table->string('title');
             $table->integer('sort_order')->default(0);
             $table->softDeletes();
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
@@ -162,7 +162,7 @@ return new class extends Migration
         Schema::create('questions', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('lesson_id')->constrained('lessons')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('title');
+            $table->text('title');
             $table->string('media')->nullable();
             $table->string('type');
             $table->string('difficulty');
@@ -176,7 +176,7 @@ return new class extends Migration
         Schema::create('question_options', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('question_id')->constrained('questions')->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('title');
+            $table->text('title');
             $table->string('media')->nullable();
             $table->boolean('is_correct')->default(false);
             $table->integer('sort_order')->default(0);

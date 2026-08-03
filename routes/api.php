@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\Auth\LoginController;
+use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\General\GeneralController;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
@@ -14,20 +15,27 @@ Route::group([
         Route::group([
             'prefix' => 'student',
         ], function () {
-            Route::post('login', [LoginController::class, 'login']);
-            Route::post('verify', [LoginController::class, 'verify']);
+            Route::post('login', [AuthController::class, 'login']);
+            Route::post('verify', [AuthController::class, 'verify']);
 
               Route::middleware('role.token:student')->group(function () {
-                // Route::get('me', [LoginController::class, 'me']);
-                // Route::post('logout', [LoginController::class, 'customerLogout']);
-                // Route::post('edit-profile', [LoginController::class, 'editProfile']);
-
-                Route::get('student-services', [LoginController::class, 'studentServices']);
+                 Route::get('me', [AuthController::class, 'me']);
+                 Route::post('logout', [AuthController::class, 'logout']);
+                 Route::put('edit-profile', [AuthController::class, 'editProfile']);
+                 Route::get('student-services', [AuthController::class, 'studentServices']);
             });
 
         });
 
     });
 
+       Route::group([
+        'prefix' => 'general',
+    ], function () {
+        Route::get('countries', [GeneralController::class, 'getCountries']);
+        Route::get('cities', [GeneralController::class, 'getCities']);
+        Route::get('educational-stages', [GeneralController::class, 'getEducationalStages']);
+        Route::get('grades', [GeneralController::class, 'getGrades']);
+    });
 
 });

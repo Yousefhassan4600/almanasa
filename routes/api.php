@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Academy\AcademyController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\General\GeneralController;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,14 @@ Route::group([
         Route::get('cities', [GeneralController::class, 'getCities']);
         Route::get('educational-stages', [GeneralController::class, 'getEducationalStages']);
         Route::get('grades', [GeneralController::class, 'getGrades']);
+    });
+
+    Route::group([
+        'prefix'     => 'academy',
+        'middleware' => ['role.token:student'],
+    ], function () {
+        Route::get('subjects', [AcademyController::class, 'getSubjects']);
+        Route::get('teachers', [AcademyController::class, 'getTeachers']);
     });
 
 });

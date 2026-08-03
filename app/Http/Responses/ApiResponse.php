@@ -16,6 +16,7 @@ class ApiResponse implements Responsable
         'data' => null,
         'message' => '',
         'errors' => [],
+          'pagination' => null,
     ];
 
     /**
@@ -27,7 +28,23 @@ class ApiResponse implements Responsable
     {
         return new static();
     }
+public function pagination($pagination): self
+    {
+        if ($pagination instanceof LengthAwarePaginator) {
+            $this->data['pagination'] = [
+                'total'        => $pagination->total(),
+                'count'        => $pagination->count(),
+                'per_page'     => $pagination->perPage(),
+                'current_page' => $pagination->currentPage(),
+                'total_pages'  => $pagination->lastPage(),
+                'has_more'     => $pagination->hasMorePages(),
+            ];
+        } elseif (is_array($pagination)) {
+            $this->data['pagination'] = $pagination;
+        }
 
+        return $this;
+    }
     public function __construct()
     {
         $this->errors((object)[]);

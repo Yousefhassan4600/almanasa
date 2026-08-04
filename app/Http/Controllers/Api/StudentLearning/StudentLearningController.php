@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Academy;
+namespace App\Http\Controllers\Api\StudentLearning;
 use App\Actions\StudentPortal\Catalog\ListAccountSubjects;
 use App\Actions\StudentPortal\Catalog\LoadSingleTeacherPage;
 use App\Actions\StudentPortal\Catalog\LoadTeachersPage;
@@ -22,7 +22,7 @@ use App\Http\Responses\ApiResponse;
 use App\Models\Provider;
 use Illuminate\Http\Request;
 
-class AcademyController extends Controller
+class StudentLearningController extends Controller
 {
 
 public function getMySubscribedSubjects( Request $request,  LoadMyLessons $loadMyLessons): ApiResponse {

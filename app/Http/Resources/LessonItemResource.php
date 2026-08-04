@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Enums\LessonTypeEnum;
+use App\Models\Question;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -36,7 +37,8 @@ class LessonItemResource extends JsonResource
             ],
         ];
 
-        if ($lessonItem->type === LessonTypeEnum::Video || ! empty($videoPlayback)) {
+        // 1. الفيديو
+        if ($lessonItem->type === LessonTypeEnum::Video || ! empty($videoPlayback) || ! empty($lessonItem->video_url)) {
             $response['video'] = [
                 'signed_video_url'            => $videoPlayback['signedVideoUrl'] ?? $this->storageUrl($lessonItem->video_url),
                 'bunny_video_id'              => $lessonItem->bunny_video_id,
@@ -47,42 +49,57 @@ class LessonItemResource extends JsonResource
             ];
         }
 
-        if ($lessonItem->type === LessonTypeEnum::File || ! empty($lessonItem->file_url)) {
+        // 2. الملفات والروابط
+        if (! empty($lessonItem->link_url) || ! empty($lessonItem->file_url) || in_array($lessonItem->type, [LessonTypeEnum::File ?? null, LessonTypeEnum::Link ?? null])) {
             $response['file'] = [
                 'file_url' => $this->storageUrl($lessonItem->file_url),
                 'link_url' => $lessonItem->link_url,
             ];
         }
 
-        $assessment = $lessonItem->assignment ?? $lessonItem->exam;
+        // 3. الامتحانات والواجبات
+        $assignment = $lessonItem->assignment;
+        $exam       = $lessonItem->exam;
+        $assessment = $assignment ?? $exam;
 
         if ($assessment) {
-            $questionsQuery = $lessonItem->assignment
-                ? $lessonItem->assignment->selectedQuestions()
-                : $lessonItem->exam->courseQuestions();
+            if ($assignment) {
+                $ids = $assignment->question_ids;
+                if (is_string($ids)) {
+                    $ids = json_decode($ids, true);
+                }
+                $ids = is_array($ids) ? array_values(array_filter($ids)) : [];
 
-            $questions = $questionsQuery->with('options')->get();
+                $questions = ! empty($ids)
+                    ? Question::withoutGlobalScopes()->whereIn('id', $ids)->with('options')->get()
+                    : collect();
+            } else {
+                $questions = $exam->courseQuestions()->with('options')->get();
+            }
 
             $response['assessment'] = [
-                'id'                    => $assessment->id,
-                'title'                 => $assessment->title,
-                'description'           => $assessment->description,
-                'type'                  => $lessonItem->assignment ? 'assignment' : 'exam',
-                'duration_minutes'      => $assessment->duration_minutes ?? 0,
-                'num_of_questions'      => $assessment->num_of_questions ?? $questions->count(),
-                'max_degree'            => $assessment->max_degree ?? null,
-                'attempts'              => $attempts,
-                'questions'             => $questions->map(function ($question, $index) {
+                'id'               => $assessment->id,
+                'title'            => $assessment->title,
+                'description'      => $assessment->description,
+                'type'             => $assignment ? 'assignment' : 'exam',
+                'duration_minutes' => $assessment->duration_minutes ?? 0,
+                'num_of_questions' => $assessment->num_of_questions ?? $questions->count(),
+                'max_degree'       => $assessment->max_degree ?? null,
+                'attempts'         => $attempts,
+                'questions'        => $questions->map(function ($question, $index) {
                     return [
                         'id'              => $question->id,
                         'question_number' => $index + 1,
-                        'question_text'   => $question->text,
+                        'question_text'   => $question->title,
+                        'media'           => $this->storageUrl($question->media),
+                        'difficulty'      => $question->difficulty?->value ?? $question->difficulty,
                         'degree_text'     => __('ten_degrees'),
                         'options'         => $question->options?->map(function ($option) {
                             return [
-                                'id'   => $option->id,
-                                'text' => $option->text,
-                                'code' => $option->code,
+                                'id'         => $option->id,
+                                'text'       => $option->title ?? $option->text,
+                                'code'       => $option->code,
+                                'is_correct' => (bool) ($option->is_correct ?? false),
                             ];
                         }),
                     ];

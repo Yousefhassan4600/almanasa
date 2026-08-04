@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\Api\Academy\AcademyController;
+use App\Http\Controllers\Api\Academy\StudentLearning;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\General\GeneralController;
+use App\Http\Controllers\Api\StudentLearning\StudentLearningController;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
@@ -40,12 +41,12 @@ Route::group([
     });
 
     Route::group([
-        'prefix'     => 'academy',
+        'prefix'     => 'studentlearning',
         'middleware' => ['role.token:student'],
     ], function () {
-        Route::get('my-subscribed-subjects', [AcademyController::class, 'getMySubscribedSubjects']);
-        Route::get('single-teacher-page', [AcademyController::class, 'getSingleTeacherPage']);
-        Route::get('lesson-item', [AcademyController::class, 'getLessonItem']);
+        Route::get('my-subscribed-subjects', [StudentLearningController::class, 'getMySubscribedSubjects']);
+        Route::get('single-teacher-page', [StudentLearningController::class, 'getSingleTeacherPage']);
+        Route::get('lesson-item', [StudentLearningController::class, 'getLessonItem']);
 
     });
 

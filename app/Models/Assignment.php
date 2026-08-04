@@ -68,4 +68,5 @@ class Assignment extends Model
 
         return Question::query()->whereIn('id', $questionIds);
     }
+
 }

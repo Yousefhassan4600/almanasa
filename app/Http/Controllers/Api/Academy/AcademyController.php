@@ -2,9 +2,20 @@
 
 namespace App\Http\Controllers\Api\Academy;
 use App\Actions\StudentPortal\Catalog\ListAccountSubjects;
+use App\Actions\StudentPortal\Catalog\LoadSingleTeacherPage;
 use App\Actions\StudentPortal\Catalog\LoadTeachersPage;
+use App\Actions\StudentPortal\Courses\CheckCourseSubscription;
+use App\Actions\StudentPortal\Lessons\CalculateAssessmentAttempts;
+use App\Actions\StudentPortal\Lessons\ManageLessonVideoPlayback;
+use App\Actions\StudentPortal\Lessons\ResolveLessonItem;
+use App\Actions\StudentPortal\Students\LoadMyLessons;
+use App\Enums\LessonTypeEnum;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\LessonItemResource;
+use App\Http\Resources\MySubscribedSubjectResource;
+use App\Http\Resources\SingleTeacherPageResource;
 use App\Http\Resources\TeacherResource;
+use Auth;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Http\Resources\SubjectResource;
 use App\Http\Responses\ApiResponse;
@@ -14,8 +25,7 @@ use Illuminate\Http\Request;
 class AcademyController extends Controller
 {
 
-public function getSubjects(Request $request, ListAccountSubjects $listAccountSubjects): ApiResponse
-{
+public function getMySubscribedSubjects( Request $request,  LoadMyLessons $loadMyLessons): ApiResponse {
     $user = $request->attributes->get('auth_user');
 
     if (! $user) {
@@ -27,44 +37,23 @@ public function getSubjects(Request $request, ListAccountSubjects $listAccountSu
 
     $validated = $request->validate([
         'providerId' => ['required', 'integer', 'exists:providers,id'],
-        'search'     => ['nullable', 'string', 'max:255'],
-        'per_page'   => ['nullable', 'integer', 'min:1', 'max:100'],
-        'page'       => ['nullable', 'integer', 'min:1'],
     ]);
 
-    $gradeId  = $user->studentProfile()?->value('grade_id');
     $provider = Provider::query()->findOrFail($validated['providerId']);
 
-    $search  = trim($validated['search'] ?? '');
-    $perPage = (int) ($validated['per_page'] ?? 10);
-    $page    = (int) ($validated['page'] ?? 1);
-
-    $allSubjects = $listAccountSubjects->handle(
-        $provider,
-        $gradeId,
-        $search,
-        withActiveTeachersCount: true
-    );
-
-    $currentPageItems = $allSubjects->slice(($page - 1) * $perPage, $perPage)->values();
-
-    $paginator = new LengthAwarePaginator(
-        $currentPageItems,
-        $allSubjects->count(),
-        $perPage,
-        $page,
-        ['path' => $request->url(), 'query' => $request->query()]
-    );
+    $data = $loadMyLessons->handle($provider, $user);
+    $subscriptions = $data['subscriptions'];
 
     return ApiResponse::make()
         ->success(true)
         ->message(__('subjects_fetched_successfully'))
-        ->data(SubjectResource::collection($paginator->items()))
-        ->pagination($paginator);
+        ->data(MySubscribedSubjectResource::collection($subscriptions));
 }
 
-public function getTeachers(Request $request, LoadTeachersPage $loadTeachersPage): ApiResponse
-{
+public function getSingleTeacherPage(
+    Request $request,
+    LoadSingleTeacherPage $loadSingleTeacherPage
+): ApiResponse {
     $user = $request->attributes->get('auth_user');
 
     if (! $user) {
@@ -75,52 +64,156 @@ public function getTeachers(Request $request, LoadTeachersPage $loadTeachersPage
     }
 
     $validated = $request->validate([
-        'providerId' => ['required', 'integer', 'exists:providers,id'],
-        'subjectId'  => ['required', 'integer', 'exists:account_subjects,id'],
-        'per_page'   => ['nullable', 'integer', 'min:1', 'max:100'],
-        'page'       => ['nullable', 'integer', 'min:1'],
+        'providerId'     => ['required', 'integer', 'exists:providers,id'],
+        'teacherId'      => ['nullable', 'integer', 'exists:academy_teachers,id'],
+        'subjectId'      => ['nullable', 'integer', 'exists:account_subjects,id'],
+        'coursePeriodId' => ['nullable', 'integer', 'exists:course_periods,id'],
     ]);
 
-    $gradeId   = $user->studentProfile()?->value('grade_id');
-    $provider  = Provider::query()->findOrFail($validated['providerId']);
-    $subjectId = (int) $validated['subjectId'];
+    $provider       = Provider::query()->findOrFail($validated['providerId']);
+    $gradeId        = $user->studentProfile()?->value('grade_id');
+    $teacherId      = isset($validated['teacherId']) ? (int) $validated['teacherId'] : null;
+    $subjectId      = isset($validated['subjectId']) ? (int) $validated['subjectId'] : null;
+    $coursePeriodId = isset($validated['coursePeriodId']) ? (int) $validated['coursePeriodId'] : null;
 
-    $perPage = (int) ($validated['per_page'] ?? 10);
-    $page    = (int) ($validated['page'] ?? 1);
-
-    $data = $loadTeachersPage->handle(
+    $data = $loadSingleTeacherPage->handle(
         $provider,
-        $gradeId,
-        $subjectId
+        $teacherId,
+        $subjectId,
+        $user->id,
+        $gradeId
     );
 
-    /** @var \Illuminate\Support\Collection $teachers */
-    $teachers = $data['teachers'];
-    $coursesByTeacher = $data['coursesByTeacher'];
-    $isStandaloneTeacher = $data['isStandaloneTeacher'];
+    if (! $data['teacher']) {
+        return ApiResponse::make()
+            ->success(false)
+            ->message(__('teacher_not_found'))
+            ->statusCode(404);
+    }
 
-    $currentPageItems = $teachers->slice(($page - 1) * $perPage, $perPage)->values();
-
-    $paginator = new LengthAwarePaginator(
-        $currentPageItems,
-        $teachers->count(),
-        $perPage,
-        $page,
-        ['path' => $request->url(), 'query' => $request->query()]
-    );
-
-    $resourceCollection = TeacherResource::collection($paginator->items())
-        ->additional([
-            'courses_by_teacher'    => $coursesByTeacher,
-            'is_standalone_teacher' => $isStandaloneTeacher,
-            'account_subject_id'    => $data['selectedSubjectId'],
-        ]);
+    $data['coursePeriodId'] = $coursePeriodId;
 
     return ApiResponse::make()
         ->success(true)
-        ->message(__('teachers_fetched_successfully'))
-        ->data($resourceCollection)
-        ->pagination($paginator);
+        ->message(__('teacher_page_fetched_successfully'))
+        ->data(new SingleTeacherPageResource($data));
 }
+
+
+    public function getLessonItem(
+        Request $request,
+        ResolveLessonItem $resolveLessonItem,
+        CheckCourseSubscription $checkCourseSubscription,
+        ManageLessonVideoPlayback $manageLessonVideoPlayback,
+        CalculateAssessmentAttempts $calculateAssessmentAttempts
+    ) {
+        $validated = $request->validate([
+            'providerId'   => ['required', 'integer', 'exists:providers,id'],
+            'lessonItemId' => ['required', 'integer', 'exists:lesson_items,id'],
+        ]);
+
+        $user = $request->attributes->get('auth_user') ?? Auth::user();
+
+        if (! $user) {
+            return ApiResponse::make()
+                ->success(false)
+                ->message(__('unauthenticated'))
+                ->statusCode(401);
+        }
+
+        $provider = Provider::query()->findOrFail($validated['providerId']);
+
+        $lessonItem = $resolveLessonItem->handle($provider, $validated['lessonItemId']);
+
+        if (! $lessonItem) {
+            return ApiResponse::make()
+                ->success(false)
+                ->message(__('lesson_item_not_found'))
+                ->statusCode(404);
+        }
+
+        if (! $lessonItem->isCurrentlyOpen()) {
+            return ApiResponse::make()
+                ->success(false)
+                ->message(__('lesson_item_not_available_yet'))
+                ->statusCode(403);
+        }
+
+        $course = $lessonItem->lesson?->course;
+        $hasCourseSubscription = $course
+            ? $checkCourseSubscription->handle($course, $user->id)
+            : false;
+
+        if (! $lessonItem->is_free && ! $hasCourseSubscription) {
+            return ApiResponse::make()
+                ->success(false)
+                ->message(__('subscription_required_to_access_content'))
+                ->statusCode(403);
+        }
+
+        $videoPlayback = null;
+        if ($lessonItem->type === LessonTypeEnum::Video || $lessonItem->video_url || $lessonItem->bunny_video_id) {
+            $videoPlayback = $manageLessonVideoPlayback->resolve(
+                $lessonItem,
+                $user->id,
+                $hasCourseSubscription
+            );
+
+            if ($videoPlayback['videoViewLimitReached'] ?? false) {
+                return ApiResponse::make()
+                    ->success(false)
+                    ->message(__('video_view_limit_exceeded'))
+                    ->statusCode(403);
+            }
+
+            $this->saveVideoProgress(
+                $manageLessonVideoPlayback,
+                $provider,
+                $lessonItem->id,
+                $user->id,
+                $request
+            );
+        }
+
+        $assessment = $lessonItem->assignment ?? $lessonItem->exam;
+        $attempts = $assessment
+            ? $calculateAssessmentAttempts->handle($assessment, $user->id)
+            : null;
+
+        $payload = [
+            'lessonItem'            => $lessonItem,
+            'hasCourseSubscription' => $hasCourseSubscription,
+            'videoPlayback'        => $videoPlayback,
+            'attempts'             => $attempts,
+        ];
+
+        return ApiResponse::make()
+            ->success(true)
+            ->message(__('lesson_item_fetched_successfully'))
+            ->data(new LessonItemResource($payload));
+    }
+
+    private function saveVideoProgress(
+        ManageLessonVideoPlayback $manageLessonVideoPlayback,
+        Provider $provider,
+        int $lessonItemId,
+        int $userId,
+        Request $request
+    ): array {
+        return $manageLessonVideoPlayback->saveProgress(
+            $provider,
+            $lessonItemId,
+            $userId,
+            (float) $request->input('positionSeconds', 0),
+            (float) $request->input('durationSeconds', 0),
+            (float) $request->input('watchedDeltaSeconds', 0),
+            (bool) $request->input('ended', false),
+            $request->input('progressId') ? (int) $request->input('progressId') : null
+        );
+    }
+
+
+
+
 
 }

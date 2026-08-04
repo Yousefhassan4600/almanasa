@@ -22,7 +22,7 @@ Route::group([
               Route::middleware('role.token:student')->group(function () {
                  Route::get('me', [AuthController::class, 'me']);
                  Route::post('logout', [AuthController::class, 'logout']);
-                 Route::put('edit-profile', [AuthController::class, 'editProfile']);
+                 Route::post('edit-profile', [AuthController::class, 'editProfile']);
                  Route::get('student-services', [AuthController::class, 'studentServices']);
             });
 
@@ -43,8 +43,10 @@ Route::group([
         'prefix'     => 'academy',
         'middleware' => ['role.token:student'],
     ], function () {
-        Route::get('subjects', [AcademyController::class, 'getSubjects']);
-        Route::get('teachers', [AcademyController::class, 'getTeachers']);
+        Route::get('my-subscribed-subjects', [AcademyController::class, 'getMySubscribedSubjects']);
+        Route::get('single-teacher-page', [AcademyController::class, 'getSingleTeacherPage']);
+        Route::get('lesson-item', [AcademyController::class, 'getLessonItem']);
+
     });
 
 });

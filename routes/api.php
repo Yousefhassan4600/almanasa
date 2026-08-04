@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Academy\AcademyController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\General\GeneralController;
 use Illuminate\Support\Facades\Route;
@@ -21,7 +22,7 @@ Route::group([
               Route::middleware('role.token:student')->group(function () {
                  Route::get('me', [AuthController::class, 'me']);
                  Route::post('logout', [AuthController::class, 'logout']);
-                 Route::put('edit-profile', [AuthController::class, 'editProfile']);
+                 Route::post('edit-profile', [AuthController::class, 'editProfile']);
                  Route::get('student-services', [AuthController::class, 'studentServices']);
             });
 
@@ -36,6 +37,16 @@ Route::group([
         Route::get('cities', [GeneralController::class, 'getCities']);
         Route::get('educational-stages', [GeneralController::class, 'getEducationalStages']);
         Route::get('grades', [GeneralController::class, 'getGrades']);
+    });
+
+    Route::group([
+        'prefix'     => 'academy',
+        'middleware' => ['role.token:student'],
+    ], function () {
+        Route::get('my-subscribed-subjects', [AcademyController::class, 'getMySubscribedSubjects']);
+        Route::get('single-teacher-page', [AcademyController::class, 'getSingleTeacherPage']);
+        Route::get('lesson-item', [AcademyController::class, 'getLessonItem']);
+
     });
 
 });

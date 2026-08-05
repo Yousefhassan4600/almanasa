@@ -12,7 +12,7 @@ class ResolveLessonItem
     {
         return LessonItem::query()
             ->with([
-                'assignment:id,course_id,title,description,duration_minutes,num_of_questions,num_of_attempts',
+                'assignment:id,course_id,title,description,duration_minutes,num_of_questions,num_of_attempts,question_ids',
                 'exam:id,course_id,title,description,duration_minutes,max_degree,num_of_questions,num_of_attempts',
                 'lesson' => fn ($query) => $query
                     ->with([

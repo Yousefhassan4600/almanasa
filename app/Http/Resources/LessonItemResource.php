@@ -12,7 +12,7 @@ class LessonItemResource extends JsonResource
     public function toArray(Request $request): array
     {
         $lessonItem            = $this['lessonItem'];
-        $hasCourseSubscription = $this['hasCourseSubscription'] ?? false;
+         $hasCourseSubscription = $this['hasCourseSubscription'] ?? false;
         $videoPlayback         = $this['videoPlayback'] ?? null;
         $attempts              = $this['attempts'] ?? null;
 
@@ -30,7 +30,7 @@ class LessonItemResource extends JsonResource
             'type'                    => $typeValue,
             'is_free'                 => (bool) $lessonItem->is_free,
             'is_active'               => (bool) $lessonItem->is_active,
-            'has_course_subscription' => $hasCourseSubscription,
+             'has_course_subscription' => $hasCourseSubscription,
             'navigation'              => [
                 'previous_item_id' => $prevItem?->id,
                 'next_item_id'     => $nextItem?->id,

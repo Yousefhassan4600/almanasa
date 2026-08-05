@@ -52,7 +52,7 @@ public function getMySubscribedSubjects( Request $request,  LoadMyLessons $loadM
 
 public function getSingleTeacherPage(
     Request $request,
-    LoadSingleTeacherPage $loadSingleTeacherPage
+    LoadSingleTeacherPage $loadSingleTeacherPage, CheckCourseSubscription $checkCourseSubscription,
 ): ApiResponse {
     $user = $request->attributes->get('auth_user');
 
@@ -90,7 +90,15 @@ public function getSingleTeacherPage(
             ->message(__('teacher_not_found'))
             ->statusCode(404);
     }
+    $course = $data['course'] ?? null;
+$hasCourseSubscription = false;
 
+if ($course) {
+    $hasCourseSubscription = $checkCourseSubscription->handle($course, $user->id);
+}
+
+    $data['hasCourseSubscription'] = $hasCourseSubscription;
+    $data['userId'] = $user->id;
     $data['coursePeriodId'] = $coursePeriodId;
 
     return ApiResponse::make()

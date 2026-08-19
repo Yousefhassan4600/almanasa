@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Questions\Tables;
 use App\Filament\Base\BaseTable;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 
 class QuestionsTable extends BaseTable
 {
@@ -24,10 +25,16 @@ class QuestionsTable extends BaseTable
             ImageColumn::make('media')
                 ->label(__('admin.labels.Image'))
                 ->searchable(),
-            TextColumn::make('title')
+
+            ViewColumn::make('title')
                 ->label(__('admin.labels.Title'))
-                ->searchable()
-                ->wrap(),
+                ->view('filament.tables.columns.math'),
+
+            // TextColumn::make('title')
+            //     ->label(__('admin.labels.Title'))
+            //     ->searchable()
+            //     ->wrap(),
+
             TextColumn::make('lesson.course.title')
                 ->label(__('admin.labels.Course'))
                 ->searchable()

@@ -8,6 +8,7 @@ use App\Filament\Resources\Lessons\RelationManagers\Tables\LessonItemsTable;
 use App\Models\Assignment;
 use App\Models\Exam;
 use App\Models\LessonItem;
+use App\Services\BunnyStreamService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -105,21 +106,21 @@ class LessonItemsRelationManager extends BaseRelationManager
             Action::make('link')
                 ->hiddenLabel()
                 ->tooltip(__('admin.labels.Open'))
-                ->url(fn (LessonItem $record): ?string => $this->resolveItemUrl($record))
-                ->visible(fn (LessonItem $record): bool => filled($this->resolveItemUrl($record)))
+                ->url(fn (LessonItem $record, BunnyStreamService $bunnyStream): ?string => $this->resolveItemUrl($record, $bunnyStream))
+                ->visible(fn (LessonItem $record, BunnyStreamService $bunnyStream): bool => filled($this->resolveItemUrl($record, $bunnyStream)))
                 ->openUrlInNewTab()
                 ->icon('heroicon-o-link'),
         ];
     }
 
-    protected function resolveItemUrl(LessonItem $record): ?string
+    protected function resolveItemUrl(LessonItem $record, BunnyStreamService $bunnyStream): ?string
     {
         $type = $record->type instanceof LessonTypeEnum
             ? $record->type
             : LessonTypeEnum::tryFrom((string) $record->type);
 
         return match ($type) {
-            LessonTypeEnum::Video => $this->resolveFileUrl($record->video_url),
+            LessonTypeEnum::Video => $bunnyStream->signedEmbedUrl($record->bunny_video_id ?: $record->video_url, 3600),
             LessonTypeEnum::File => $this->resolveFileUrl($record->file_url),
             LessonTypeEnum::Link => $this->normalizeUrl($record->link_url),
             default => null,

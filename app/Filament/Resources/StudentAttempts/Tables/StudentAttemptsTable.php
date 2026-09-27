@@ -11,6 +11,7 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -134,10 +135,10 @@ class StudentAttemptsTable extends BaseTable
                         ->label(__('admin.labels.Statement Answers'))
                         ->schema([
                             Hidden::make('id'),
-                            Textarea::make('question')
+                            TextEntry::make('question')
                                 ->label(__('admin.labels.Question'))
-                                ->disabled()
-                                ->dehydrated(false)
+                                ->formatStateUsing(fn (?string $state): HtmlString => new HtmlString('<span data-math x-data x-init="$nextTick(() => renderFilamentMath())">'.e($state ?? '').'</span>'))
+                                ->html()
                                 ->columnSpanFull(),
                             Textarea::make('answer')
                                 ->label(__('admin.labels.Student Answer'))

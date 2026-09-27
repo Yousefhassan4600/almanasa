@@ -7,6 +7,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TextInputColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -47,10 +48,10 @@ class ModelsRelationManager extends RelationManager
                 TextColumn::make('id')
                     ->label(__('admin.labels.#'))
                     ->sortable(),
-                TextColumn::make('title')
+                ViewColumn::make('title')
                     ->label(__('admin.labels.Title'))
                     ->searchable()
-                    ->wrap(),
+                    ->view('filament.tables.columns.math'),
                 TextColumn::make('lesson.course.title')
                     ->label(__('admin.labels.Course'))
                     ->searchable()

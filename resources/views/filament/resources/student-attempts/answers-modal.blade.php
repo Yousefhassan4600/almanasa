@@ -14,7 +14,7 @@
                         <p style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">
                             {{ __('admin.labels.Question') }} #{{ $loop->iteration }}
                         </p>
-                        <h4 style="font-size: 0.95rem; font-weight: 700; color: #111827;">
+                        <h4 data-math x-data x-init="$nextTick(() => renderFilamentMath())" style="font-size: 0.95rem; font-weight: 700; color: #111827;">
                             {{ $answer->question?->title ?? __('admin.labels.Unknown Question') }}
                         </h4>
                     </div>
@@ -41,12 +41,12 @@
                 <div style="display: grid; gap: 0.4rem; color: #374151; font-size: 0.85rem;">
                     <div>
                         <span style="font-weight: 700;">{{ __('admin.labels.Answer') }}:</span>
-                        <span>{{ $answer->question_option?->title ?? $answer->answer_text ?? '-' }}</span>
+                        <span data-math x-data x-init="$nextTick(() => renderFilamentMath())">{{ $answer->question_option?->title ?? $answer->answer_text ?? '-' }}</span>
                     </div>
                     @if(! $requiresManualGrading && $answer->is_correct === false && filled($correctAnswer))
                         <div>
                             <span style="font-weight: 700;">{{ __('admin.labels.Correct Answer') }}:</span>
-                            <span>{{ $correctAnswer }}</span>
+                            <span data-math x-data x-init="$nextTick(() => renderFilamentMath())">{{ $correctAnswer }}</span>
                         </div>
                     @endif
                     <div>

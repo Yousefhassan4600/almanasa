@@ -143,7 +143,7 @@
                 </div>
 
                 <div class="bg-white border border-gray-100 rounded-2xl p-6 md:p-8 text-center shadow-sm">
-                    <h1 class="text-lg md:text-xl font-black text-blue-950 leading-relaxed max-w-2xl mx-auto">
+                    <h1 wire:key="assessment-question-title-{{ $currentQuestion->id }}" data-question-math x-data x-init="$nextTick(() => renderStudentMath())" class="text-lg md:text-xl font-black text-blue-950 leading-relaxed max-w-2xl mx-auto">
                         {{ $currentQuestion->title }}
                     </h1>
                 </div>
@@ -172,7 +172,7 @@
                                     <span class="badge w-8 h-8 rounded-xl {{ $isSelected ? 'text-white' : 'bg-gray-100 text-gray-400' }} flex items-center justify-center font-black text-xs transition-all" style="{{ $isSelected ? 'background-color: '.$themeColor : '' }}">
                                         {{ $optionLabels[$optionIndex] ?? $optionIndex + 1 }}
                                     </span>
-                                    <span class="text-sm font-black text-blue-950">{{ $option->title }}</span>
+                                    <span data-question-math x-data x-init="$nextTick(() => renderStudentMath())" class="text-sm font-black text-blue-950">{{ $option->title }}</span>
                                 </div>
                                 <span class="text-[10px] font-bold text-gray-400">الخيار {{ $optionIndex + 1 }}</span>
                             </label>
@@ -226,3 +226,39 @@
         @endif
     </section>
 </div>
+
+@once
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js" onload="renderStudentMath()"></script>
+    <script>
+        function renderStudentMath() {
+            if (typeof katex === 'undefined') {
+                return;
+            }
+
+            document.querySelectorAll('[data-question-math]').forEach(function (element) {
+                if (element.dataset.mathRendered === 'true') {
+                    return;
+                }
+
+                const text = element.textContent;
+                const expression = /\\\((.*?)\\\)|\\frac\{[^{}]+\}\{[^{}]+\}/g;
+                const fragments = document.createDocumentFragment();
+                let cursor = 0;
+
+                for (const match of text.matchAll(expression)) {
+                    fragments.append(document.createTextNode(text.slice(cursor, match.index)));
+
+                    const math = document.createElement('span');
+                    katex.render(match[1] ?? match[0], math, { throwOnError: false });
+                    fragments.append(math);
+                    cursor = match.index + match[0].length;
+                }
+
+                fragments.append(document.createTextNode(text.slice(cursor)));
+                element.replaceChildren(fragments);
+                element.dataset.mathRendered = 'true';
+            });
+        }
+    </script>
+@endonce

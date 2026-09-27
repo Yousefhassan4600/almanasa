@@ -23,9 +23,9 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Livewire\Livewire;
-use Illuminate\Support\Facades\Blade;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -48,33 +48,33 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'Users & Subscriptions' => NavigationGroup::make()
-                    ->label(fn(): string => __('admin.navigation_groups.Users & Subscriptions'))
+                    ->label(fn (): string => __('admin.navigation_groups.Users & Subscriptions'))
                     ->icon(Heroicon::OutlinedUsers),
                 'Project Data' => NavigationGroup::make()
-                    ->label(fn(): string => __('admin.navigation_groups.Project Data'))
+                    ->label(fn (): string => __('admin.navigation_groups.Project Data'))
                     ->icon(Heroicon::OutlinedAdjustmentsHorizontal),
                 'Users & Accounts' => NavigationGroup::make()
-                    ->label(fn(): string => __('admin.navigation_groups.Users & Accounts'))
+                    ->label(fn (): string => __('admin.navigation_groups.Users & Accounts'))
                     ->icon(Heroicon::OutlinedUsers),
                 'Provider Setup' => NavigationGroup::make()
-                    ->label(fn(): string => __('admin.navigation_groups.Provider Setup'))
+                    ->label(fn (): string => __('admin.navigation_groups.Provider Setup'))
                     ->icon(Heroicon::OutlinedBookOpen),
                 'Learning Content' => NavigationGroup::make()
-                    ->label(fn(): string => __('admin.navigation_groups.Learning Content'))
+                    ->label(fn (): string => __('admin.navigation_groups.Learning Content'))
                     ->icon(Heroicon::OutlinedBookOpen),
                 'Students & Families' => NavigationGroup::make()
-                    ->label(fn(): string => __('admin.navigation_groups.Students & Families'))
+                    ->label(fn (): string => __('admin.navigation_groups.Students & Families'))
                     ->icon(Heroicon::OutlinedUserGroup),
                 'Sales & Payments' => NavigationGroup::make()
-                    ->label(fn(): string => __('admin.navigation_groups.Sales & Payments'))
+                    ->label(fn (): string => __('admin.navigation_groups.Sales & Payments'))
                     ->icon(Heroicon::OutlinedCreditCard),
                 'Communication & Website' => NavigationGroup::make()
-                    ->label(fn(): string => __('admin.navigation_groups.Communication & Website'))
+                    ->label(fn (): string => __('admin.navigation_groups.Communication & Website'))
                     ->icon(Heroicon::OutlinedChatBubbleLeftRight),
             ])
             ->renderHook(
                 PanelsRenderHook::GLOBAL_SEARCH_AFTER,
-                fn(): string => Livewire::mount('admin.account-picker'),
+                fn (): string => Livewire::mount('admin.account-picker'),
             )
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([])
@@ -100,7 +100,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                EnsureCurrentAccount::class . ':dashboard',
+                EnsureCurrentAccount::class.':dashboard',
             ])
             ->sidebarWidth(69)
             ->maxContentWidth(Width::Full)
@@ -108,7 +108,7 @@ class AdminPanelProvider extends PanelProvider
             ->font('Cairo')
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn(): string => Blade::render(<<<'BLADE'
+                fn (): string => Blade::render(<<<'BLADE'
                 <link
                     rel="stylesheet"
                     href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css"
@@ -118,7 +118,7 @@ class AdminPanelProvider extends PanelProvider
 
             ->renderHook(
                 PanelsRenderHook::BODY_END,
-                fn(): string => Blade::render(<<<'BLADE'
+                fn (): string => Blade::render(<<<'BLADE'
                 <script
                     defer
                     src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js">
@@ -135,14 +135,22 @@ class AdminPanelProvider extends PanelProvider
                                 return;
                             }
 
-                            katex.render(
-                                element.textContent.trim(),
-                                element,
-                                {
-                                    throwOnError: false,
-                                    displayMode: false
-                                }
-                            );
+                            const text = element.textContent;
+                            const expression = /\\\((.*?)\\\)|\\frac\{[^{}]+\}\{[^{}]+\}/g;
+                            const fragments = document.createDocumentFragment();
+                            let cursor = 0;
+
+                            for (const match of text.matchAll(expression)) {
+                                fragments.append(document.createTextNode(text.slice(cursor, match.index)));
+
+                                const math = document.createElement('span');
+                                katex.render(match[1] ?? match[0], math, { throwOnError: false });
+                                fragments.append(math);
+                                cursor = match.index + match[0].length;
+                            }
+
+                            fragments.append(document.createTextNode(text.slice(cursor)));
+                            element.replaceChildren(fragments);
 
                             element.dataset.mathRendered = 'true';
                         });

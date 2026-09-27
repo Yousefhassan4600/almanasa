@@ -1,7 +1,7 @@
 <span
     data-math
     x-data
-    x-init="$nextTick(() => renderMath())"
+    x-init="$nextTick(() => renderFilamentMath())"
 >
     {{ $getState() }}
 </span>

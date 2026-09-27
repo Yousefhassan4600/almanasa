@@ -89,6 +89,16 @@
                         </p>
                     </div>
 
+                    <form wire:submit="redeemCode" class="rounded-2xl border border-gray-100 bg-slate-50 p-5 flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+                        <div class="flex-1 w-full text-right">
+                            <label for="provider-code" class="block text-sm font-black text-blue-950 mb-2">تفعيل كود</label>
+                            <input id="provider-code" type="text" wire:model="code" dir="ltr" autocomplete="off" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm" placeholder="أدخل الكود">
+                            @error('code') <p class="text-rose-600 text-xs mt-2">{{ $message }}</p> @enderror
+                            @if ($codeRedeemed) <p class="text-emerald-600 text-xs mt-2">تم تفعيل الكود وإضافة المحتوى إلى دروسك.</p> @endif
+                        </div>
+                        <button type="submit" class="rounded-xl px-6 py-3 text-white text-sm font-bold" style="background-color: {{ $themeColor }}">تفعيل</button>
+                    </form>
+
                     @if ($subscriptions->isEmpty())
                         <div class="rounded-[2rem] border border-dashed border-gray-200 bg-slate-50 p-10 text-center">
                             <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl" style="background-color: {{ $themeColor }}14; color: {{ $themeColor }}">
@@ -120,8 +130,8 @@
                                     $teacherImage = $teacher?->image
                                         ? asset('storage/'.$teacher->image)
                                         : 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120&h=120';
-                                    $firstLesson = $course?->lessons?->first();
-                                    $firstItem = $firstLesson?->items?->first();
+                                    $firstLesson = $subscription->lesson ?: $course?->lessons?->first(fn ($lesson) => $lesson->isCurrentlyOpen() && $lesson->items->contains(fn ($item) => $item->isCurrentlyOpen()));
+                                    $firstItem = $firstLesson?->items?->first(fn ($item) => $item->isCurrentlyOpen());
                                     $continueUrl = $firstItem
                                         ? '/lesson?item='.$firstItem->id
                                         : '/single_teacher?subject='.$accountSubject?->id.($course?->academy_teacher_id ? '&teacher='.$course->academy_teacher_id : '');

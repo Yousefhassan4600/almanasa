@@ -9,10 +9,12 @@ use App\Models\Order;
 use App\Models\OrderStatusType;
 use App\Models\Payment;
 use App\Models\Provider;
+use App\Models\ProviderCode;
 use App\Models\ProviderPaymentMethod;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class SubmitCheckoutOrder
@@ -24,11 +26,31 @@ class SubmitCheckoutOrder
         Cart $cart,
         ?TemporaryUploadedFile $transferImage = null,
         ?string $transactionReference = null,
+        ?string $providerCode = null,
     ): string {
         $cart->loadMissing('items');
 
-        return DB::transaction(function () use ($provider, $studentUserId, $paymentMethod, $cart, $transferImage, $transactionReference): string {
-            $transferImagePath = $this->storeTransferImage($transferImage);
+        return DB::transaction(function () use ($provider, $studentUserId, $paymentMethod, $cart, $transferImage, $transactionReference, $providerCode): string {
+            $isCodePayment = (bool) $paymentMethod->paymentMethod?->is_code;
+            $code = null;
+
+            if ($isCodePayment) {
+                if (blank($providerCode)) {
+                    throw ValidationException::withMessages(['providerCode' => 'يرجى إدخال الكود.']);
+                }
+
+                $code = ProviderCode::query()
+                    ->whereBelongsTo($provider)
+                    ->where('code', trim((string) $providerCode))
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $code) {
+                    throw ValidationException::withMessages(['providerCode' => 'الكود غير صحيح.']);
+                }
+            }
+
+            $transferImagePath = $isCodePayment ? null : $this->storeTransferImage($transferImage);
             $order = Order::query()->create([
                 'provider_id' => $provider->id,
                 'student_user_id' => $studentUserId,
@@ -52,11 +74,11 @@ class SubmitCheckoutOrder
             });
 
             $order->statuses()->create([
-                'order_status_type_id' => $this->pendingStatusType()->id,
+                'order_status_type_id' => ($isCodePayment ? $this->paidStatusType() : $this->pendingStatusType())->id,
                 'is_current' => true,
                 'status_at' => now(),
                 'created_by_user_id' => $studentUserId,
-                'notes' => 'Waiting for provider approval.',
+                'notes' => $isCodePayment ? 'Paid with provider code.' : 'Waiting for provider approval.',
             ]);
 
             Payment::query()->create([
@@ -64,7 +86,8 @@ class SubmitCheckoutOrder
                 'provider_id' => $provider->id,
                 'student_user_id' => $studentUserId,
                 'provider_payment_method_id' => $paymentMethod->id,
-                'transaction_reference' => $transactionReference,
+                'provider_code_id' => $code?->id,
+                'transaction_reference' => $isCodePayment ? null : $transactionReference,
                 'transfer_image' => $transferImagePath,
                 'is_paid' => false,
             ]);
@@ -85,6 +108,17 @@ class SubmitCheckoutOrder
         ], [
             'name' => ['en' => 'Pending', 'ar' => 'قيد الانتظار'],
             'sort_order' => 1,
+            'is_active' => true,
+        ]);
+    }
+
+    private function paidStatusType(): OrderStatusType
+    {
+        return OrderStatusType::query()->firstOrCreate([
+            'slug' => 'paid',
+        ], [
+            'name' => ['en' => 'Paid', 'ar' => 'مدفوع'],
+            'sort_order' => 2,
             'is_active' => true,
         ]);
     }

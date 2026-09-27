@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProviderCodes\Schemas;
 
+use App\Enums\PurchaseUnitType;
 use App\Filament\Support\CurrentAccount;
 use App\Models\Course;
 use App\Models\Lesson;
@@ -25,6 +26,7 @@ class ProviderCodeForm
                 CurrentAccount::providerSelect(Select::make('provider_id'))
                     ->label(__('admin.labels.Provider'))
                     ->relationship('provider', 'name')
+                    ->dehydrated(true)
                     ->live()
                     ->afterStateUpdated(function (Set $set): void {
                         $set('course_id', null);
@@ -69,6 +71,8 @@ class ProviderCodeForm
                         ])
                         ->all())
                     ->searchable()
+                    ->live()
+                    ->afterStateUpdated(fn (Set $set) => $set('lesson_id', null))
                     ->preload()
                     ->required()
                     ->columnSpanFull(),
@@ -106,6 +110,7 @@ class ProviderCodeForm
                         },
                     ])
                     ->disabled(fn (Get $get): bool => blank(self::selectedProviderId($get)))
+                    ->required()
                     ->preload()
                     ->searchable(),
                 Select::make('lesson_id')
@@ -141,6 +146,8 @@ class ProviderCodeForm
                         },
                     ])
                     ->disabled(fn (Get $get): bool => blank($get('course_id')))
+                    ->required(fn (Get $get): bool => PurchaseUnit::query()->find($get('purchase_unit_id'))?->type === PurchaseUnitType::Lesson)
+                    ->visible(fn (Get $get): bool => PurchaseUnit::query()->find($get('purchase_unit_id'))?->type === PurchaseUnitType::Lesson)
                     ->preload()
                     ->searchable(),
                 TextInput::make('num_of_uses')

@@ -7,6 +7,7 @@ use App\Actions\StudentPortal\Checkout\ListProviderPaymentMethods;
 use App\Actions\StudentPortal\Checkout\SubmitCheckoutOrder;
 use App\Models\Provider;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -31,7 +32,11 @@ class CheckoutPage extends Component
 
     public ?string $transactionReference = null;
 
+    public ?string $providerCode = null;
+
     public ?string $submittedOrderNumber = null;
+
+    public bool $paidWithCode = false;
 
     private ManageStudentCart $manageStudentCart;
 
@@ -84,6 +89,7 @@ class CheckoutPage extends Component
         $selectedPurchaseUnitId = $this->manageStudentCart->selectPurchaseUnit($provider, Auth::id(), $purchaseUnitId);
 
         $this->selectedPurchaseUnitId = $selectedPurchaseUnitId ?: $this->selectedPurchaseUnitId;
+        $this->resetValidation('providerCode');
     }
 
     public function selectPaymentMethod(int $providerPaymentMethodId): void
@@ -95,6 +101,9 @@ class CheckoutPage extends Component
         }
 
         $this->selectedProviderPaymentMethodId = $providerPaymentMethodId;
+        $this->providerCode = null;
+        $this->transferImage = null;
+        $this->transactionReference = null;
         $this->resetValidation();
     }
 
@@ -112,31 +121,44 @@ class CheckoutPage extends Component
 
         $rules = [
             'transactionReference' => ['nullable', 'string', 'max:255'],
+            'providerCode' => $paymentMethod->paymentMethod?->is_code
+                ? ['required', 'string', 'max:255']
+                : ['nullable', 'string', 'max:255'],
         ];
 
-        if ($paymentMethod->paymentMethod?->require_proof) {
+        if (! $paymentMethod->paymentMethod?->is_code && $paymentMethod->paymentMethod?->require_proof) {
             $rules['transferImage'] = ['required', 'image', 'max:2048'];
         } else {
             $rules['transferImage'] = ['nullable', 'image', 'max:2048'];
         }
 
         $this->validate($rules, [
+            'providerCode.required' => 'يرجى إدخال الكود.',
             'transferImage.required' => 'يرجى رفع صورة التحويل.',
             'transferImage.image' => 'صورة التحويل يجب أن تكون ملف صورة.',
             'transferImage.max' => 'حجم صورة التحويل يجب ألا يتجاوز 2MB.',
         ]);
 
-        $this->submittedOrderNumber = $this->submitCheckoutOrder->handle(
-            $provider,
-            Auth::id(),
-            $paymentMethod,
-            $cart,
-            $this->transferImage,
-            $this->transactionReference,
-        );
+        try {
+            $this->submittedOrderNumber = $this->submitCheckoutOrder->handle(
+                $provider,
+                Auth::id(),
+                $paymentMethod,
+                $cart,
+                $this->transferImage,
+                $this->transactionReference,
+                $paymentMethod->paymentMethod?->is_code ? $this->providerCode : null,
+            );
+        } catch (ValidationException $exception) {
+            $this->addError('providerCode', collect($exception->errors())->flatten()->first());
 
+            return;
+        }
+
+        $this->paidWithCode = (bool) $paymentMethod->paymentMethod?->is_code;
         $this->transferImage = null;
         $this->transactionReference = null;
+        $this->providerCode = null;
     }
 
     public function render(): mixed

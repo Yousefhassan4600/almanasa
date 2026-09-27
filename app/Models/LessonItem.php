@@ -93,20 +93,11 @@ class LessonItem extends Model
 
     public function scopeCurrentlyOpen(Builder $query): Builder
     {
-        return $query
-            ->where('is_active', true)
-            ->where(fn (Builder $query): Builder => $query
-                ->whereNull('starts_at')
-                ->orWhere('starts_at', '<=', now()))
-            ->where(fn (Builder $query): Builder => $query
-                ->whereNull('ends_at')
-                ->orWhere('ends_at', '>=', now()));
+        return $query->where('is_active', true);
     }
 
     public function isCurrentlyOpen(): bool
     {
-        return $this->is_active
-            && (blank($this->starts_at) || $this->starts_at->lte(now()))
-            && (blank($this->ends_at) || $this->ends_at->gte(now()));
+        return $this->is_active;
     }
 }

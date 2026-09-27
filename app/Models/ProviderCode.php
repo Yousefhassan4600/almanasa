@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
+use App\Enums\PurchaseUnitType;
 use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -64,6 +65,7 @@ class ProviderCode extends Model
     {
         $payment->loadMissing('order.items', 'order.provider');
         $this->loadMissing('lesson');
+        $this->loadMissing('purchaseUnit');
 
         $order = $payment->order;
 
@@ -120,6 +122,11 @@ class ProviderCode extends Model
      */
     private function assertMatchesOrderItems(Collection $orderItems): void
     {
+        if ($this->purchaseUnit?->type === PurchaseUnitType::Lesson && ! $this->lesson_id) {
+            throw ValidationException::withMessages([
+                'provider_code_id' => __('This code is not linked to a lesson.'),
+            ]);
+        }
         if ($orderItems->contains(fn (OrderItem $item): bool => (int) $item->purchase_unit_id !== (int) $this->purchase_unit_id)) {
             throw ValidationException::withMessages([
                 'provider_code_id' => __('This code is not valid for the selected purchase unit.'),

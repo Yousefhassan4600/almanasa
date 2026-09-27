@@ -10,6 +10,7 @@ use App\Filament\Pages\ProviderSettings;
 use App\Filament\Resources\AcademyTeachers\AcademyTeacherResource;
 use App\Filament\Resources\Courses\CourseResource;
 use App\Filament\Resources\Courses\Pages\CreateCourse;
+use App\Filament\Resources\ProviderCodes\Pages\ListProviderCodes;
 use App\Filament\Resources\Roles\RoleResource;
 use App\Filament\Resources\Roles\Schemas\RoleForm;
 use App\Livewire\Admin\AccountPicker;
@@ -106,6 +107,24 @@ class AdminPermissionTest extends TestCase
             'provider_id' => $provider->id,
             'academy_teacher_id' => null,
         ], $method->invoke($page, []));
+    }
+
+    public function test_provider_code_create_data_is_assigned_to_current_provider(): void
+    {
+        $owner = User::factory()->create();
+        $provider = $this->provider($owner, ProviderType::StandaloneTeacher);
+        $account = $this->account(AccountType::StandaloneTeacher, $owner, $provider);
+
+        $this->actingAsTenant($account);
+
+        $page = (new \ReflectionClass(ListProviderCodes::class))->newInstanceWithoutConstructor();
+        $method = new \ReflectionMethod($page, 'getHeaderActions');
+        $method->setAccessible(true);
+        $action = $method->invoke($page)[0];
+
+        $action->data(['provider_id' => $provider->id + 1, 'code' => 'TEST']);
+
+        $this->assertSame($provider->id, $action->getData()['provider_id']);
     }
 
     public function test_employee_uses_provider_scoped_spatie_role_permissions(): void

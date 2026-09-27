@@ -225,8 +225,6 @@
             </form>
         @endif
     </section>
-</div>
-
 @once
     <link rel="stylesheet" href="{{ asset('css/katex.min.css') }}">
     <script defer src="{{ asset('js/katex.min.js') }}" onload="renderStudentMath()"></script>
@@ -262,3 +260,4 @@
         }
     </script>
 @endonce
+</div>

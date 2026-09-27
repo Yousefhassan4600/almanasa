@@ -29,6 +29,7 @@ class LoadMyLessons
         return Subscription::query()
             ->with([
                 'purchaseUnit:id,type,name',
+                'lesson.items' => fn ($query) => $query->where('is_active', true)->oldest('sort_order')->oldest('id'),
                 'course:id,provider_id,account_subject_id,academy_teacher_id,title,thumbnail',
                 'course.provider:id,owner_user_id,type',
                 'course.provider.owner:id,first_name,last_name',
@@ -54,7 +55,7 @@ class LoadMyLessons
             ->latest('starts_at')
             ->latest('id')
             ->get()
-            ->unique('course_id')
+            ->unique(fn (Subscription $subscription): string => $subscription->course_id.':'.($subscription->lesson_id ?? 'course'))
             ->values();
     }
 }

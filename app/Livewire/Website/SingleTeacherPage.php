@@ -48,6 +48,7 @@ class SingleTeacherPage extends Component
             'accountSubject' => $data['accountSubject'],
             'course' => $data['course'],
             'hasCourseSubscription' => $data['hasCourseSubscription'],
+            'lessonCodeIds' => $data['lessonCodeIds'],
             'monthlyPrice' => $data['monthlyPrice'],
         ]);
     }

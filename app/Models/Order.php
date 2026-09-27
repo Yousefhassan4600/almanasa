@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\FiltersByTenant;
 use App\Enums\PurchaseType;
+use App\Enums\PurchaseUnitType;
 use App\Models\Traits\SoftDeletesWithUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -115,10 +116,15 @@ class Order extends Model
     public function createMissingSubscriptionsForItems(): void
     {
         $this->loadMissing('items.subscription', 'items.purchaseUnit');
+        $providerCode = $this->payments()
+            ->where('is_paid', true)
+            ->whereNotNull('provider_code_id')
+            ->with('providerCode.purchaseUnit')
+            ->first()?->providerCode;
 
         $this->items
             ->filter(fn (OrderItem $orderItem): bool => ! $orderItem->subscription)
-            ->each(function (OrderItem $orderItem): void {
+            ->each(function (OrderItem $orderItem) use ($providerCode): void {
                 $startsAt = now();
                 $periodDays = $orderItem->purchaseUnit?->period_days;
 
@@ -126,6 +132,9 @@ class Order extends Model
                     'student_user_id' => $this->student_user_id,
                     'provider_id' => $this->provider_id,
                     'course_id' => $orderItem->course_id,
+                    'lesson_id' => $providerCode?->purchaseUnit?->type === PurchaseUnitType::Lesson
+                        ? $providerCode->lesson_id
+                        : null,
                     'purchase_unit_id' => $orderItem->purchase_unit_id,
                     'purchase_type' => $orderItem->purchase_type,
                     'starts_at' => $startsAt,

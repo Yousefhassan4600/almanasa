@@ -68,7 +68,7 @@
         'file' => 'fa-regular fa-file-pdf',
         default => 'fa-regular fa-circle-play',
     };
-    $lessonIsOpen = $lesson?->isCurrentlyOpen() ?? false;
+    $lessonIsOpen = ($lesson?->isCurrentlyOpen() ?? false) || ($hasImmediateLessonAccess ?? false);
     $lessonAvailabilityText = match (true) {
         $lessonIsOpen => null,
         filled($lesson?->starts_at) && $lesson->starts_at->isFuture() => 'هذا الدرس سيفتح في '.$lesson->starts_at->format('Y-m-d H:i'),
@@ -83,14 +83,6 @@
 
         if (! $item->is_active) {
             return 'غير مفعل حالياً';
-        }
-
-        if (filled($item->starts_at) && $item->starts_at->isFuture()) {
-            return 'يفتح في '.$item->starts_at->format('Y-m-d H:i');
-        }
-
-        if (filled($item->ends_at) && $item->ends_at->isPast()) {
-            return 'انتهى في '.$item->ends_at->format('Y-m-d H:i');
         }
 
         return $fallback;
@@ -156,7 +148,7 @@
                             </div>
                             <h1 class="text-xl sm:text-2xl font-black text-blue-950">{{ $itemTitle }}</h1>
                             <p class="text-sm text-gray-500 font-semibold mt-3">{{ $activeLessonItemAvailabilityText }}</p>
-                            <p class="text-xs text-gray-400 font-medium mt-2">العنصر ظاهر في قائمة الدروس، لكن المحتوى لا يمكن فتحه خارج فترة الإتاحة أو أثناء إيقافه.</p>
+                            <p class="text-xs text-gray-400 font-medium mt-2">العنصر ظاهر في قائمة الدروس، لكن المحتوى لا يمكن فتحه أثناء إيقافه.</p>
                         </div>
                     @elseif (! $activeLessonItemHasAccess)
                         <div class="bg-slate-50 border border-slate-100 rounded-[24px] p-8 text-center shadow-sm">

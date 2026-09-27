@@ -20,6 +20,7 @@ class Subscription extends Model
         'student_user_id',
         'provider_id',
         'course_id',
+        'lesson_id',
         'order_item_id',
         'purchase_unit_id',
         'purchase_type',
@@ -57,12 +58,29 @@ class Subscription extends Model
             ->where('student_user_id', $studentUserId)
             ->where('provider_id', $course->provider_id)
             ->where('course_id', $course->id)
+            ->whereNull('lesson_id')
             ->where(fn (Builder $query): Builder => $query
                 ->whereNull('starts_at')
                 ->orWhere('starts_at', '<=', now()))
             ->where(fn (Builder $query): Builder => $query
                 ->whereNull('ends_at')
                 ->orWhere('ends_at', '>=', now()));
+    }
+
+    public function scopeActiveForStudentLesson(Builder $query, int $studentUserId, Lesson $lesson): Builder
+    {
+        return $query
+            ->where('student_user_id', $studentUserId)
+            ->where('provider_id', $lesson->course->provider_id)
+            ->where('course_id', $lesson->course_id)
+            ->where(fn (Builder $query): Builder => $query->whereNull('lesson_id')->orWhere('lesson_id', $lesson->id))
+            ->where(fn (Builder $query): Builder => $query->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
+            ->where(fn (Builder $query): Builder => $query->whereNull('ends_at')->orWhere('ends_at', '>=', now()));
+    }
+
+    public function scopeActiveForSpecificLesson(Builder $query, int $studentUserId, Lesson $lesson): Builder
+    {
+        return $query->activeForStudentLesson($studentUserId, $lesson)->where('lesson_id', $lesson->id);
     }
 
     public function student(): BelongsTo
@@ -78,6 +96,11 @@ class Subscription extends Model
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class, 'course_id');
+    }
+
+    public function lesson(): BelongsTo
+    {
+        return $this->belongsTo(Lesson::class, 'lesson_id');
     }
 
     public function orderItem(): BelongsTo

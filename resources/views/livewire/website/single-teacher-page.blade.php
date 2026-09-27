@@ -42,14 +42,6 @@
             return 'غير مفعل حالياً';
         }
 
-        if (filled($item->starts_at) && $item->starts_at->isFuture()) {
-            return 'يفتح في '.$item->starts_at->format('Y-m-d H:i');
-        }
-
-        if (filled($item->ends_at) && $item->ends_at->isPast()) {
-            return 'انتهى في '.$item->ends_at->format('Y-m-d H:i');
-        }
-
         return 'مغلق';
     };
 @endphp
@@ -149,7 +141,8 @@
                                             @php
                                                 $lessonTitle = $lesson->getTranslation('title', 'ar', false) ?: $lesson->title;
                                                 $lessonItems = $lesson->items;
-                                                $lessonIsOpen = $lesson->isCurrentlyOpen();
+                                                $lessonHasCodeAccess = in_array($lesson->id, $lessonCodeIds ?? [], true);
+                                                $lessonIsOpen = $lesson->isCurrentlyOpen() || $lessonHasCodeAccess;
                                                 $lessonAvailabilityText = match (true) {
                                                     $lessonIsOpen => null,
                                                     filled($lesson->starts_at) && $lesson->starts_at->isFuture() => 'تفتح في '.$lesson->starts_at->format('Y-m-d H:i'),
@@ -200,7 +193,7 @@
                                                                     $itemAvailabilityText = ! $itemIsOpen
                                                                         ? $lessonItemAvailabilityText($item)
                                                                         : null;
-                                                                    $itemHasAccess = $item->is_free || $hasCourseAccess;
+                                                                    $itemHasAccess = $item->is_free || $hasCourseAccess || $lessonHasCodeAccess;
                                                                     $isLocked = ! $lessonIsOpen || ! $itemHasAccess || ! $itemIsOpen;
                                                                 @endphp
 

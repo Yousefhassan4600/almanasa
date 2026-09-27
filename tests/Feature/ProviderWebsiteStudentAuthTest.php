@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Actions\StudentPortal\Courses\CheckCourseSubscription;
 use App\Enums\AccountType;
 use App\Enums\CoursePeriodType;
 use App\Enums\LessonTypeEnum;
@@ -52,6 +53,7 @@ use App\Models\OrderStatusType;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Provider;
+use App\Models\ProviderCode;
 use App\Models\ProviderPaymentMethod;
 use App\Models\ProviderPlan;
 use App\Models\ProviderPlanOption;
@@ -798,13 +800,13 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('حصة منتهية', false)
             ->assertSee('فيديو منتهي', false)
             ->assertSee('اختبار منتهي', false)
-            ->assertSee('انتهى في', false)
+            ->assertDontSee('انتهى في', false)
             ->assertSee('غير متاح الآن', false)
             ->assertDontSee('href="/lesson?item='.$inactiveItem->id.'"', false)
-            ->assertDontSee('href="/lesson?item='.$futureActiveLessonItem->id.'"', false)
+            ->assertSee('href="/lesson?item='.$futureActiveLessonItem->id.'"', false)
             ->assertDontSee('href="/lesson?item='.$futureItem->id.'"', false)
             ->assertDontSee('href="/lesson?item='.$expiredItem->id.'"', false)
-            ->assertDontSee('href="/lesson?item='.$expiredExamItem->id.'"', false)
+            ->assertSee('href="/lesson?item='.$expiredExamItem->id.'"', false)
             ->assertDontSee('المراجعات النهائية', false);
     }
 
@@ -1123,13 +1125,14 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
         $subject = Subject::query()->create([
             'track_id' => $track->id,
-            'name' => ['en' => 'Mathematics', 'ar' => 'الرياضيات'],
+            'name' => 'الرياضيات',
         ]);
         $accountSubject = AccountSubject::query()->create([
             'provider_id' => $provider->id,
             'grade_subject_id' => GradeSubject::query()->create([
                 'grade_id' => $grade->id,
                 'subject_id' => $subject->id,
+                'track_id' => $track->id,
             ])->id,
             'is_active' => true,
         ]);
@@ -1443,9 +1446,8 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertOk()
             ->assertSeeLivewire(LessonPage::class)
             ->assertSee('عنصر مستقبلي داخل الدرس', false)
-            ->assertSee('يفتح في', false)
-            ->assertSee('العنصر ظاهر في قائمة الدروس', false)
-            ->assertDontSee('https://videos.example.test/future-item-video', false);
+            ->assertDontSee('يفتح في', false)
+            ->assertSee('https://videos.example.test/future-item-video', false);
 
         $this->actingAs($user)
             ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$futureItem->id)
@@ -1461,15 +1463,15 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertOk()
             ->assertSeeLivewire(LessonPage::class)
             ->assertSee('اختبار منتهي', false)
-            ->assertSee('انتهى في', false)
-            ->assertDontSee('href="/quiz?exam='.$expiredExam->id.'"', false);
+            ->assertDontSee('انتهى في', false)
+            ->assertSee('href="/quiz?exam='.$expiredExam->id.'"', false);
 
         $this->actingAs($user)
             ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$expiredExam->id)
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
-            ->assertSee('الاختبار مغلق حالياً', false)
-            ->assertDontSee('إنهاء الاختبار', false);
+            ->assertDontSee('الاختبار مغلق حالياً', false)
+            ->assertSee('إنهاء الاختبار', false);
     }
 
     public function test_student_can_submit_assignment_and_exam_attempts_from_website(): void
@@ -2149,9 +2151,9 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertOk()
             ->assertSee('عنصر واجب منتهي', false)
             ->assertSee('عنصر اختبار منتهي', false)
-            ->assertSee('انتهى في', false)
-            ->assertDontSee('href="/lesson?item='.$expiredAssignmentItem->id.'"', false)
-            ->assertDontSee('href="/lesson?item='.$expiredExamItem->id.'"', false);
+            ->assertDontSee('انتهى في', false)
+            ->assertSee('href="/lesson?item='.$expiredAssignmentItem->id.'"', false)
+            ->assertSee('href="/lesson?item='.$expiredExamItem->id.'"', false);
 
         $this->actingAs($studentUser)
             ->get($baseUrl.'/home_work?assignment='.$assignment->id.'&item='.$assignmentItem->id)
@@ -2202,8 +2204,8 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->get($baseUrl.'/home_work?assignment='.$expiredAssignment->id.'&item='.$expiredAssignmentItem->id)
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
-            ->assertSee('الواجب مغلق حالياً', false)
-            ->assertDontSee('إنهاء الواجب', false);
+            ->assertDontSee('الواجب مغلق حالياً', false)
+            ->assertSee('إنهاء الواجب', false);
 
         $this->actingAs($studentUser)
             ->get($baseUrl.'/quiz?exam='.$exam->id.'&item='.$examItem->id)
@@ -2248,8 +2250,8 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->get($baseUrl.'/quiz?exam='.$expiredExam->id.'&item='.$expiredExamItem->id)
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
-            ->assertSee('الاختبار مغلق حالياً', false)
-            ->assertDontSee('إنهاء الاختبار', false);
+            ->assertDontSee('الاختبار مغلق حالياً', false)
+            ->assertSee('إنهاء الاختبار', false);
 
         $this->actingAs($studentUser)
             ->get($baseUrl.'/quiz?exam='.$exam->id.'&item='.$examItem->id)
@@ -2371,17 +2373,16 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'is_active' => true,
         ]);
         $paymentMethod = PaymentMethod::query()->create([
-            'slug' => PaymentMethodSlugs::Code->value,
-            'name' => ['en' => 'Code', 'ar' => 'كود'],
+            'slug' => PaymentMethodSlugs::InstaPay->value,
+            'name' => ['en' => 'InstaPay', 'ar' => 'إنستا باي'],
             'sort_order' => 1,
             'is_active' => true,
-            'is_code' => true,
         ]);
         $providerPaymentMethod = ProviderPaymentMethod::query()->create([
             'provider_id' => $provider->id,
             'payment_method_id' => $paymentMethod->id,
-            'account_number' => 'CODE-555',
-            'account_holder' => 'Mona Physics',
+            'phone_number' => '01000000001',
+            'phone_holder' => 'Mona Physics',
         ]);
 
         $this->actingAs($studentUser)
@@ -2390,7 +2391,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSeeLivewire(CheckoutPage::class)
             ->assertSee('نوع الاشتراك', false)
             ->assertSee('كورس الفيزياء', false)
-            ->assertSee('كود', false)
+            ->assertSee('إنستا باي', false)
             ->assertSee('120.00 ج.م', false)
             ->assertDontSee('90.00 ج.م', false);
 
@@ -2435,6 +2436,392 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertOk()
             ->assertSee('كورس الفيزياء', false)
             ->assertSee('نشط', false);
+    }
+
+    public function test_checkout_code_payment_requires_a_valid_code_and_unlocks_the_selected_lesson(): void
+    {
+        $fixture = $this->standaloneTeacherCourseFixture();
+        $provider = $fixture['provider'];
+        $student = $fixture['studentUser'];
+        $course = $fixture['course'];
+        $period = CoursePeriod::query()->create([
+            'type' => CoursePeriodType::Term1->value,
+            'name' => ['en' => 'First term'],
+            'is_active' => true,
+        ]);
+        $lesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $period->id,
+            'title' => ['en' => 'Selected lesson'],
+            'starts_at' => now()->addWeek(),
+            'is_active' => true,
+        ]);
+        $lessonUnit = PurchaseUnit::query()->create([
+            'type' => PurchaseUnitType::Lesson->value,
+            'name' => ['en' => 'Lesson'],
+            'is_active' => true,
+        ]);
+        CoursePrice::query()->create([
+            'course_id' => $course->id,
+            'purchase_unit_id' => $lessonUnit->id,
+            'price' => 0,
+        ]);
+        $code = ProviderCode::query()->create([
+            'provider_id' => $provider->id,
+            'course_id' => $course->id,
+            'lesson_id' => $lesson->id,
+            'purchase_unit_id' => $lessonUnit->id,
+            'code' => 'CHECKOUT-LESSON',
+            'num_of_uses' => 1,
+        ]);
+        $method = PaymentMethod::query()->create([
+            'slug' => PaymentMethodSlugs::Code->value,
+            'name' => ['en' => 'Code', 'ar' => 'كود'],
+            'is_active' => true,
+            'is_code' => true,
+        ]);
+        $providerMethod = ProviderPaymentMethod::query()->create([
+            'provider_id' => $provider->id,
+            'payment_method_id' => $method->id,
+            'account_number' => 'CODE-2',
+        ]);
+
+        $this->actingAs($student)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/checkout?course='.$course->id)
+            ->assertOk();
+
+        $checkout = Livewire::actingAs($student)
+            ->test(CheckoutPage::class, ['providerId' => $provider->id])
+            ->call('selectPurchaseUnit', $lessonUnit->id)
+            ->call('selectPaymentMethod', $providerMethod->id)
+            ->assertSee('أدخل الكود', false)
+            ->assertDontSee('CODE-2', false)
+            ->call('submitOrder')
+            ->assertHasErrors(['providerCode']);
+
+        $checkout->set('providerCode', 'WRONG-CODE')
+            ->call('submitOrder')
+            ->assertHasErrors(['providerCode']);
+
+        $this->assertSame(0, Order::query()->where('student_user_id', $student->id)->count());
+        $this->assertDatabaseHas(Cart::class, [
+            'provider_id' => $provider->id,
+            'student_user_id' => $student->id,
+            'deleted_at' => null,
+        ]);
+
+        $checkout->call('selectPurchaseUnit', $fixture['monthPurchaseUnit']->id)
+            ->set('providerCode', $code->code)
+            ->call('submitOrder')
+            ->assertHasErrors(['providerCode']);
+
+        $this->assertSame(0, Order::query()->where('student_user_id', $student->id)->count());
+
+        $checkout->call('selectPurchaseUnit', $lessonUnit->id)
+            ->set('providerCode', $code->code)
+            ->call('submitOrder')
+            ->assertHasNoErrors()
+            ->assertSee('تم تفعيل الكود', false)
+            ->assertDontSee('في انتظار موافقة الإدارة', false);
+
+        $payment = Payment::query()->where('provider_code_id', $code->id)->firstOrFail();
+        $this->assertTrue($payment->is_paid);
+        $this->assertSame($providerMethod->id, $payment->provider_payment_method_id);
+        $this->assertDatabaseHas(Subscription::class, [
+            'student_user_id' => $student->id,
+            'course_id' => $course->id,
+            'lesson_id' => $lesson->id,
+            'purchase_unit_id' => $lessonUnit->id,
+        ]);
+        $this->assertSame('paid', $payment->order->currentStatus->type->slug);
+    }
+
+    public function test_lesson_code_unlocks_only_its_lesson_immediately_and_cannot_be_reused(): void
+    {
+        $fixture = $this->standaloneTeacherCourseFixture();
+        $provider = $fixture['provider'];
+        $student = $fixture['studentUser'];
+        $course = $fixture['course'];
+        $period = CoursePeriod::query()->create([
+            'type' => CoursePeriodType::Term1->value,
+            'name' => ['en' => 'First term'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $lesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $period->id,
+            'title' => ['en' => 'Code lesson'],
+            'starts_at' => now()->addWeek(),
+            'is_active' => true,
+        ]);
+        $otherLesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $period->id,
+            'title' => ['en' => 'Other lesson'],
+            'is_active' => true,
+        ]);
+        $item = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Code video'],
+            'video_url' => 'https://videos.example.test/code-video',
+            'is_active' => true,
+        ]);
+        $otherItem = LessonItem::query()->create([
+            'lesson_id' => $otherLesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Other video'],
+            'video_url' => 'https://videos.example.test/other-video',
+            'is_active' => true,
+        ]);
+        $unit = PurchaseUnit::query()->create([
+            'type' => PurchaseUnitType::Lesson->value,
+            'name' => ['en' => 'Lesson'],
+            'is_active' => true,
+        ]);
+        $code = ProviderCode::query()->create([
+            'provider_id' => $provider->id,
+            'course_id' => $course->id,
+            'lesson_id' => $lesson->id,
+            'purchase_unit_id' => $unit->id,
+            'code' => 'LESSON-123',
+            'num_of_uses' => 1,
+        ]);
+
+        Livewire::actingAs($student)
+            ->test(MyLessonsPage::class, ['providerId' => $provider->id])
+            ->set('code', $code->code)
+            ->call('redeemCode')
+            ->assertHasNoErrors()
+            ->assertSee('تم تفعيل الكود', false);
+
+        $this->assertDatabaseHas(Subscription::class, [
+            'student_user_id' => $student->id,
+            'course_id' => $course->id,
+            'lesson_id' => $lesson->id,
+        ]);
+        $this->assertFalse(app(CheckCourseSubscription::class)->handle($course, $student->id));
+        $this->assertTrue(app(CheckCourseSubscription::class)->forLesson($lesson, $student->id));
+        $this->assertFalse(app(CheckCourseSubscription::class)->forLesson($otherLesson, $student->id));
+
+        $this->actingAs($student)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/single_teacher?subject='.$fixture['accountSubject']->id)
+            ->assertSee('href="/lesson?item='.$item->id.'"', false)
+            ->assertDontSee('href="/lesson?item='.$otherItem->id.'"', false);
+
+        $this->actingAs($student)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$item->id)
+            ->assertOk()
+            ->assertDontSee('هذا العنصر متاح للمشتركين في الكورس فقط.', false);
+
+        Livewire::actingAs($student)
+            ->test(MyLessonsPage::class, ['providerId' => $provider->id])
+            ->set('code', $code->code)
+            ->call('redeemCode')
+            ->assertHasErrors(['code']);
+
+        $this->assertSame(1, Payment::query()->where('provider_code_id', $code->id)->count());
+    }
+
+    public function test_month_code_unlocks_course_but_respects_lesson_schedule(): void
+    {
+        $fixture = $this->standaloneTeacherCourseFixture();
+        $provider = $fixture['provider'];
+        $student = $fixture['studentUser'];
+        $course = $fixture['course'];
+        $period = CoursePeriod::query()->create([
+            'type' => CoursePeriodType::Term1->value,
+            'name' => ['en' => 'First term'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $lesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $period->id,
+            'title' => ['en' => 'Upcoming'],
+            'starts_at' => now()->addWeek(),
+            'is_active' => true,
+        ]);
+        $item = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Upcoming video'],
+            'video_url' => 'https://videos.example.test/upcoming',
+            'is_active' => true,
+        ]);
+        ProviderCode::query()->create([
+            'provider_id' => $provider->id,
+            'course_id' => $course->id,
+            'lesson_id' => $lesson->id,
+            'purchase_unit_id' => $fixture['monthPurchaseUnit']->id,
+            'code' => 'MONTH-123',
+            'num_of_uses' => 1,
+        ]);
+
+        Livewire::actingAs($student)
+            ->test(MyLessonsPage::class, ['providerId' => $provider->id])
+            ->set('code', 'MONTH-123')
+            ->call('redeemCode')
+            ->assertHasNoErrors();
+
+        $subscription = Subscription::query()->where('student_user_id', $student->id)->firstOrFail();
+        $this->assertNull($subscription->lesson_id);
+        $this->assertTrue($subscription->ends_at->isAfter(now()->addDays(29)));
+
+        $this->actingAs($student)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/single_teacher?subject='.$fixture['accountSubject']->id)
+            ->assertDontSee('href="/lesson?item='.$item->id.'"', false);
+
+        $this->actingAs($student)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$item->id)
+            ->assertSee('هذا الدرس سيفتح في', false);
+    }
+
+    public function test_open_lesson_ignores_lesson_item_dates_but_keeps_inactive_items_locked(): void
+    {
+        $fixture = $this->standaloneTeacherCourseFixture();
+        $provider = $fixture['provider'];
+        $student = $fixture['studentUser'];
+        $course = $fixture['course'];
+        $period = CoursePeriod::query()->create([
+            'type' => CoursePeriodType::Term1->value,
+            'name' => ['en' => 'First term'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $lesson = Lesson::query()->create([
+            'course_id' => $course->id,
+            'course_period_id' => $period->id,
+            'title' => ['en' => 'Open lesson'],
+            'is_active' => true,
+        ]);
+        $expiredItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Expired item'],
+            'video_url' => 'https://videos.example.test/expired-item',
+            'ends_at' => now()->subDay(),
+            'is_active' => true,
+        ]);
+        $futureItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Future item'],
+            'video_url' => 'https://videos.example.test/future-item',
+            'starts_at' => now()->addDay(),
+            'is_active' => true,
+        ]);
+        $question = Question::query()->create([
+            'lesson_id' => $lesson->id,
+            'title' => 'What is motion?',
+            'type' => QuestionType::Mcq->value,
+            'difficulty' => QuestionDifficulty::Easy->value,
+            'sort_order' => 1,
+        ]);
+        QuestionOption::query()->create([
+            'question_id' => $question->id,
+            'title' => 'A change in position',
+            'is_correct' => true,
+            'sort_order' => 1,
+        ]);
+        $assignment = Assignment::query()->create([
+            'course_id' => $course->id,
+            'title' => ['en' => 'Homework'],
+            'duration_minutes' => 15,
+            'num_of_attempts' => 2,
+            'question_ids' => [$question->id],
+        ]);
+        $homeworkItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'assignment_id' => $assignment->id,
+            'type' => LessonTypeEnum::Assignments->value,
+            'title' => ['en' => 'Homework'],
+            'ends_at' => now()->subDay(),
+            'is_active' => true,
+        ]);
+        $inactiveItem = LessonItem::query()->create([
+            'lesson_id' => $lesson->id,
+            'type' => LessonTypeEnum::Video->value,
+            'title' => ['en' => 'Inactive item'],
+            'is_active' => false,
+        ]);
+        Subscription::query()->create([
+            'student_user_id' => $student->id,
+            'provider_id' => $provider->id,
+            'course_id' => $course->id,
+            'purchase_unit_id' => $fixture['monthPurchaseUnit']->id,
+            'purchase_type' => PurchaseType::SingleCourse->value,
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addWeek(),
+        ]);
+
+        $this->assertTrue($expiredItem->isCurrentlyOpen());
+        $this->assertTrue($futureItem->isCurrentlyOpen());
+        $this->assertTrue($homeworkItem->isCurrentlyOpen());
+        $this->assertFalse($inactiveItem->isCurrentlyOpen());
+        $this->assertEqualsCanonicalizing(
+            [$expiredItem->id, $futureItem->id, $homeworkItem->id],
+            LessonItem::query()->currentlyOpen()->pluck('id')->all(),
+        );
+
+        $baseUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
+        $this->actingAs($student)
+            ->get($baseUrl.'/single_teacher?subject='.$fixture['accountSubject']->id)
+            ->assertOk()
+            ->assertSee('href="/lesson?item='.$expiredItem->id.'"', false)
+            ->assertSee('href="/lesson?item='.$futureItem->id.'"', false)
+            ->assertSee('href="/lesson?item='.$homeworkItem->id.'"', false)
+            ->assertDontSee('href="/lesson?item='.$inactiveItem->id.'"', false)
+            ->assertDontSee('انتهى في', false)
+            ->assertDontSee('يفتح في', false);
+
+        $this->actingAs($student)
+            ->get($baseUrl.'/lesson?item='.$expiredItem->id)
+            ->assertOk()
+            ->assertSee('id="bunny-player-'.$expiredItem->id.'"', false)
+            ->assertDontSee('انتهى في', false);
+
+        $this->actingAs($student)
+            ->get($baseUrl.'/home_work?assignment='.$assignment->id.'&item='.$homeworkItem->id)
+            ->assertOk()
+            ->assertSee('إنهاء الواجب', false)
+            ->assertDontSee('الواجب مغلق حالياً', false);
+    }
+
+    public function test_expired_and_other_provider_codes_do_not_create_subscriptions(): void
+    {
+        $fixture = $this->standaloneTeacherCourseFixture();
+        $provider = $fixture['provider'];
+        $student = $fixture['studentUser'];
+        $otherProvider = $this->provider('other-teacher', ProviderType::StandaloneTeacher);
+
+        ProviderCode::query()->create([
+            'provider_id' => $provider->id,
+            'course_id' => $fixture['course']->id,
+            'purchase_unit_id' => $fixture['monthPurchaseUnit']->id,
+            'code' => 'EXPIRED-123',
+            'expiry_date' => today()->subDay(),
+            'num_of_uses' => 1,
+        ]);
+        ProviderCode::query()->create([
+            'provider_id' => $otherProvider->id,
+            'course_id' => $fixture['course']->id,
+            'purchase_unit_id' => $fixture['monthPurchaseUnit']->id,
+            'code' => 'OTHER-123',
+            'num_of_uses' => 1,
+        ]);
+
+        foreach (['EXPIRED-123', 'OTHER-123'] as $value) {
+            Livewire::actingAs($student)
+                ->test(MyLessonsPage::class, ['providerId' => $provider->id])
+                ->set('code', $value)
+                ->call('redeemCode')
+                ->assertHasErrors(['code']);
+        }
+
+        $this->assertSame(0, Subscription::query()->where('student_user_id', $student->id)->count());
+        $this->assertSame(0, Order::query()->where('student_user_id', $student->id)->count());
     }
 
     public function test_home_cta_links_guests_to_login(): void
@@ -2688,13 +3075,14 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $track = Track::query()->create(['name' => ['en' => 'Scientific', 'ar' => 'علمي'], 'code' => 'scientific']);
         $subject = Subject::query()->create([
             'track_id' => $track->id,
-            'name' => ['en' => 'Physics', 'ar' => 'الفيزياء'],
+            'name' => 'الفيزياء',
         ]);
         $accountSubject = AccountSubject::query()->create([
             'provider_id' => $provider->id,
             'grade_subject_id' => GradeSubject::query()->create([
                 'grade_id' => $grade->id,
                 'subject_id' => $subject->id,
+                'track_id' => $track->id,
             ])->id,
             'is_active' => true,
         ]);

@@ -37,10 +37,10 @@
             default => 'fa-credit-card',
         };
     };
-    $paymentIdentifier = $selectedPaymentMethod?->paymentMethod?->is_bank || $selectedPaymentMethod?->paymentMethod?->is_code
+    $paymentIdentifier = $selectedPaymentMethod?->paymentMethod?->is_bank
         ? $selectedPaymentMethod?->account_number
         : $selectedPaymentMethod?->phone_number;
-    $paymentHolder = $selectedPaymentMethod?->paymentMethod?->is_bank || $selectedPaymentMethod?->paymentMethod?->is_code
+    $paymentHolder = $selectedPaymentMethod?->paymentMethod?->is_bank
         ? $selectedPaymentMethod?->account_holder
         : $selectedPaymentMethod?->phone_holder;
 @endphp
@@ -63,9 +63,9 @@
                 <p class="text-xs font-black text-emerald-600 bg-emerald-50 rounded-full px-4 py-2 inline-flex mb-4">
                     {{ $submittedOrderNumber }}
                 </p>
-                <h1 class="text-2xl md:text-3xl font-black text-blue-950">تم إرسال الطلب</h1>
+                <h1 class="text-2xl md:text-3xl font-black text-blue-950">{{ $paidWithCode ? 'تم تفعيل الكود' : 'تم إرسال الطلب' }}</h1>
                 <p class="text-sm font-bold text-gray-400 mt-3 leading-7">
-                    طلبك الآن في انتظار موافقة الإدارة. سنقوم بتفعيل الاشتراك بعد مراجعة بيانات الدفع.
+                    {{ $paidWithCode ? 'تم تفعيل الاشتراك ويمكنك بدء التعلم الآن من صفحة دروسي.' : 'طلبك الآن في انتظار موافقة الإدارة. سنقوم بتفعيل الاشتراك بعد مراجعة بيانات الدفع.' }}
                 </p>
                 <div class="flex flex-col sm:flex-row gap-3 justify-center mt-8">
                     <a href="/my_lessons" class="text-white font-black text-sm py-3.5 px-8 rounded-2xl transition-all" style="background-color: {{ $themeColor }}">
@@ -141,6 +141,23 @@
                 </div>
 
                 @if ($selectedPaymentMethod)
+                    @if ($selectedPaymentMethod->paymentMethod?->is_code)
+                        <div class="space-y-2 pt-2 text-right">
+                            <label for="checkout-provider-code" class="text-sm font-black text-gray-800 block">أدخل الكود</label>
+                            <input
+                                id="checkout-provider-code"
+                                type="text"
+                                wire:model="providerCode"
+                                autocomplete="off"
+                                dir="ltr"
+                                placeholder="أدخل الكود الذي حصلت عليه"
+                                class="w-full bg-[#F3F4F9] text-gray-800 text-sm font-bold px-4 py-4 rounded-xl border border-transparent focus:outline-none focus:border-blue-400 transition-all"
+                            >
+                            @error('providerCode')
+                                <p class="text-xs font-bold text-red-500 mt-2">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @else
                     <div class="space-y-4 pt-2">
                         <h3 class="text-sm font-black text-gray-800 flex items-center gap-2">
                             <i class="fa-solid fa-money-bill-transfer text-gray-400"></i>
@@ -150,7 +167,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="space-y-1.5 text-right">
                                 <label class="text-xs font-bold text-gray-400 block">
-                                    {{ $selectedPaymentMethod->paymentMethod?->is_code ? 'الكود' : ($selectedPaymentMethod->paymentMethod?->is_bank ? 'رقم الحساب' : 'رقم الموبايل') }}
+                                    {{ $selectedPaymentMethod->paymentMethod?->is_bank ? 'رقم الحساب' : 'رقم الموبايل' }}
                                 </label>
                                 <div class="relative">
                                     <input
@@ -247,6 +264,7 @@
                             @enderror
                         </div>
                     </div>
+                    @endif
                 @endif
 
                 <button
@@ -259,7 +277,7 @@
                 >
                     <span wire:loading.remove wire:target="submitOrder">
                         <i class="fa-solid fa-lock text-xs"></i>
-                        تأكيد عملية الدفع
+                        {{ $selectedPaymentMethod?->paymentMethod?->is_code ? 'تفعيل الكود' : 'تأكيد عملية الدفع' }}
                     </span>
                     <span wire:loading wire:target="submitOrder">جاري إرسال الطلب...</span>
                 </button>

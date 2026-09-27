@@ -3,7 +3,7 @@
 namespace App\Actions\StudentPortal\Lessons;
 
 use App\Enums\LessonTypeEnum;
-use App\Models\Course;
+use App\Models\Lesson;
 use App\Models\LessonItem;
 use App\Models\Provider;
 use App\Models\StudentVideoProgress;
@@ -65,7 +65,7 @@ class ManageLessonVideoPlayback
             return $this->videoProgressPayload(null, null, $studentUserId);
         }
 
-        if (! $lesson->isCurrentlyOpen() || ! $lessonItem->isCurrentlyOpen()) {
+        if ((! $lesson->isCurrentlyOpen() && ! $this->hasImmediateLessonAccess($lesson, $studentUserId)) || ! $lessonItem->isCurrentlyOpen()) {
             return $this->videoProgressPayload(
                 $this->latestStudentVideoProgress($lessonItem, $studentUserId),
                 $lessonItem,
@@ -73,7 +73,7 @@ class ManageLessonVideoPlayback
             );
         }
 
-        if (! $lessonItem->is_free && ! $this->hasActiveCourseSubscription($course, $studentUserId)) {
+        if (! $lessonItem->is_free && ! $this->hasActiveLessonSubscription($lesson, $studentUserId)) {
             return $this->videoProgressPayload(
                 $this->latestStudentVideoProgress($lessonItem, $studentUserId),
                 $lessonItem,
@@ -294,11 +294,16 @@ class ManageLessonVideoPlayback
             ->count();
     }
 
-    private function hasActiveCourseSubscription(Course $course, int $studentUserId): bool
+    private function hasActiveLessonSubscription(Lesson $lesson, int $studentUserId): bool
     {
         return Subscription::query()
-            ->activeForStudentCourse($studentUserId, $course)
+            ->activeForStudentLesson($studentUserId, $lesson)
             ->exists();
+    }
+
+    private function hasImmediateLessonAccess(Lesson $lesson, int $studentUserId): bool
+    {
+        return Subscription::query()->activeForSpecificLesson($studentUserId, $lesson)->exists();
     }
 
     private function canWatchVideo(?LessonItem $lessonItem, ?int $studentUserId, bool $hasCourseSubscription): bool
@@ -311,7 +316,9 @@ class ManageLessonVideoPlayback
             return false;
         }
 
-        if (! ($lessonItem->lesson?->isCurrentlyOpen() ?? false) || ! $lessonItem->isCurrentlyOpen()) {
+        $lesson = $lessonItem->lesson;
+
+        if (! $lesson || (! $lesson->isCurrentlyOpen() && ! $this->hasImmediateLessonAccess($lesson, $studentUserId)) || ! $lessonItem->isCurrentlyOpen()) {
             return false;
         }
 

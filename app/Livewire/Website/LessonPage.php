@@ -51,7 +51,10 @@ class LessonPage extends Component
         $provider = Provider::query()->findOrFail($this->providerId);
         $lessonItem = $this->resolveLessonItem->handle($provider, $this->itemId);
         $hasCourseSubscription = $lessonItem?->lesson?->course
-            ? $this->checkCourseSubscription->handle($lessonItem->lesson->course, Auth::id())
+            ? $this->checkCourseSubscription->forLesson($lessonItem->lesson, Auth::id())
+            : false;
+        $hasImmediateLessonAccess = $lessonItem?->lesson
+            ? $this->checkCourseSubscription->isImmediateLessonAccess($lessonItem->lesson, Auth::id())
             : false;
         $videoPlayback = $this->manageLessonVideoPlayback->resolve(
             $lessonItem,
@@ -64,6 +67,7 @@ class LessonPage extends Component
             'lessonItem' => $lessonItem,
             'lessonItems' => $lessonItem?->lesson?->items ?? collect(),
             'hasCourseSubscription' => $hasCourseSubscription,
+            'hasImmediateLessonAccess' => $hasImmediateLessonAccess,
             'signedVideoUrl' => $videoPlayback['signedVideoUrl'],
             'attempts' => $this->calculateAssessmentAttempts->handle($lessonItem?->assignment ?? $lessonItem?->exam, Auth::id()),
             'studentVideoProgress' => $videoPlayback['studentVideoProgress'],

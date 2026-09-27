@@ -1,9 +1,8 @@
 <?php
 
 namespace App\Http\Controllers\Api\StudentLearning;
-use App\Actions\StudentPortal\Catalog\ListAccountSubjects;
+
 use App\Actions\StudentPortal\Catalog\LoadSingleTeacherPage;
-use App\Actions\StudentPortal\Catalog\LoadTeachersPage;
 use App\Actions\StudentPortal\Courses\CheckCourseSubscription;
 use App\Actions\StudentPortal\Lessons\CalculateAssessmentAttempts;
 use App\Actions\StudentPortal\Lessons\ManageLessonVideoPlayback;
@@ -14,99 +13,95 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\LessonItemResource;
 use App\Http\Resources\MySubscribedSubjectResource;
 use App\Http\Resources\SingleTeacherPageResource;
-use App\Http\Resources\TeacherResource;
-use Auth;
-use Illuminate\Pagination\LengthAwarePaginator;
-use App\Http\Resources\SubjectResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Provider;
+use Auth;
 use Illuminate\Http\Request;
 
 class StudentLearningController extends Controller
 {
+    public function getMySubscribedSubjects(Request $request, LoadMyLessons $loadMyLessons): ApiResponse
+    {
+        $user = $request->attributes->get('auth_user');
 
-public function getMySubscribedSubjects( Request $request,  LoadMyLessons $loadMyLessons): ApiResponse {
-    $user = $request->attributes->get('auth_user');
+        if (! $user) {
+            return ApiResponse::make()
+                ->success(false)
+                ->message(__('unauthenticated'))
+                ->statusCode(401);
+        }
 
-    if (! $user) {
+        $validated = $request->validate([
+            'providerId' => ['required', 'integer', 'exists:providers,id'],
+        ]);
+
+        $provider = Provider::query()->findOrFail($validated['providerId']);
+
+        $data = $loadMyLessons->handle($provider, $user);
+        $subscriptions = $data['subscriptions'];
+
         return ApiResponse::make()
-            ->success(false)
-            ->message(__('unauthenticated'))
-            ->statusCode(401);
+            ->success(true)
+            ->message(__('subjects_fetched_successfully'))
+            ->data(MySubscribedSubjectResource::collection($subscriptions));
     }
 
-    $validated = $request->validate([
-        'providerId' => ['required', 'integer', 'exists:providers,id'],
-    ]);
+    public function getSingleTeacherPage(
+        Request $request,
+        LoadSingleTeacherPage $loadSingleTeacherPage, CheckCourseSubscription $checkCourseSubscription,
+    ): ApiResponse {
+        $user = $request->attributes->get('auth_user');
 
-    $provider = Provider::query()->findOrFail($validated['providerId']);
+        if (! $user) {
+            return ApiResponse::make()
+                ->success(false)
+                ->message(__('unauthenticated'))
+                ->statusCode(401);
+        }
 
-    $data = $loadMyLessons->handle($provider, $user);
-    $subscriptions = $data['subscriptions'];
+        $validated = $request->validate([
+            'providerId' => ['required', 'integer', 'exists:providers,id'],
+            'teacherId' => ['nullable', 'integer', 'exists:academy_teachers,id'],
+            'subjectId' => ['nullable', 'integer', 'exists:account_subjects,id'],
+            'coursePeriodId' => ['nullable', 'integer', 'exists:course_periods,id'],
+        ]);
 
-    return ApiResponse::make()
-        ->success(true)
-        ->message(__('subjects_fetched_successfully'))
-        ->data(MySubscribedSubjectResource::collection($subscriptions));
-}
+        $provider = Provider::query()->findOrFail($validated['providerId']);
+        $gradeId = $user->studentProfile()?->value('grade_id');
+        $teacherId = isset($validated['teacherId']) ? (int) $validated['teacherId'] : null;
+        $subjectId = isset($validated['subjectId']) ? (int) $validated['subjectId'] : null;
+        $coursePeriodId = isset($validated['coursePeriodId']) ? (int) $validated['coursePeriodId'] : null;
 
-public function getSingleTeacherPage(
-    Request $request,
-    LoadSingleTeacherPage $loadSingleTeacherPage, CheckCourseSubscription $checkCourseSubscription,
-): ApiResponse {
-    $user = $request->attributes->get('auth_user');
+        $data = $loadSingleTeacherPage->handle(
+            $provider,
+            $teacherId,
+            $subjectId,
+            $user->id,
+            $gradeId
+        );
 
-    if (! $user) {
+        if (! $data['teacher']) {
+            return ApiResponse::make()
+                ->success(false)
+                ->message(__('teacher_not_found'))
+                ->statusCode(404);
+        }
+        $course = $data['course'] ?? null;
+        $hasCourseSubscription = false;
+
+        if ($course) {
+            $hasCourseSubscription = $checkCourseSubscription->handle($course, $user->id);
+        }
+
+        $data['hasCourseSubscription'] = $hasCourseSubscription;
+        $data['userId'] = $user->id;
+        $data['coursePeriodId'] = $coursePeriodId;
+
         return ApiResponse::make()
-            ->success(false)
-            ->message(__('unauthenticated'))
-            ->statusCode(401);
+            ->success(true)
+            ->message(__('teacher_page_fetched_successfully'))
+            ->data(new SingleTeacherPageResource($data));
     }
-
-    $validated = $request->validate([
-        'providerId'     => ['required', 'integer', 'exists:providers,id'],
-        'teacherId'      => ['nullable', 'integer', 'exists:academy_teachers,id'],
-        'subjectId'      => ['nullable', 'integer', 'exists:account_subjects,id'],
-        'coursePeriodId' => ['nullable', 'integer', 'exists:course_periods,id'],
-    ]);
-
-    $provider       = Provider::query()->findOrFail($validated['providerId']);
-    $gradeId        = $user->studentProfile()?->value('grade_id');
-    $teacherId      = isset($validated['teacherId']) ? (int) $validated['teacherId'] : null;
-    $subjectId      = isset($validated['subjectId']) ? (int) $validated['subjectId'] : null;
-    $coursePeriodId = isset($validated['coursePeriodId']) ? (int) $validated['coursePeriodId'] : null;
-
-    $data = $loadSingleTeacherPage->handle(
-        $provider,
-        $teacherId,
-        $subjectId,
-        $user->id,
-        $gradeId
-    );
-
-    if (! $data['teacher']) {
-        return ApiResponse::make()
-            ->success(false)
-            ->message(__('teacher_not_found'))
-            ->statusCode(404);
-    }
-    $course = $data['course'] ?? null;
-$hasCourseSubscription = false;
-
-if ($course) {
-    $hasCourseSubscription = $checkCourseSubscription->handle($course, $user->id);
-}
-
-    $data['hasCourseSubscription'] = $hasCourseSubscription;
-    $data['userId'] = $user->id;
-    $data['coursePeriodId'] = $coursePeriodId;
-
-    return ApiResponse::make()
-        ->success(true)
-        ->message(__('teacher_page_fetched_successfully'))
-        ->data(new SingleTeacherPageResource($data));
-}
-
 
     public function getLessonItem(
         Request $request,
@@ -116,7 +111,7 @@ if ($course) {
         CalculateAssessmentAttempts $calculateAssessmentAttempts
     ) {
         $validated = $request->validate([
-            'providerId'   => ['required', 'integer', 'exists:providers,id'],
+            'providerId' => ['required', 'integer', 'exists:providers,id'],
             'lessonItemId' => ['required', 'integer', 'exists:lesson_items,id'],
         ]);
 
@@ -140,7 +135,7 @@ if ($course) {
                 ->statusCode(404);
         }
 
-        if (! $lessonItem->isCurrentlyOpen()) {
+        if (! $lessonItem->isCurrentlyOpen() || (! $lessonItem->lesson->isCurrentlyOpen() && ! $checkCourseSubscription->isImmediateLessonAccess($lessonItem->lesson, $user->id))) {
             return ApiResponse::make()
                 ->success(false)
                 ->message(__('lesson_item_not_available_yet'))
@@ -149,7 +144,7 @@ if ($course) {
 
         $course = $lessonItem->lesson?->course;
         $hasCourseSubscription = $course
-            ? $checkCourseSubscription->handle($course, $user->id)
+            ? $checkCourseSubscription->forLesson($lessonItem->lesson, $user->id)
             : false;
 
         if (! $lessonItem->is_free && ! $hasCourseSubscription) {
@@ -189,10 +184,10 @@ if ($course) {
             : null;
 
         $payload = [
-            'lessonItem'            => $lessonItem,
+            'lessonItem' => $lessonItem,
             'hasCourseSubscription' => $hasCourseSubscription,
-            'videoPlayback'        => $videoPlayback,
-            'attempts'             => $attempts,
+            'videoPlayback' => $videoPlayback,
+            'attempts' => $attempts,
         ];
 
         return ApiResponse::make()
@@ -219,9 +214,4 @@ if ($course) {
             $request->input('progressId') ? (int) $request->input('progressId') : null
         );
     }
-
-
-
-
-
 }

@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 class LoadSingleTeacherPage
 {
     /**
-     * @return array{teacher: AcademyTeacher|Account|null, accountSubject: AccountSubject|null, course: Course|null, hasCourseSubscription: bool, monthlyPrice: string|null, selectedSubjectId: int|null}
+     * @return array{teacher: AcademyTeacher|Account|null, accountSubject: AccountSubject|null, course: Course|null, hasCourseSubscription: bool, lessonCodeIds: array<int, int>, monthlyPrice: string|null, selectedSubjectId: int|null}
      */
     public function handle(Provider $provider, ?int $teacherId, ?int $subjectId, ?int $studentUserId, ?int $gradeId): array
     {
@@ -31,6 +31,14 @@ class LoadSingleTeacherPage
             'accountSubject' => $accountSubject,
             'course' => $course,
             'hasCourseSubscription' => $course ? $this->hasActiveCourseSubscription($course, $studentUserId) : false,
+            'lessonCodeIds' => $course && $studentUserId ? Subscription::query()
+                ->where('student_user_id', $studentUserId)
+                ->whereBelongsTo($provider)
+                ->whereBelongsTo($course)
+                ->whereNotNull('lesson_id')
+                ->where(fn (Builder $query): Builder => $query->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
+                ->where(fn (Builder $query): Builder => $query->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
+                ->pluck('lesson_id')->all() : [],
             'monthlyPrice' => $course ? $this->monthlyPrice($course) : null,
             'selectedSubjectId' => $accountSubject?->id,
         ];

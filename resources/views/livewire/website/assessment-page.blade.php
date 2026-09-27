@@ -228,8 +228,8 @@
 </div>
 
 @once
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js" onload="renderStudentMath()"></script>
+    <link rel="stylesheet" href="{{ asset('css/katex.min.css') }}">
+    <script defer src="{{ asset('js/katex.min.js') }}" onload="renderStudentMath()"></script>
     <script>
         function renderStudentMath() {
             if (typeof katex === 'undefined') {

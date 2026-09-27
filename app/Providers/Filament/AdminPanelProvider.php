@@ -111,7 +111,7 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => Blade::render(<<<'BLADE'
                 <link
                     rel="stylesheet"
-                    href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css"
+                    href="{{ asset('css/katex.min.css') }}"
                 >
             BLADE)
             )
@@ -121,7 +121,8 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => Blade::render(<<<'BLADE'
                 <script
                     defer
-                    src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js">
+                    src="{{ asset('js/katex.min.js') }}"
+                    onload="renderFilamentMath()">
                 </script>
 
                 <script>

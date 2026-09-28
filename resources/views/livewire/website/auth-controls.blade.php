@@ -3,8 +3,8 @@
         @if (! $logoutOnly)
             <div class="{{ $isDesktop ? 'hidden lg:flex items-center gap-2' : 'flex items-center justify-center gap-3' }}">
                 <a
-                    href="/profile"
-                    aria-label="الملف الشخصي"
+                    href="/{{ \App\Support\WebsiteUrl::locale() }}/profile"
+                    aria-label="{{ __('الملف الشخصي') }}"
                     class="text-gray-700 hover:text-[{{ $themeColor }}] transition-colors p-2 shrink-0"
                 >
                     <svg
@@ -24,8 +24,8 @@
                 </a>
 
                 <a
-                    href="/cart"
-                    aria-label="السلة ({{ $cartItemsCount }})"
+                    href="/{{ \App\Support\WebsiteUrl::locale() }}/cart"
+                    aria-label="{{ __('السلة') }} ({{ $cartItemsCount }})"
                     class="relative text-gray-700 hover:text-[{{ $themeColor }}] transition-colors p-2 shrink-0"
                 >
                     <svg
@@ -60,16 +60,16 @@
             wire:click="logout"
             class="{{ $isDesktop ? 'text-sm lg:text-base py-2.5 px-4 whitespace-nowrap' : 'w-full text-center py-3 px-6' }} bg-transparent text-red-600 border-2 border-red-100 font-semibold rounded-[12px] transition-all hover:bg-red-50 active:scale-95"
         >
-            <span wire:loading.remove wire:target="logout">تسجيل الخروج</span>
-            <span wire:loading wire:target="logout">جاري الخروج...</span>
+            <span wire:loading.remove wire:target="logout">{{ __('تسجيل الخروج') }}</span>
+            <span wire:loading wire:target="logout">{{ __('جاري الخروج...') }}</span>
         </button>
     @else
         <a
-            href="/login"
+            href="/{{ \App\Support\WebsiteUrl::locale() }}/login"
             class="{{ $isDesktop ? 'hidden lg:flex items-center justify-center whitespace-nowrap text-sm lg:text-base py-2.5 px-4' : 'w-full text-center py-3 px-6' }} bg-transparent font-semibold rounded-[12px] border-2 transition-all hover:bg-gray-50 active:scale-95"
             style="color: {{ $themeColor }}; border-color: {{ $themeColor }}"
         >
-            تسجيل الدخول
+            {{ __('تسجيل الدخول') }}
         </a>
     @endif
 </div>

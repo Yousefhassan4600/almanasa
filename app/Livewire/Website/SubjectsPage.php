@@ -4,6 +4,7 @@ namespace App\Livewire\Website;
 
 use App\Actions\StudentPortal\Catalog\ListAccountSubjects;
 use App\Models\Provider;
+use App\Support\WebsiteTranslation;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -34,8 +35,8 @@ class SubjectsPage extends Component
         return view('livewire.website.subjects-page', [
             'provider' => $provider,
             'subjects' => $this->listAccountSubjects->handle($provider, $gradeId, $this->search, withActiveTeachersCount: true),
-            'gradeName' => $profile?->grade?->name,
-            'stageName' => $profile?->grade?->educationStage?->name,
+            'gradeName' => WebsiteTranslation::value($profile?->grade, 'name'),
+            'stageName' => WebsiteTranslation::value($profile?->grade?->educationStage, 'name'),
             'hasGradeFilter' => filled($gradeId),
         ]);
     }

@@ -91,9 +91,9 @@ function toggleAccordion(header) {
 
 const studentData = {
   all: {
-    generalLevel: "ممتاز",
+    generalLevel: window.websiteTranslate("ممتاز"),
     generalLevelPercent: "92%",
-    timeSpent: "18 ساعة و 45 دقيقة",
+    timeSpent: window.websiteTranslate("18 ساعة و 45 دقيقة"),
     attendanceLessons: "52 / 65",
     attendancePercent: 80,
     homeworkCorrect: 145,
@@ -101,16 +101,16 @@ const studentData = {
     homeworkRate: "94%",
     examsAvg: "18.5 / 20",
     exams: [
-      { id: 1, title: "اختبار الوحدة الأولى", time: "منذ أسبوعين", score: "19 / 20", grade: "ممتاز", gradeColor: "#00AA6C" },
-      { id: 2, title: "اختبار الدرس الثالث", time: "منذ 3 أيام", score: "18 / 20", grade: "جيد جداً", gradeColor: "#008B5B" }
+      { id: 1, title: window.websiteTranslate("اختبار الوحدة الأولى"), time: window.websiteTranslate("منذ أسبوعين"), score: "19 / 20", grade: window.websiteTranslate("ممتاز"), gradeColor: "#00AA6C" },
+      { id: 2, title: window.websiteTranslate("اختبار الدرس الثالث"), time: window.websiteTranslate("منذ 3 أيام"), score: "18 / 20", grade: window.websiteTranslate("جيد جداً"), gradeColor: "#008B5B" }
     ],
-    strengths: ["الجبر والعمليات الحسابية", "سرعة حل المسائل اللفظية"],
-    opportunities: ["التركيز في خطوات البرهان الهندسي", "مراجعة قوانين حساب المثلثات"]
+    strengths: [window.websiteTranslate("الجبر والعمليات الحسابية"), window.websiteTranslate("سرعة حل المسائل اللفظية")],
+    opportunities: [window.websiteTranslate("التركيز في خطوات البرهان الهندسي"), window.websiteTranslate("مراجعة قوانين حساب المثلثات")]
   },
   term1: {
-    generalLevel: "ممتاز",
+    generalLevel: window.websiteTranslate("ممتاز"),
     generalLevelPercent: "95%",
-    timeSpent: "10 ساعات و 15 دقيقة",
+    timeSpent: window.websiteTranslate("10 ساعات و 15 دقيقة"),
     attendanceLessons: "30 / 32",
     attendancePercent: 94,
     homeworkCorrect: 80,
@@ -118,15 +118,15 @@ const studentData = {
     homeworkRate: "95%",
     examsAvg: "19 / 20",
     exams: [
-      { id: 1, title: "اختبار الوحدة الأولى", time: "منذ أسبوعين", score: "19 / 20", grade: "ممتاز", gradeColor: "#00AA6C" }
+      { id: 1, title: window.websiteTranslate("اختبار الوحدة الأولى"), time: window.websiteTranslate("منذ أسبوعين"), score: "19 / 20", grade: window.websiteTranslate("ممتاز"), gradeColor: "#00AA6C" }
     ],
-    strengths: ["الجبر والعمليات الحسابية"],
-    opportunities: ["التركيز في خطوات البرهان الهندسي"]
+    strengths: [window.websiteTranslate("الجبر والعمليات الحسابية")],
+    opportunities: [window.websiteTranslate("التركيز في خطوات البرهان الهندسي")]
   },
   term2: {
-    generalLevel: "جيد جداً",
+    generalLevel: window.websiteTranslate("جيد جداً"),
     generalLevelPercent: "89%",
-    timeSpent: "8 ساعات و 30 دقيقة",
+    timeSpent: window.websiteTranslate("8 ساعات و 30 دقيقة"),
     attendanceLessons: "22 / 33",
     attendancePercent: 67,
     homeworkCorrect: 65,
@@ -134,10 +134,10 @@ const studentData = {
     homeworkRate: "89%",
     examsAvg: "18 / 20",
     exams: [
-      { id: 2, title: "اختبار الدرس الثالث", time: "منذ 3 أيام", score: "18 / 20", grade: "جيد جداً", gradeColor: "#008B5B" }
+      { id: 2, title: window.websiteTranslate("اختبار الدرس الثالث"), time: window.websiteTranslate("منذ 3 أيام"), score: "18 / 20", grade: window.websiteTranslate("جيد جداً"), gradeColor: "#008B5B" }
     ],
-    strengths: ["سرعة حل المسائل اللفظية"],
-    opportunities: ["مراجعة قوانين حساب المثلثات"]
+    strengths: [window.websiteTranslate("سرعة حل المسائل اللفظية")],
+    opportunities: [window.websiteTranslate("مراجعة قوانين حساب المثلثات")]
   }
 };
 
@@ -204,7 +204,7 @@ function filterStudentTerm(term) {
   const examsList = document.getElementById("student-exams-list");
   if (examsList) {
     if (data.exams.length === 0) {
-      examsList.innerHTML = `<div class="text-center py-4 text-xs text-gray-400">لا توجد امتحانات مضافة بعد.</div>`;
+      examsList.innerHTML = `<div class="text-center py-4 text-xs text-gray-400">${window.websiteTranslate("لا توجد امتحانات مضافة بعد.")}</div>`;
     } else {
       examsList.innerHTML = data.exams.map(exam => `
         <div class="flex items-center justify-between p-4 bg-[#F8F7FF] rounded-2xl border border-[#ECECFF]/50 hover:border-[#5D3FD3]/25 transition-all duration-300 shadow-sm hover:shadow-md">

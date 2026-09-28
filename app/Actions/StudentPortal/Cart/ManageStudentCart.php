@@ -9,6 +9,7 @@ use App\Models\Course;
 use App\Models\CoursePrice;
 use App\Models\Provider;
 use App\Models\PurchaseUnit;
+use App\Support\WebsiteTranslation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -62,7 +63,7 @@ class ManageStudentCart
                 'course_price_id' => $coursePrice->id,
                 'purchase_unit_id' => $coursePrice->purchase_unit_id,
                 'purchase_type' => PurchaseType::SingleCourse->value,
-                'title' => $course->getTranslation('title', 'ar', false) ?: $course->title,
+                'title' => WebsiteTranslation::value($course, 'title') ?: $course->title,
                 'unit_price' => $coursePrice->price,
                 'total' => $coursePrice->price,
             ])->save();

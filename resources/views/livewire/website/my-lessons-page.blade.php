@@ -3,8 +3,8 @@
 
     $themeColor = $provider->websitePrimaryColor();
     $secondaryColor = $provider->websiteSecondaryColor();
-    $studentName = $student?->name ?: 'طالب';
-    $gradeName = $studentProfile?->grade?->name;
+    $studentName = $student?->name ?: __('طالب');
+    $gradeName = \App\Support\WebsiteTranslation::value($studentProfile?->grade, 'name');
     $avatar = $studentProfile?->avatar
         ? asset('storage/'.$studentProfile->avatar)
         : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120&h=120';
@@ -12,36 +12,36 @@
     $statusFor = function ($subscription): array {
         if ($subscription->is_active) {
             return [
-                'label' => 'نشط',
+                'label' => __('نشط'),
                 'class' => 'bg-emerald-50 text-emerald-600',
                 'border' => '#059669',
                 'description' => filled($subscription->ends_at)
-                    ? 'ينتهي في '.$subscription->ends_at->format('Y-m-d')
-                    : 'اشتراك مفتوح',
+                    ? __('ينتهي في ').$subscription->ends_at->format('Y-m-d')
+                    : __('اشتراك مفتوح'),
             ];
         }
 
         if (filled($subscription->starts_at) && $subscription->starts_at->isFuture()) {
             return [
-                'label' => 'لم يبدأ',
+                'label' => __('لم يبدأ'),
                 'class' => 'bg-amber-50 text-amber-600',
                 'border' => '#F59E0B',
-                'description' => 'يبدأ في '.$subscription->starts_at->format('Y-m-d'),
+                'description' => __('يبدأ في ').$subscription->starts_at->format('Y-m-d'),
             ];
         }
 
         return [
-            'label' => 'غير نشط',
+            'label' => __('غير نشط'),
             'class' => 'bg-rose-50 text-rose-600',
             'border' => '#E11D48',
             'description' => filled($subscription->ends_at)
-                ? 'انتهى في '.$subscription->ends_at->format('Y-m-d')
-                : 'الاشتراك غير نشط حالياً',
+                ? __('انتهى في ').$subscription->ends_at->format('Y-m-d')
+                : __('الاشتراك غير نشط حالياً'),
         ];
     };
 @endphp
 
-<div class="grid grid-cols-1 lg:grid-cols-12 min-h-screen bg-white" dir="rtl">
+<div class="grid grid-cols-1 lg:grid-cols-12 min-h-screen bg-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <aside class="col-span-1 lg:col-span-2 bg-white border-b lg:border-b-0 lg:border-l border-gray-100 p-6 flex flex-col justify-between order-1 lg:order-1">
         <div class="space-y-8">
                     <div class="flex flex-col items-center text-center space-y-3">
@@ -50,27 +50,27 @@
                             <span class="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></span>
                         </div>
                         <div>
-                            <h2 class="text-sm font-black text-blue-950">أهلاً بك، {{ $studentName }}</h2>
-                            <p class="text-xs font-bold text-gray-400 mt-1">{{ $gradeName ? 'طالب في '.$gradeName : 'طالب' }}</p>
+                            <h2 class="text-sm font-black text-blue-950">{{ __('أهلاً بك،') }} {{ $studentName }}</h2>
+                            <p class="text-xs font-bold text-gray-400 mt-1">{{ $gradeName ? __('طالب في ').$gradeName : __('طالب') }}</p>
                         </div>
                     </div>
 
                     <nav class="space-y-1">
-                        <a href="/profile" class="flex items-center gap-3 text-gray-400 hover:bg-gray-50 hover:text-blue-950 px-4 py-3 rounded-xl text-xs font-bold transition-all">
+                        <a href="/{{ \App\Support\WebsiteUrl::locale() }}/profile" class="flex items-center gap-3 text-gray-400 hover:bg-gray-50 hover:text-blue-950 px-4 py-3 rounded-xl text-xs font-bold transition-all">
                             <i class="fa-regular fa-bookmark text-base w-5 text-center"></i>
-                            <span>لوحة التحكم</span>
+                            <span>{{ __('لوحة التحكم') }}</span>
                         </a>
-                        <a href="/my_lessons" class="flex items-center gap-3 text-white px-4 py-3 rounded-xl text-xs font-black shadow-sm transition-all" style="background-color: {{ $themeColor }}; box-shadow: 0 8px 20px {{ $themeColor }}26">
+                        <a href="/{{ \App\Support\WebsiteUrl::locale() }}/my_lessons" class="flex items-center gap-3 text-white px-4 py-3 rounded-xl text-xs font-black shadow-sm transition-all" style="background-color: {{ $themeColor }}; box-shadow: 0 8px 20px {{ $themeColor }}26">
                             <i class="fa-solid fa-grip text-base w-5 text-center"></i>
-                            <span>دروسي</span>
+                            <span>{{ __('دروسي') }}</span>
                         </a>
                         <a href="#" class="flex items-center gap-3 text-gray-400 hover:bg-gray-50 hover:text-blue-950 px-4 py-3 rounded-xl text-xs font-bold transition-all">
                             <i class="fa-regular fa-file-lines text-base w-5 text-center"></i>
-                            <span>الاختبارات</span>
+                            <span>{{ __('الاختبارات') }}</span>
                         </a>
                         <a href="#" class="flex items-center gap-3 text-gray-400 hover:bg-gray-50 hover:text-blue-950 px-4 py-3 rounded-xl text-xs font-bold transition-all">
                             <i class="fa-regular fa-chart-bar text-base w-5 text-center"></i>
-                            <span>التقارير</span>
+                            <span>{{ __('التقارير') }}</span>
                         </a>
                     </nav>
         </div>
@@ -83,20 +83,20 @@
     <main class="col-span-1 lg:col-span-10 p-4 md:p-8 order-2 lg:order-2 bg-white">
                 <div class="my-container space-y-8">
                     <div class="text-right">
-                        <h1 class="text-3xl md:text-4xl font-black text-blue-950">دروسي</h1>
+                        <h1 class="text-3xl md:text-4xl font-black text-blue-950">{{ __('دروسي') }}</h1>
                         <p class="text-sm md:text-base font-bold text-gray-400 mt-3">
-                            المواد والكورسات التي اشتركت بها، مع حالة كل اشتراك.
+                            {{ __('المواد والكورسات التي اشتركت بها، مع حالة كل اشتراك.') }}
                         </p>
                     </div>
 
                     <form wire:submit="redeemCode" class="rounded-2xl border border-gray-100 bg-slate-50 p-5 flex flex-col sm:flex-row gap-3 items-start sm:items-end">
                         <div class="flex-1 w-full text-right">
-                            <label for="provider-code" class="block text-sm font-black text-blue-950 mb-2">تفعيل كود</label>
-                            <input id="provider-code" type="text" wire:model="code" dir="ltr" autocomplete="off" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm" placeholder="أدخل الكود">
+                            <label for="provider-code" class="block text-sm font-black text-blue-950 mb-2">{{ __('تفعيل كود') }}</label>
+                            <input id="provider-code" type="text" wire:model="code" dir="ltr" autocomplete="off" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm" placeholder="{{ __('أدخل الكود') }}">
                             @error('code') <p class="text-rose-600 text-xs mt-2">{{ $message }}</p> @enderror
-                            @if ($codeRedeemed) <p class="text-emerald-600 text-xs mt-2">تم تفعيل الكود وإضافة المحتوى إلى دروسك.</p> @endif
+                            @if ($codeRedeemed) <p class="text-emerald-600 text-xs mt-2">{{ __('تم تفعيل الكود وإضافة المحتوى إلى دروسك.') }}</p> @endif
                         </div>
-                        <button type="submit" class="rounded-xl px-6 py-3 text-white text-sm font-bold" style="background-color: {{ $themeColor }}">تفعيل</button>
+                        <button type="submit" class="rounded-xl px-6 py-3 text-white text-sm font-bold" style="background-color: {{ $themeColor }}">{{ __('تفعيل') }}</button>
                     </form>
 
                     @if ($subscriptions->isEmpty())
@@ -104,10 +104,10 @@
                             <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl" style="background-color: {{ $themeColor }}14; color: {{ $themeColor }}">
                                 <i class="fa-solid fa-book-open"></i>
                             </div>
-                            <h2 class="text-xl font-black text-blue-950">لا توجد اشتراكات بعد</h2>
-                            <p class="text-sm font-bold text-gray-400 mt-2">اشترك في مادة لتظهر هنا وتبدأ متابعة دروسك.</p>
-                            <a href="/subjects" class="inline-flex mt-5 text-white text-sm font-bold py-3 px-8 rounded-xl transition-all" style="background-color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $secondaryColor }}'" onmouseout="this.style.backgroundColor='{{ $themeColor }}'">
-                                استكشف المواد
+                            <h2 class="text-xl font-black text-blue-950">{{ __('لا توجد اشتراكات بعد') }}</h2>
+                            <p class="text-sm font-bold text-gray-400 mt-2">{{ __('اشترك في مادة لتظهر هنا وتبدأ متابعة دروسك.') }}</p>
+                            <a href="/{{ \App\Support\WebsiteUrl::locale() }}/subjects" class="inline-flex mt-5 text-white text-sm font-bold py-3 px-8 rounded-xl transition-all" style="background-color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $secondaryColor }}'" onmouseout="this.style.backgroundColor='{{ $themeColor }}'">
+                                {{ __('استكشف المواد') }}
                             </a>
                         </div>
                     @else
@@ -121,23 +121,23 @@
                                     $track = $gradeSubject?->track;
                                     $teacher = $course?->academyTeacher;
                                     $isStandaloneTeacher = $course?->provider?->type === ProviderType::StandaloneTeacher;
-                                    $subjectName = $subject?->name ?: $course?->title ?: 'مادة';
-                                    $courseTitle = $course?->getTranslation('title', 'ar', false) ?: $course?->title ?: $subjectName;
-                                    $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
+                                    $subjectName = \App\Support\WebsiteTranslation::value($subject, 'name') ?: $course?->title ?: __('مادة');
+                                    $courseTitle = \App\Support\WebsiteTranslation::value($course, 'title') ?: $course?->title ?: $subjectName;
+                                    $trackName = \App\Support\WebsiteTranslation::value($track, 'name') ?: $track?->name;
                                     $teacherName = $isStandaloneTeacher
-                                        ? ($course?->provider?->owner?->name ?: $provider->owner?->name ?: 'المعلم')
-                                        : ($teacher?->teacher?->owner?->name ?: 'المعلم');
+                                        ? ($course?->provider?->owner?->name ?: $provider->owner?->name ?: __('المعلم'))
+                                        : ($teacher?->teacher?->owner?->name ?: __('المعلم'));
                                     $teacherImage = $teacher?->image
                                         ? asset('storage/'.$teacher->image)
                                         : 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120&h=120';
                                     $firstLesson = $subscription->lesson ?: $course?->lessons?->first(fn ($lesson) => $lesson->isCurrentlyOpen() && $lesson->items->contains(fn ($item) => $item->isCurrentlyOpen()));
                                     $firstItem = $firstLesson?->items?->first(fn ($item) => $item->isCurrentlyOpen());
                                     $continueUrl = $firstItem
-                                        ? '/lesson?item='.$firstItem->id
-                                        : '/single_teacher?subject='.$accountSubject?->id.($course?->academy_teacher_id ? '&teacher='.$course->academy_teacher_id : '');
-                                    $courseUrl = '/single_teacher?subject='.$accountSubject?->id.($course?->academy_teacher_id ? '&teacher='.$course->academy_teacher_id : '');
+                                        ? \App\Support\WebsiteUrl::path('/lesson?item='.$firstItem->id)
+                                        : \App\Support\WebsiteUrl::path('/single_teacher?subject='.$accountSubject?->id.($course?->academy_teacher_id ? '&teacher='.$course->academy_teacher_id : ''));
+                                    $courseUrl = \App\Support\WebsiteUrl::path('/single_teacher?subject='.$accountSubject?->id.($course?->academy_teacher_id ? '&teacher='.$course->academy_teacher_id : ''));
                                     $status = $statusFor($subscription);
-                                    $subscriptionUnit = $subscription->purchaseUnit?->getTranslation('name', 'ar', false) ?: $subscription->purchaseUnit?->name;
+                                    $subscriptionUnit = \App\Support\WebsiteTranslation::value($subscription->purchaseUnit, 'name') ?: $subscription->purchaseUnit?->name;
                                 @endphp
 
                                 <article class="bg-white border border-gray-100 rounded-[2rem] p-5 shadow-sm flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md" wire:key="subscription-course-{{ $subscription->id }}">
@@ -165,18 +165,18 @@
                                             <img src="{{ $teacherImage }}" alt="{{ $teacherName }}" class="w-10 h-10 rounded-xl object-cover">
                                             <div class="text-right">
                                                 <h3 class="text-xs font-black text-blue-950">{{ $teacherName }}</h3>
-                                                <p class="text-[10px] font-bold text-gray-400 mt-0.5">المعلم</p>
+                                                <p class="text-[10px] font-bold text-gray-400 mt-0.5">{{ __('المعلم') }}</p>
                                             </div>
                                         </div>
 
                                         <div class="rounded-2xl border border-gray-100 bg-gray-50/60 p-3 text-right space-y-2">
                                             <div class="flex items-center justify-between gap-3 text-[11px] font-black">
-                                                <span class="text-gray-400">حالة الاشتراك</span>
+                                                <span class="text-gray-400">{{ __('حالة الاشتراك') }}</span>
                                                 <span style="color: {{ $status['border'] }}">{{ $status['description'] }}</span>
                                             </div>
                                             @if ($subscriptionUnit)
                                                 <div class="flex items-center justify-between gap-3 text-[11px] font-black">
-                                                    <span class="text-gray-400">مدة الاشتراك</span>
+                                                    <span class="text-gray-400">{{ __('مدة الاشتراك') }}</span>
                                                     <span class="text-blue-950">{{ $subscriptionUnit }}</span>
                                                 </div>
                                             @endif
@@ -185,8 +185,8 @@
                                         <div class="border border-dashed border-gray-200 rounded-2xl p-3.5 flex justify-between items-center bg-gray-50/50">
                                             <span class="text-sm" style="color: {{ $themeColor }}"><i class="fa-regular fa-circle-play"></i></span>
                                             <div class="text-right flex-1 pr-3">
-                                                <p class="text-[10px] font-bold text-gray-400">أول درس متاح</p>
-                                                <h4 class="text-xs font-black text-blue-950 mt-0.5">{{ $firstLesson?->getTranslation('title', 'ar', false) ?: $firstLesson?->title ?: 'لم تتم إضافة دروس بعد' }}</h4>
+                                                <p class="text-[10px] font-bold text-gray-400">{{ __('أول درس متاح') }}</p>
+                                                <h4 class="text-xs font-black text-blue-950 mt-0.5">{{ \App\Support\WebsiteTranslation::value($firstLesson, 'title') ?: __('لم تتم إضافة دروس بعد') }}</h4>
                                             </div>
                                         </div>
                                     </div>
@@ -194,18 +194,18 @@
                                     <div class="pt-5 grid grid-cols-1 gap-2">
                                         @if ($subscription->is_active)
                                             <a href="{{ $continueUrl }}" class="w-full text-white font-black text-xs py-3.5 rounded-xl transition-all flex items-center justify-center gap-2" style="background-color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $secondaryColor }}'" onmouseout="this.style.backgroundColor='{{ $themeColor }}'">
-                                                <span>استكمال التعلم</span>
+                                                <span>{{ __('استكمال التعلم') }}</span>
                                                 <i class="fa-solid fa-arrow-left text-[10px]"></i>
                                             </a>
                                         @else
-                                            <a href="/checkout?course={{ $course?->id }}" class="w-full text-white font-black text-xs py-3.5 rounded-xl transition-all flex items-center justify-center gap-2" style="background-color: {{ $status['border'] }}">
-                                                <span>تجديد الاشتراك</span>
+                                            <a href="/{{ \App\Support\WebsiteUrl::locale() }}/checkout?course={{ $course?->id }}" class="w-full text-white font-black text-xs py-3.5 rounded-xl transition-all flex items-center justify-center gap-2" style="background-color: {{ $status['border'] }}">
+                                                <span>{{ __('تجديد الاشتراك') }}</span>
                                                 <i class="fa-solid fa-rotate-right text-[10px]"></i>
                                             </a>
                                         @endif
 
                                         <a href="{{ $courseUrl }}" class="w-full bg-slate-50 hover:bg-slate-100 text-blue-950 font-black text-xs py-3 rounded-xl transition-all flex items-center justify-center gap-2">
-                                            <span>عرض المادة</span>
+                                            <span>{{ __('عرض المادة') }}</span>
                                             <i class="fa-solid fa-arrow-left text-[10px]"></i>
                                         </a>
                                     </div>

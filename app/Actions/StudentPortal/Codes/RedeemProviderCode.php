@@ -25,14 +25,14 @@ class RedeemProviderCode
                 ->first();
 
             if (! $code) {
-                throw ValidationException::withMessages(['code' => 'الكود غير صحيح.']);
+                throw ValidationException::withMessages(['code' => __('الكود غير صحيح.')]);
             }
 
             $code->loadMissing('course', 'lesson', 'purchaseUnit');
 
             if (! $code->course || ! $code->purchaseUnit ||
                 ($code->purchaseUnit->type === PurchaseUnitType::Lesson && (! $code->lesson || (int) $code->lesson->course_id !== (int) $code->course_id))) {
-                throw ValidationException::withMessages(['code' => 'الكود غير مرتبط بكورس أو حصة صالحة.']);
+                throw ValidationException::withMessages(['code' => __('الكود غير مرتبط بكورس أو حصة صالحة.')]);
             }
 
             $order = Order::query()->create([

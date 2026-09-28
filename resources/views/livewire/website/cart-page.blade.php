@@ -4,14 +4,13 @@
     $itemsCount = $items->count();
     $subtotal = (float) ($cart?->subtotal ?? 0);
     $total = (float) ($cart?->total ?? 0);
-    $money = fn (float|int|string|null $amount): string => number_format((float) $amount, 0).' ج.م';
+    $money = fn (float|int|string|null $amount): string => number_format((float) $amount, 0).__(' ج.م');
     $unitLabel = function ($unit): string {
         if (! $unit) {
             return '';
         }
 
-        return $unit->getTranslation('name', 'ar', false)
-            ?: $unit->getTranslation('name', 'en', false)
+        return \App\Support\WebsiteTranslation::value($unit, 'name')
             ?: $unit->type?->value
             ?: '';
     };
@@ -20,16 +19,16 @@
             return $course->academyTeacher->teacher->owner->name;
         }
 
-        return $course?->provider?->owner?->name ?: 'المعلم';
+        return $course?->provider?->owner?->name ?: __('المعلم');
     };
 @endphp
 
-<div class="bg-white" dir="rtl">
+<div class="bg-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <section class="max-w-7xl mx-auto px-4 md:px-8 py-8">
         <nav class="flex items-center gap-2 text-xs font-bold text-gray-400 mb-6">
-            <a href="/" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">الرئيسية</a>
+            <a href="/{{ \App\Support\WebsiteUrl::locale() }}" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('الرئيسية') }}</a>
             <span>/</span>
-            <span class="text-gray-600">السلة</span>
+            <span class="text-gray-600">{{ __('السلة') }}</span>
         </nav>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -37,7 +36,7 @@
                 <div class="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm space-y-4">
                     <h3 class="text-sm font-black text-gray-800 flex items-center gap-2">
                         <i class="fa-regular fa-calendar-check text-gray-400"></i>
-                        مدة الاشتراك
+                        {{ __('مدة الاشتراك') }}
                     </h3>
 
                     @if ($purchaseUnits->isNotEmpty())
@@ -55,15 +54,15 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="text-sm text-gray-400 font-semibold">لا توجد مدد اشتراك مفعلة حالياً.</p>
+                        <p class="text-sm text-gray-400 font-semibold">{{ __('لا توجد مدد اشتراك مفعلة حالياً.') }}</p>
                     @endif
                 </div>
 
                 <div class="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm space-y-6">
                     <div class="flex justify-between items-center gap-3">
-                        <h2 class="text-xl font-black" style="color: {{ $themeColor }}">الباقة المخصصة</h2>
+                        <h2 class="text-xl font-black" style="color: {{ $themeColor }}">{{ __('الباقة المخصصة') }}</h2>
                         <span class="text-xs font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg">
-                            ({{ $itemsCount }} {{ $itemsCount === 1 ? 'مادة مختارة' : 'مواد مختارة' }})
+                            ({{ $itemsCount }} {{ $itemsCount === 1 ? __('مادة مختارة') : __('مواد مختارة') }})
                         </span>
                     </div>
 
@@ -75,9 +74,9 @@
                                     $subject = $gradeSubject?->subject;
                                     $track = $gradeSubject?->track;
                                     $subjectName = $subject
-                                        ? $subject->name
+                                        ? \App\Support\WebsiteTranslation::value($subject, 'name')
                                         : null;
-                                    $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
+                                    $trackName = \App\Support\WebsiteTranslation::value($track, 'name') ?: $track?->name;
                                     $subjectDetails = collect([$subjectName, $trackName])->filter()->join(' - ');
                                 @endphp
 
@@ -90,7 +89,7 @@
                                         </div>
                                         <div>
                                             <h4 class="text-sm font-black text-blue-950">
-                                                {{ $item->title }}
+                                                {{ \App\Support\WebsiteTranslation::value($item->course, 'title') ?: $item->title }}
                                             </h4>
                                             <p class="text-[11px] text-gray-400 font-semibold mt-0.5">
                                                 {{ $teacherName($item->course) }}
@@ -113,7 +112,7 @@
                                             class="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1 transition-colors"
                                         >
                                             <i class="fa-regular fa-trash-can"></i>
-                                            حذف
+                                            {{ __('حذف') }}
                                         </button>
                                     </div>
                                 </div>
@@ -124,10 +123,10 @@
                             <div class="w-16 h-16 rounded-full bg-white text-gray-300 flex items-center justify-center mx-auto mb-4 text-2xl">
                                 <i class="fa-solid fa-cart-shopping"></i>
                             </div>
-                            <h3 class="text-lg font-black text-blue-950">السلة فارغة</h3>
-                            <p class="text-sm text-gray-400 font-semibold mt-2">اختر مادة أو كورس لإضافته إلى السلة.</p>
-                            <a href="/subjects" class="inline-flex mt-5 text-white text-sm font-bold py-3 px-8 rounded-xl transition-all" style="background-color: {{ $themeColor }}">
-                                تصفح المواد
+                            <h3 class="text-lg font-black text-blue-950">{{ __('السلة فارغة') }}</h3>
+                            <p class="text-sm text-gray-400 font-semibold mt-2">{{ __('اختر مادة أو كورس لإضافته إلى السلة.') }}</p>
+                            <a href="/{{ \App\Support\WebsiteUrl::locale() }}/subjects" class="inline-flex mt-5 text-white text-sm font-bold py-3 px-8 rounded-xl transition-all" style="background-color: {{ $themeColor }}">
+                                {{ __('تصفح المواد') }}
                             </a>
                         </div>
                     @endif
@@ -136,37 +135,37 @@
 
             <div class="lg:col-span-4 space-y-4">
                 <div class="bg-white rounded-[2rem] border border-gray-100 p-6 shadow-sm space-y-6">
-                    <h2 class="text-lg font-black text-blue-950 text-right">ملخص الطلب</h2>
+                    <h2 class="text-lg font-black text-blue-950 text-right">{{ __('ملخص الطلب') }}</h2>
 
                     <div class="space-y-3 text-xs font-bold text-gray-400">
                         <div class="flex justify-between">
-                            <span>المجموع الفرعي ({{ $itemsCount }} {{ $itemsCount === 1 ? 'مادة' : 'مواد' }})</span>
+                            <span>{{ __('المجموع الفرعي (') }}{{ $itemsCount }} {{ $itemsCount === 1 ? __('مادة') : __('مواد') }})</span>
                             <span>{{ $money($subtotal) }}</span>
                         </div>
 
                         <hr class="border-gray-100 my-2">
 
                         <div class="flex justify-between items-baseline pt-1">
-                            <span>الإجمالي</span>
+                            <span>{{ __('الإجمالي') }}</span>
                             <span class="font-black text-2xl" style="color: {{ $themeColor }}">{{ $money($total) }}</span>
                         </div>
                     </div>
 
                     <a
-                        href="/checkout"
+                        href="/{{ \App\Support\WebsiteUrl::locale() }}/checkout"
                         class="w-full text-white font-black text-sm py-4 rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 {{ $items->isEmpty() ? 'pointer-events-none opacity-50' : '' }}"
                         style="background-color: {{ $themeColor }}; box-shadow: 0 10px 20px {{ $themeColor }}33"
                         onmouseover="this.style.backgroundColor='{{ $secondaryThemeColor }}'"
                         onmouseout="this.style.backgroundColor='{{ $themeColor }}'"
                     >
-                        إتمام عملية الدفع
+                        {{ __('إتمام عملية الدفع') }}
                         <i class="fa-solid fa-chevron-left text-xs"></i>
                     </a>
 
                     <div class="flex items-center justify-center gap-4 text-[10px] font-bold text-gray-400 pt-2 border-t border-gray-50">
-                        <span class="flex items-center gap-1"><i class="fa-solid fa-rotate-left text-gray-300"></i> استرداد سهل</span>
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-rotate-left text-gray-300"></i> {{ __('استرداد سهل') }}</span>
                         <span class="text-gray-200">|</span>
-                        <span class="flex items-center gap-1 text-emerald-600"><i class="fa-solid fa-shield-halved"></i> دفع آمن 100%</span>
+                        <span class="flex items-center gap-1 text-emerald-600"><i class="fa-solid fa-shield-halved"></i> {{ __('دفع آمن 100%') }}</span>
                     </div>
                 </div>
 
@@ -176,12 +175,12 @@
                             <i class="fa-regular fa-comments"></i>
                         </span>
                         <div>
-                            <h3 class="text-sm font-black text-blue-950">هل تحتاج لمساعدة؟</h3>
-                            <p class="text-[11px] text-gray-400 font-semibold">فريقنا متاح لمساعدتك في أي وقت</p>
+                            <h3 class="text-sm font-black text-blue-950">{{ __('هل تحتاج لمساعدة؟') }}</h3>
+                            <p class="text-[11px] text-gray-400 font-semibold">{{ __('فريقنا متاح لمساعدتك في أي وقت') }}</p>
                         </div>
                     </div>
                     <a href="#" class="text-xs font-bold px-4 py-2 rounded-xl border" style="color: {{ $themeColor }}; border-color: {{ $themeColor }}33">
-                        تحدث معنا
+                        {{ __('تحدث معنا') }}
                     </a>
                 </div>
             </div>

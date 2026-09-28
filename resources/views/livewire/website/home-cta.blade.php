@@ -1,6 +1,6 @@
 <div>
     @if ($isVisible)
-        <section class="py-16 bg-white" dir="rtl">
+        <section class="py-16 bg-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
             <div class="mx-auto px-4 md:px-8">
                 <div
                     class="rounded-[32px] overflow-hidden relative shadow-xl"
@@ -22,21 +22,21 @@
                             <h2
                                 class="text-2xl sm:text-3xl md:text-6xl font-extrabold text-white leading-tight"
                             >
-                                جاهز للانطلاق نحو التفوق ؟
+                                {{ __('جاهز للانطلاق نحو التفوق ؟') }}
                             </h2>
                             <p
                                 class="text-lg sm:text-xl text-purple-100 max-w-md mx-auto lg:mx-0 leading-relaxed"
                             >
-                                انضم إلى آلاف الطلاب وابدأ رحلتك التعليمية الآن.
+                                {{ __('انضم إلى آلاف الطلاب وابدأ رحلتك التعليمية الآن.') }}
                             </p>
 
                             <div class="pt-2">
                                 <a
-                                    href="/login"
+                                    href="/{{ \App\Support\WebsiteUrl::locale() }}/login"
                                     class="inline-flex w-full sm:w-auto font-bold text-base px-8 py-4 rounded-[12px] shadow-lg transition-all active:scale-95 justify-center"
                                     style="background-color: {{ $secondaryThemeColor }}; color: white;"
                                 >
-                                    ابدأ رحلتك الآن
+                                    {{ __('ابدأ رحلتك الآن') }}
                                 </a>
                             </div>
                         </div>
@@ -49,7 +49,7 @@
                             >
                                 <img
                                     src="{{ rtrim($assetPath, '/') }}/images/bag.png"
-                                    alt="جاهز للتفوق"
+                                    alt="{{ __('جاهز للتفوق') }}"
                                     class="w-full h-auto object-contain drop-shadow-2xl animate-bounce-slow"
                                 />
                             </div>

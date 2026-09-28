@@ -10,17 +10,17 @@
     $stage = $grade?->educationStage;
     $track = $accountSubject?->gradeSubject?->track;
     $teacherName = $isStandaloneTeacher
-        ? ($teacher?->owner?->name ?: $provider?->owner?->name ?: 'معلم')
-        : ($teacher?->teacher?->owner?->name ?: 'معلم');
+        ? ($teacher?->owner?->name ?: $provider?->owner?->name ?: __('معلم'))
+        : ($teacher?->teacher?->owner?->name ?: __('معلم'));
     $teacherImage = (! $isStandaloneTeacher && $teacher?->image)
         ? asset('storage/'.$teacher->image)
         : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200';
-    $courseTitle = $course?->getTranslation('title', 'ar', false) ?: $course?->title ?: ($subject?->name ?: 'الكورس');
-    $courseDescription = $course?->getTranslation('description', 'ar', false) ?: $course?->description;
-    $subjectName = $subject?->name;
-    $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
-    $gradeName = $grade?->name;
-    $stageName = $stage?->name;
+    $courseTitle = \App\Support\WebsiteTranslation::value($course, 'title') ?: $course?->title ?: (\App\Support\WebsiteTranslation::value($subject, 'name') ?: __('الكورس'));
+    $courseDescription = \App\Support\WebsiteTranslation::value($course, 'description') ?: $course?->description;
+    $subjectName = \App\Support\WebsiteTranslation::value($subject, 'name');
+    $trackName = \App\Support\WebsiteTranslation::value($track, 'name') ?: $track?->name;
+    $gradeName = \App\Support\WebsiteTranslation::value($grade, 'name');
+    $stageName = \App\Support\WebsiteTranslation::value($stage, 'name');
     $lessons = $course?->lessons ?? collect();
     $termOneLessons = $lessons->filter(fn ($lesson) => $lesson->coursePeriod?->type === CoursePeriodType::Term1);
     $termTwoLessons = $lessons->filter(fn ($lesson) => $lesson->coursePeriod?->type === CoursePeriodType::Term2);
@@ -35,26 +35,26 @@
     $lessonItemIsOpen = fn ($item): bool => filled($item) && $item->isCurrentlyOpen();
     $lessonItemAvailabilityText = function ($item): string {
         if (blank($item)) {
-            return 'مغلق';
+            return __('مغلق');
         }
 
         if (! $item->is_active) {
-            return 'غير مفعل حالياً';
+            return __('غير مفعل حالياً');
         }
 
-        return 'مغلق';
+        return __('مغلق');
     };
 @endphp
 
-<div class="bg-white" dir="rtl">
+<div class="bg-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <section class="max-w-7xl mx-auto px-4 md:px-8 py-6">
         <nav class="flex items-center gap-2 text-xs font-bold text-gray-400 mb-6">
-            <a href="/" style="--theme-color: {{ $themeColor }}" class="hover:text-[var(--theme-color)]">الرئيسية</a>
+            <a href="/{{ \App\Support\WebsiteUrl::locale() }}" style="--theme-color: {{ $themeColor }}" class="hover:text-[var(--theme-color)]">{{ __('الرئيسية') }}</a>
             <span>/</span>
-            <a href="/subjects" style="--theme-color: {{ $themeColor }}" class="hover:text-[var(--theme-color)]">المواد</a>
+            <a href="/{{ \App\Support\WebsiteUrl::locale() }}/subjects" style="--theme-color: {{ $themeColor }}" class="hover:text-[var(--theme-color)]">{{ __('المواد') }}</a>
             @if ($subjectName)
                 <span>/</span>
-                <a href="/teachers?subject={{ $accountSubject?->id }}" style="--theme-color: {{ $themeColor }}" class="hover:text-[var(--theme-color)]">{{ $subjectName }}</a>
+                <a href="/{{ \App\Support\WebsiteUrl::locale() }}/teachers?subject={{ $accountSubject?->id }}" style="--theme-color: {{ $themeColor }}" class="hover:text-[var(--theme-color)]">{{ $subjectName }}</a>
             @endif
             @if ($gradeName)
                 <span>/</span>
@@ -78,15 +78,15 @@
 
                     <div class="flex flex-wrap justify-center lg:justify-start gap-3">
                         <div class="bg-white/10 rounded-2xl px-5 py-3 min-w-28">
-                            <span class="block text-[10px] {{ $themeTextMuted }}">الدروس</span>
+                            <span class="block text-[10px] {{ $themeTextMuted }}">{{ __('الدروس') }}</span>
                             <span class="block text-lg font-black">{{ $course?->num_of_lessons ?? $lessons->count() }}</span>
                         </div>
                         <div class="bg-white/10 rounded-2xl px-5 py-3 min-w-28">
-                            <span class="block text-[10px] {{ $themeTextMuted }}">ساعة محتوى</span>
+                            <span class="block text-[10px] {{ $themeTextMuted }}">{{ __('ساعة محتوى') }}</span>
                             <span class="block text-lg font-black">{{ $course?->num_of_hours ?? '—' }}</span>
                         </div>
                         <div class="bg-white/10 rounded-2xl px-5 py-3 min-w-28">
-                            <span class="block text-[10px] {{ $themeTextMuted }}">محاضرات أسبوعياً</span>
+                            <span class="block text-[10px] {{ $themeTextMuted }}">{{ __('محاضرات أسبوعياً') }}</span>
                             <span class="block text-lg font-black">{{ $course?->weekly_lectures_count ?? '—' }}</span>
                         </div>
                     </div>
@@ -96,7 +96,7 @@
                     <div class="text-right">
                         <h2 class="text-xl md:text-2xl font-bold">{{ $teacherName }}</h2>
                         @if (! $isStandaloneTeacher)
-                            <p class="text-xs {{ $themeTextLight }} mt-1">خبرة {{ $teacher?->experience_years ?? '—' }} سنوات</p>
+                            <p class="text-xs {{ $themeTextLight }} mt-1">{{ __('خبرة') }} {{ $teacher?->experience_years ?? '—' }} {{ __('سنوات') }}</p>
                         @endif
                     </div>
                     <div class="w-20 h-20 md:w-24 md:h-24 rounded-full p-1 bg-white/20 border border-white/40 overflow-hidden">
@@ -110,20 +110,20 @@
     <section class="max-w-7xl mx-auto px-4 md:px-8 py-8">
         @if (! $teacher || ! $accountSubject)
             <div class="rounded-3xl bg-slate-50 border border-slate-100 p-8 text-center">
-                <p class="text-sm font-bold text-blue-950">لم يتم العثور على المعلم أو المادة المطلوبة.</p>
-                <a href="/subjects" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $themeColor }}">العودة لاختيار مادة</a>
+                <p class="text-sm font-bold text-blue-950">{{ __('لم يتم العثور على المعلم أو المادة المطلوبة.') }}</p>
+                <a href="/{{ \App\Support\WebsiteUrl::locale() }}/subjects" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $themeColor }}">{{ __('العودة لاختيار مادة') }}</a>
             </div>
         @elseif (! $course)
             <div class="rounded-3xl bg-slate-50 border border-slate-100 p-8 text-center">
-                <p class="text-sm font-bold text-blue-950">لا يوجد كورس منشأ لهذا المعلم في هذه المادة حالياً.</p>
-                <a href="/teachers?subject={{ $accountSubject->id }}" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $themeColor }}">{{ $isStandaloneTeacher ? 'العودة للمادة' : 'اختيار معلم آخر' }}</a>
+                <p class="text-sm font-bold text-blue-950">{{ __('لا يوجد كورس منشأ لهذا المعلم في هذه المادة حالياً.') }}</p>
+                <a href="/{{ \App\Support\WebsiteUrl::locale() }}/teachers?subject={{ $accountSubject->id }}" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $themeColor }}">{{ $isStandaloneTeacher ? __('العودة للمادة') : __('اختيار معلم آخر') }}</a>
             </div>
         @else
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 <div class="lg:col-span-8 space-y-6">
                     <div class="border-b border-gray-100 flex items-center justify-start gap-8">
-                        <span class="pb-3 text-sm font-bold border-b-2" style="border-color: {{ $themeColor }}; color: {{ $themeColor }}">الدروس والوحدات</span>
-                        <span class="pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400">مستوى الطالب</span>
+                        <span class="pb-3 text-sm font-bold border-b-2" style="border-color: {{ $themeColor }}; color: {{ $themeColor }}">{{ __('الدروس والوحدات') }}</span>
+                        <span class="pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400">{{ __('مستوى الطالب') }}</span>
                     </div>
 
                     @if ($lessons->isNotEmpty())
@@ -135,19 +135,19 @@
                             ] as $periodLabel => $periodLessons)
                                 @if ($periodLessons->isNotEmpty())
                                     <div class="space-y-4" wire:key="period-{{ $periodLabel }}">
-                                        <h3 class="text-sm font-black text-blue-950">{{ $periodLabel }}</h3>
+                                        <h3 class="text-sm font-black text-blue-950">{{ __($periodLabel) }}</h3>
 
                                         @foreach ($periodLessons as $lesson)
                                             @php
-                                                $lessonTitle = $lesson->getTranslation('title', 'ar', false) ?: $lesson->title;
+                                                $lessonTitle = \App\Support\WebsiteTranslation::value($lesson, 'title') ?: $lesson->title;
                                                 $lessonItems = $lesson->items;
                                                 $lessonHasCodeAccess = in_array($lesson->id, $lessonCodeIds ?? [], true);
                                                 $lessonIsOpen = $lesson->isCurrentlyOpen() || $lessonHasCodeAccess;
                                                 $lessonAvailabilityText = match (true) {
                                                     $lessonIsOpen => null,
-                                                    filled($lesson->starts_at) && $lesson->starts_at->isFuture() => 'تفتح في '.$lesson->starts_at->format('Y-m-d H:i'),
-                                                    filled($lesson->ends_at) && $lesson->ends_at->isPast() => 'انتهت في '.$lesson->ends_at->format('Y-m-d H:i'),
-                                                    default => 'مغلقة الآن',
+                                                    filled($lesson->starts_at) && $lesson->starts_at->isFuture() => __('تفتح في ').$lesson->starts_at->format('Y-m-d H:i'),
+                                                    filled($lesson->ends_at) && $lesson->ends_at->isPast() => __('انتهت في ').$lesson->ends_at->format('Y-m-d H:i'),
+                                                    default => __('مغلقة الآن'),
                                                 };
                                             @endphp
 
@@ -160,7 +160,7 @@
                                                         <div class="text-right">
                                                             <h4 class="text-sm font-bold text-blue-950">{{ $lessonTitle }}</h4>
                                                             <span class="text-[10px] text-gray-400 block mt-0.5">
-                                                                {{ $lessonItems->count() }} عناصر
+                                                                {{ $lessonItems->count() }} {{ __('عناصر') }}
                                                                 @if ($lessonAvailabilityText)
                                                                     <span class="mx-1">•</span>
                                                                     <span class="text-rose-500">{{ $lessonAvailabilityText }}</span>
@@ -176,12 +176,12 @@
                                                         <div class="p-2 divide-y divide-gray-50">
                                                             @foreach ($lessonItems as $item)
                                                                 @php
-                                                                    $itemTitle = $item->getTranslation('title', 'ar', false) ?: $item->title;
+                                                                    $itemTitle = \App\Support\WebsiteTranslation::value($item, 'title') ?: $item->title;
                                                                     $itemType = $item->type instanceof LessonTypeEnum ? $item->type->value : (string) $item->type;
                                                                     $isLink = $itemType === LessonTypeEnum::Link->value && filled($item->link_url);
                                                                     $itemUrl = $isLink
                                                                         ? (Str::startsWith($item->link_url, ['http://', 'https://']) ? $item->link_url : url($item->link_url))
-                                                                        : "/lesson?item={$item->id}";
+                                                                        : \App\Support\WebsiteUrl::path("/lesson?item={$item->id}");
                                                                     $icon = match (true) {
                                                                         $itemType === LessonTypeEnum::Assignments->value => 'fa-regular fa-clipboard',
                                                                         $itemType === LessonTypeEnum::Exams->value => 'fa-regular fa-circle-question',
@@ -211,10 +211,10 @@
                                                                             >
                                                                                 {{ $itemTitle }}
                                                                             </a>
-                                                                            <span class="bg-emerald-50 text-emerald-600 text-[9px] font-bold px-2 py-0.5 rounded">{{ $item->is_free ? 'مجاني' : 'مشترك' }}</span>
+                                                                            <span class="bg-emerald-50 text-emerald-600 text-[9px] font-bold px-2 py-0.5 rounded">{{ $item->is_free ? __('مجاني') : __('مشترك') }}</span>
                                                                         @else
                                                                             <span class="font-medium text-gray-600">{{ $itemTitle }}</span>
-                                                                            <span class="bg-gray-100 text-gray-500 text-[9px] font-bold px-2 py-0.5 rounded">{{ ! $lessonIsOpen ? 'غير متاح الآن' : ($itemAvailabilityText ?: 'مغلق') }}</span>
+                                                                            <span class="bg-gray-100 text-gray-500 text-[9px] font-bold px-2 py-0.5 rounded">{{ ! $lessonIsOpen ? __('غير متاح الآن') : ($itemAvailabilityText ?: __('مغلق')) }}</span>
                                                                         @endif
                                                                     </div>
                                                                     @if ($isLocked)
@@ -226,7 +226,7 @@
                                                             @endforeach
                                                         </div>
                                                     @else
-                                                        <div class="p-4 text-xs text-gray-500">لا توجد عناصر داخل هذه الحصة حالياً.</div>
+                                                        <div class="p-4 text-xs text-gray-500">{{ __('لا توجد عناصر داخل هذه الحصة حالياً.') }}</div>
                                                     @endif
                                                 </div>
                                             </details>
@@ -237,7 +237,7 @@
                         </div>
                     @else
                         <div class="rounded-2xl bg-gray-50 p-8 text-center text-sm font-semibold text-gray-400">
-                            لا توجد دروس مضافة لهذا الكورس حالياً.
+                            {{ __('لا توجد دروس مضافة لهذا الكورس حالياً.') }}
                         </div>
                     @endif
                 </div>
@@ -257,44 +257,44 @@
                             <div class="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 mb-6">
                                 <p class="text-xs font-bold text-emerald-700 leading-relaxed">
                                     <i class="fa-solid fa-circle-check ml-2"></i>
-                                    {{ $course->outcomes->first()->getTranslation('title', 'ar', false) ?: $course->outcomes->first()->title }}
+                                    {{ \App\Support\WebsiteTranslation::value($course->outcomes->first(), 'title') ?: $course->outcomes->first()->title }}
                                 </p>
                             </div>
                         @endif
 
                         <div class="border-t border-gray-100 pt-5 space-y-2">
-                            <span class="block text-xs text-gray-400 font-bold">سعر الاشتراك الشهري</span>
+                            <span class="block text-xs text-gray-400 font-bold">{{ __('سعر الاشتراك الشهري') }}</span>
                             <div class="flex items-baseline gap-2">
                                 <span class="text-4xl font-black text-blue-950">{{ $monthlyPrice ?? '—' }}</span>
-                                <span class="text-sm font-bold text-gray-500">جنيه</span>
+                                <span class="text-sm font-bold text-gray-500">{{ __('جنيه') }}</span>
                             </div>
                         </div>
 
                         <div class="grid gap-3 pt-6">
-                            <a href="/cart?course={{ $course->id }}" class="w-full text-white font-bold text-sm py-4 rounded-2xl transition-all text-center" style="background-color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $themeColorDark }}'" onmouseout="this.style.backgroundColor='{{ $themeColor }}'">
+                            <a href="/{{ \App\Support\WebsiteUrl::locale() }}/cart?course={{ $course->id }}" class="w-full text-white font-bold text-sm py-4 rounded-2xl transition-all text-center" style="background-color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $themeColorDark }}'" onmouseout="this.style.backgroundColor='{{ $themeColor }}'">
                                 <i class="fa-solid fa-cart-plus ml-2"></i>
-                                أضف إلى سلة التعلم
+                                {{ __('أضف إلى سلة التعلم') }}
                             </a>
-                            <a href="/checkout?course={{ $course->id }}" class="w-full border font-bold text-sm py-4 rounded-2xl transition-all text-center" style="border-color: {{ $themeColor }}66; color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $themeColor }}14'" onmouseout="this.style.backgroundColor=''">
+                            <a href="/{{ \App\Support\WebsiteUrl::locale() }}/checkout?course={{ $course->id }}" class="w-full border font-bold text-sm py-4 rounded-2xl transition-all text-center" style="border-color: {{ $themeColor }}66; color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $themeColor }}14'" onmouseout="this.style.backgroundColor=''">
                                 <i class="fa-solid fa-bolt ml-2"></i>
-                                اشترك الآن
+                                {{ __('اشترك الآن') }}
                             </a>
                         </div>
                     </div>
 
                     <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
-                        <h3 class="text-base font-black text-blue-950 mb-4">ماذا ستتعلم في هذا الكورس؟</h3>
+                        <h3 class="text-base font-black text-blue-950 mb-4">{{ __('ماذا ستتعلم في هذا الكورس؟') }}</h3>
                         @if ($course->outcomes->isNotEmpty())
                             <ul class="space-y-3">
                                 @foreach ($course->outcomes as $outcome)
                                     <li class="flex items-start gap-2 text-xs text-gray-600 font-semibold" wire:key="outcome-{{ $outcome->id }}">
                                         <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i>
-                                        <span>{{ $outcome->getTranslation('title', 'ar', false) ?: $outcome->title }}</span>
+                                        <span>{{ \App\Support\WebsiteTranslation::value($outcome, 'title') ?: $outcome->title }}</span>
                                     </li>
                                 @endforeach
                             </ul>
                         @else
-                            <p class="text-xs text-gray-400 font-semibold">سيتم إضافة أهداف التعلم قريباً.</p>
+                            <p class="text-xs text-gray-400 font-semibold">{{ __('سيتم إضافة أهداف التعلم قريباً.') }}</p>
                         @endif
                     </div>
                 </aside>

@@ -12,6 +12,7 @@ use App\Models\Provider;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use App\Models\StudentAttempt;
+use App\Support\WebsiteUrl;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -93,7 +94,7 @@ class ManageAssessmentAttempt
             return [
                 'attempt' => null,
                 'redirectAttempt' => null,
-                'errors' => ['auth' => 'يجب تسجيل الدخول أولاً.'],
+                'errors' => ['auth' => __('يجب تسجيل الدخول أولاً.')],
             ];
         }
 
@@ -101,7 +102,7 @@ class ManageAssessmentAttempt
             return [
                 'attempt' => null,
                 'redirectAttempt' => null,
-                'errors' => ['assessment' => 'هذا الاختبار أو الواجب غير متاح حالياً.'],
+                'errors' => ['assessment' => __('هذا الاختبار أو الواجب غير متاح حالياً.')],
             ];
         }
 
@@ -121,7 +122,7 @@ class ManageAssessmentAttempt
             return [
                 'attempt' => null,
                 'redirectAttempt' => null,
-                'errors' => ['assessment' => 'لا توجد أسئلة متاحة حالياً.'],
+                'errors' => ['assessment' => __('لا توجد أسئلة متاحة حالياً.')],
             ];
         }
 
@@ -194,7 +195,7 @@ class ManageAssessmentAttempt
     {
         $path = $type === 'exam' ? '/quiz_done' : '/home_work_done';
 
-        return "{$path}?attempt={$attempt->id}";
+        return WebsiteUrl::path("{$path}?attempt={$attempt->id}");
     }
 
     private function assessment(Provider $provider, string $type, ?int $assignmentId, ?int $examId): Assignment|Exam|null
@@ -556,7 +557,7 @@ class ManageAssessmentAttempt
 
         $parameters['retry'] = 1;
 
-        return $path.'?'.http_build_query($parameters);
+        return WebsiteUrl::path($path.'?'.http_build_query($parameters));
     }
 
     private function remainingSeconds(Assignment|Exam $assessment, ?StudentAttempt $attempt): ?int
@@ -587,7 +588,7 @@ class ManageAssessmentAttempt
             $answer = $answers[$question->id] ?? null;
 
             if ($this->isBlankAnswer($answer)) {
-                $errors["answers.{$question->id}"] = 'هذا السؤال مطلوب.';
+                $errors["answers.{$question->id}"] = __('هذا السؤال مطلوب.');
             }
         }
 

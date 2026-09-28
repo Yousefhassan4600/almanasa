@@ -5,9 +5,8 @@
 @php
     $themeColor = $provider->websitePrimaryColor();
     $providerLogo = filled($provider->logo) ? (filter_var($provider->logo, FILTER_VALIDATE_URL) ? $provider->logo : asset('storage/'.$provider->logo)) : null;
-    $providerBio = $provider->getTranslation('bio', 'ar', false)
-        ?: $provider->getTranslation('bio', 'en', false)
-        ?: 'منصة تعليمية متكاملة توفر أفضل المحتوى التعليمي للطلاب في جميع المراحل الدراسية.';
+    $providerBio = \App\Support\WebsiteTranslation::value($provider, 'bio')
+        ?: __('منصة تعليمية متكاملة توفر أفضل المحتوى التعليمي للطلاب في جميع المراحل الدراسية.');
     $socialLinks = [
         ['url' => $provider->facebook_link, 'icon' => 'fa-brands fa-facebook-f', 'label' => 'Facebook'],
         ['url' => $provider->instagram_link, 'icon' => 'fa-brands fa-instagram', 'label' => 'Instagram'],
@@ -17,11 +16,11 @@
     ];
 @endphp
 
-<footer class="w-full bg-white pt-16 pb-8 border-t border-gray-100" dir="rtl">
+<footer class="w-full bg-white pt-16 pb-8 border-t border-gray-100" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <div class="max-w-6xl mx-auto px-4 md:px-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 pb-12 text-center md:text-right">
             <div class="space-y-4 flex flex-col items-center md:items-start">
-                <a href="/" class="flex items-center gap-2">
+                <a href="/{{ \App\Support\WebsiteUrl::locale() }}" class="flex items-center gap-2">
                     @if ($providerLogo)
                         <img src="{{ $providerLogo }}" alt="{{ $provider->name }}" class="w-10 h-10 rounded-xl object-cover border border-gray-100 bg-white" />
                     @else
@@ -54,38 +53,38 @@
             </div>
 
             <div class="space-y-4">
-                <h4 class="text-base font-black text-[#1E3A8A]">الدعم والمساعدة</h4>
+                <h4 class="text-base font-black text-[#1E3A8A]">{{ __('الدعم والمساعدة') }}</h4>
                 <ul class="space-y-2.5 text-xs font-bold text-gray-400">
-                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">تواصل معنا</a></li>
-                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">مركز المساعدة</a></li>
-                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">الشروط والأحكام</a></li>
+                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('تواصل معنا') }}</a></li>
+                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('مركز المساعدة') }}</a></li>
+                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('الشروط والأحكام') }}</a></li>
                 </ul>
             </div>
 
             <div class="space-y-4">
-                <h4 class="text-base font-black text-[#1E3A8A]">عن المنصة</h4>
+                <h4 class="text-base font-black text-[#1E3A8A]">{{ __('عن المنصة') }}</h4>
                 <ul class="space-y-2.5 text-xs font-bold text-gray-400">
-                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">من نحن</a></li>
-                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">كيف نعمل</a></li>
-                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">سياسة الخصوصية</a></li>
-                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">اتفاقية الاستخدام</a></li>
+                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('من نحن') }}</a></li>
+                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('كيف نعمل') }}</a></li>
+                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('سياسة الخصوصية') }}</a></li>
+                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('اتفاقية الاستخدام') }}</a></li>
                 </ul>
             </div>
 
             <div class="space-y-4">
-                <h4 class="text-base font-black text-[#1E3A8A]">روابط سريعة</h4>
+                <h4 class="text-base font-black text-[#1E3A8A]">{{ __('روابط سريعة') }}</h4>
                 <ul class="space-y-2.5 text-xs font-bold text-gray-400">
-                    <li><a href="/subjects" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">المواد الدراسية</a></li>
-                    <li><a href="/my_lessons" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">دروسي</a></li>
-                    <li><a href="/packages" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">الباقات</a></li>
-                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">الأسئلة الشائعة</a></li>
+                    <li><a href="/{{ \App\Support\WebsiteUrl::locale() }}/subjects" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('المواد الدراسية') }}</a></li>
+                    <li><a href="/{{ \App\Support\WebsiteUrl::locale() }}/my_lessons" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('دروسي') }}</a></li>
+                    <li><a href="/{{ \App\Support\WebsiteUrl::locale() }}/packages" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('الباقات') }}</a></li>
+                    <li><a href="#" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('الأسئلة الشائعة') }}</a></li>
                 </ul>
             </div>
         </div>
 
         <div class="border-t border-gray-100 pt-6 text-center">
             <p class="text-[11px] font-bold text-gray-400 tracking-wide">
-                جميع الحقوق محفوظة. © {{ $provider->name }} {{ now()->year }}
+                {{ __('جميع الحقوق محفوظة.') }} © {{ $provider->name }} {{ now()->year }}
             </p>
         </div>
     </div>

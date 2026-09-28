@@ -45,7 +45,7 @@ class MyLessonsPage extends Component
         $this->validate(['code' => ['required', 'string', 'max:255']]);
 
         if (! Auth::check()) {
-            $this->addError('code', 'يجب تسجيل الدخول أولاً.');
+            $this->addError('code', __('يجب تسجيل الدخول أولاً.'));
 
             return;
         }

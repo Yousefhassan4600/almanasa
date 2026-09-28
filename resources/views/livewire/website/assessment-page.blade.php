@@ -3,13 +3,13 @@
     use App\Enums\QuestionType;
     use App\Models\Exam;
 
-    $title = $assessment?->getTranslation('title', 'ar', false) ?: $assessment?->title;
+    $title = \App\Support\WebsiteTranslation::value($assessment, 'title') ?: $assessment?->title;
     $isExam = $assessment instanceof Exam;
     $isStandaloneTeacher = $provider?->type === ProviderType::StandaloneTeacher;
     $themeColor = $provider?->websitePrimaryColor() ?? '#5D3FD3';
     $themeHoverColor = $provider?->websiteSecondaryColor() ?? '#4c32b3';
     $themeSoftColor = $themeColor.'12';
-    $label = $isExam ? 'الاختبار' : 'الواجب';
+    $label = $isExam ? __('الاختبار') : __('الواجب');
     $duration = $assessment?->duration_minutes;
     $questionCount = $questions->count();
     $answeredCount = collect($answers)->filter(fn ($answer) => ! blank($answer))->count();
@@ -19,31 +19,31 @@
     $hasCountdown = $remainingSeconds !== null;
     $questionType = $currentQuestion?->type instanceof QuestionType ? $currentQuestion?->type : QuestionType::tryFrom((string) $currentQuestion?->type);
     $isStatement = $questionType === QuestionType::Statement;
-    $optionLabels = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
+    $optionLabels = [__('أ'), __('ب'), __('ج'), __('د'), __('هـ'), __('و')];
 @endphp
 
-<div class="bg-white" dir="rtl">
+<div class="bg-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <section class="min-h-screen p-4 md:p-8 flex flex-col items-center justify-center">
         @if (! $assessment)
             <div class="w-full max-w-4xl bg-white rounded-[2rem] border border-gray-100 p-8 text-center shadow-sm">
-                <p class="text-sm font-bold text-blue-950">لم يتم العثور على {{ $label }} المطلوب.</p>
-                <a href="/my_lessons" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $themeColor }}">العودة لدروسي</a>
+                <p class="text-sm font-bold text-blue-950">{{ __('لم يتم العثور على') }} {{ $label }} {{ __('المطلوب.') }}</p>
+                <a href="/{{ \App\Support\WebsiteUrl::locale() }}/my_lessons" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $themeColor }}">{{ __('العودة لدروسي') }}</a>
             </div>
         @elseif ($existingAttempt)
             <div class="w-full max-w-4xl bg-white rounded-[2rem] border border-gray-100 p-8 text-center shadow-sm">
                 <div class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4 text-xl">
                     <i class="fa-solid fa-circle-check"></i>
                 </div>
-                <h1 class="text-2xl font-black text-blue-950">تم تسليم {{ $label }} من قبل</h1>
-                <p class="text-sm text-gray-500 font-semibold mt-3">يمكنك مراجعة النتيجة والإجابات من صفحة النتيجة.</p>
+                <h1 class="text-2xl font-black text-blue-950">{{ __('تم تسليم') }} {{ $label }} {{ __('من قبل') }}</h1>
+                <p class="text-sm text-gray-500 font-semibold mt-3">{{ __('يمكنك مراجعة النتيجة والإجابات من صفحة النتيجة.') }}</p>
                 <div class="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
                     <a href="{{ $resultUrl }}" class="w-full sm:w-auto inline-flex justify-center text-white text-sm font-bold py-3 px-8 rounded-xl transition-all" style="background-color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $themeHoverColor }}'" onmouseout="this.style.backgroundColor='{{ $themeColor }}'">
-                        عرض النتيجة
+                        {{ __('عرض النتيجة') }}
                     </a>
 
                     @if ($canRetry)
                         <a href="{{ $retryUrl }}" class="w-full sm:w-auto inline-flex justify-center text-sm font-bold py-3 px-8 rounded-xl bg-white border transition-all" style="color: {{ $themeColor }}; border-color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $themeSoftColor }}'" onmouseout="this.style.backgroundColor='white'">
-                            إعادة {{ $isExam ? 'الامتحان' : 'الواجب' }}
+                            {{ __('إعادة') }} {{ $isExam ? __('الامتحان') : __('الواجب') }}
                         </a>
                     @endif
                 </div>
@@ -53,18 +53,18 @@
                 <div class="w-16 h-16 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-4 text-xl">
                     <i class="fa-solid fa-lock"></i>
                 </div>
-                <h2 class="text-xl font-black text-blue-950">{{ $label }} مغلق حالياً</h2>
-                <p class="text-sm text-gray-500 font-semibold mt-3">سيظهر المحتوى هنا داخل فترة الإتاحة المحددة من لوحة التحكم.</p>
+                <h2 class="text-xl font-black text-blue-950">{{ $label }} {{ __('مغلق حالياً') }}</h2>
+                <p class="text-sm text-gray-500 font-semibold mt-3">{{ __('سيظهر المحتوى هنا داخل فترة الإتاحة المحددة من لوحة التحكم.') }}</p>
             </div>
         @elseif ($questions->isEmpty() || ! $currentQuestion)
             <div class="w-full max-w-4xl bg-white rounded-[2rem] border border-gray-100 p-8 text-center shadow-sm">
-                <p class="text-sm font-bold text-blue-950">لا توجد أسئلة متاحة حالياً.</p>
+                <p class="text-sm font-bold text-blue-950">{{ __('لا توجد أسئلة متاحة حالياً.') }}</p>
             </div>
         @else
             <form wire:submit="submit" class="w-full max-w-4xl bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm space-y-8">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-gray-50 pb-6">
                     <div class="flex items-center gap-2" style="color: {{ $themeColor }}">
-                        <span class="text-xs font-bold text-gray-400">الوقت المتبقي</span>
+                        <span class="text-xs font-bold text-gray-400">{{ __('الوقت المتبقي') }}</span>
                         @if ($hasCountdown)
                             <span
                                 class="text-2xl md:text-3xl font-black tracking-wider"
@@ -112,7 +112,7 @@
                     <div class="w-full sm:w-1/2 space-y-1">
                         <div class="flex justify-between items-center text-xs font-bold text-gray-400">
                             <span class="text-emerald-500 font-black">{{ $progressPercentage }}%</span>
-                            <span>التقدم: {{ $answeredCount }} / {{ $questionCount }} سؤال</span>
+                            <span>{{ __('التقدم:') }} {{ $answeredCount }} / {{ $questionCount }} {{ __('سؤال') }}</span>
                         </div>
                         <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div class="bg-emerald-500 h-full rounded-full transition-all" style="width: {{ $progressPercentage }}%"></div>
@@ -124,21 +124,21 @@
                     <div class="flex flex-col sm:flex-row justify-between items-center bg-red-50 border border-red-200 text-red-600 rounded-xl p-4 gap-3 text-sm font-bold">
                         <div class="flex items-center gap-2">
                             <i class="fa-solid fa-triangle-exclamation text-base"></i>
-                            <p class="text-center sm:text-right">تنبيه: في حال الخروج من الصفحة قبل التسليم قد تفقد إجاباتك الحالية.</p>
+                            <p class="text-center sm:text-right">{{ __('تنبيه: في حال الخروج من الصفحة قبل التسليم قد تفقد إجاباتك الحالية.') }}</p>
                         </div>
                         <button type="submit" class="text-white px-5 py-2 rounded-xl text-xs font-black whitespace-nowrap transition-all hidden sm:block" style="background-color: {{ $themeColor }}" onmouseover="this.style.backgroundColor='{{ $themeHoverColor }}'" onmouseout="this.style.backgroundColor='{{ $themeColor }}'">
-                            إنهاء الاختبار
+                            {{ __('إنهاء الاختبار') }}
                         </button>
                     </div>
                 @endif
 
                 <div class="flex justify-between items-center">
                     <span class="text-white text-xs font-black px-4 py-1.5 rounded-full shadow-sm" style="background-color: {{ $themeColor }}; box-shadow: 0 4px 12px {{ $themeColor }}1A">
-                        السؤال {{ $currentNumber }}
+                        {{ __('السؤال') }} {{ $currentNumber }}
                     </span>
                     <button type="button" class="text-xs font-bold text-red-400 hover:text-red-500 transition-all flex items-center gap-1.5">
                         <i class="fa-regular fa-flag"></i>
-                        <span>تبليغ عن خطأ</span>
+                        <span>{{ __('تبليغ عن خطأ') }}</span>
                     </button>
                 </div>
 
@@ -154,7 +154,7 @@
                         rows="6"
                         class="w-full rounded-2xl border border-gray-100 bg-gray-50 p-5 text-sm font-semibold text-blue-950 outline-none transition-colors"
                         style="--tw-ring-color: {{ $themeColor }}"
-                        placeholder="اكتب إجابتك هنا..."
+                        placeholder="{{ __('اكتب إجابتك هنا...') }}"
                     ></textarea>
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="options-container">
@@ -174,7 +174,7 @@
                                     </span>
                                     <span data-question-math x-data x-init="$nextTick(() => renderStudentMath())" class="text-sm font-black text-blue-950">{{ $option->title }}</span>
                                 </div>
-                                <span class="text-[10px] font-bold text-gray-400">الخيار {{ $optionIndex + 1 }}</span>
+                                <span class="text-[10px] font-bold text-gray-400">{{ __('الخيار') }} {{ $optionIndex + 1 }}</span>
                             </label>
                         @endforeach
                     </div>
@@ -196,8 +196,8 @@
                         onmouseover="this.style.backgroundColor='{{ $themeHoverColor }}'"
                         onmouseout="this.style.backgroundColor='{{ $themeColor }}'"
                     >
-                        <span wire:loading.remove wire:target="submit">إنهاء {{ $isExam ? 'الاختبار' : 'الواجب' }}</span>
-                        <span wire:loading wire:target="submit">جاري التسليم...</span>
+                        <span wire:loading.remove wire:target="submit">{{ __('إنهاء') }} {{ $isExam ? __('الاختبار') : __('الواجب') }}</span>
+                        <span wire:loading wire:target="submit">{{ __('جاري التسليم...') }}</span>
                     </button>
 
                     <div class="order-1 sm:order-2 flex gap-3 w-full sm:w-auto">
@@ -207,7 +207,7 @@
                             @disabled($currentQuestionIndex === 0)
                             class="flex-1 sm:flex-none px-6 py-3 rounded-xl text-xs font-black transition-all {{ $currentQuestionIndex === 0 ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-gray-50 hover:bg-gray-100 text-blue-950' }}"
                         >
-                            السابق
+                            {{ __('السابق') }}
                             <i class="fa-solid fa-arrow-right mr-1"></i>
                         </button>
 
@@ -218,7 +218,7 @@
                             class="flex-1 sm:flex-none px-6 py-3 rounded-xl text-xs font-black transition-all {{ $currentQuestionIndex >= $questionCount - 1 ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-gray-50 hover:bg-gray-100 text-blue-950' }}"
                         >
                             <i class="fa-solid fa-arrow-left ml-1"></i>
-                            التالي
+                            {{ __('التالي') }}
                         </button>
                     </div>
                 </div>

@@ -11,15 +11,15 @@
     $grade = $accountSubject?->gradeSubject?->grade;
     $subject = $accountSubject?->gradeSubject?->subject;
     $track = $accountSubject?->gradeSubject?->track;
-    $lessonTitle = $lesson?->getTranslation('title', 'ar', false) ?: $lesson?->title;
-    $itemTitle = $lessonItem?->getTranslation('title', 'ar', false) ?: $lessonItem?->title;
-    $itemDescription = $lessonItem?->getTranslation('description', 'ar', false) ?: $lessonItem?->description;
-    $courseTitle = $course?->getTranslation('title', 'ar', false) ?: $course?->title;
-    $subjectName = $subject?->name;
-    $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
+    $lessonTitle = \App\Support\WebsiteTranslation::value($lesson, 'title') ?: $lesson?->title;
+    $itemTitle = \App\Support\WebsiteTranslation::value($lessonItem, 'title') ?: $lessonItem?->title;
+    $itemDescription = \App\Support\WebsiteTranslation::value($lessonItem, 'description') ?: $lessonItem?->description;
+    $courseTitle = \App\Support\WebsiteTranslation::value($course, 'title') ?: $course?->title;
+    $subjectName = \App\Support\WebsiteTranslation::value($subject, 'name');
+    $trackName = \App\Support\WebsiteTranslation::value($track, 'name') ?: $track?->name;
     $teacherName = $isStandaloneTeacher
-        ? ($course?->provider?->owner?->name ?: 'المعلم')
-        : ($teacher?->teacher?->owner?->name ?: 'المعلم');
+        ? ($course?->provider?->owner?->name ?: __('المعلم'))
+        : ($teacher?->teacher?->owner?->name ?: __('المعلم'));
     $activeColor = $course?->provider?->websitePrimaryColor() ?? '#5D3FD3';
     $activeHoverColor = $course?->provider?->websiteSecondaryColor() ?? '#4c32b3';
     $activeSoftColor = $activeColor.'12';
@@ -33,20 +33,20 @@
         }
 
         if ($seconds < 60) {
-            return $seconds.' ثانية';
+            return $seconds.__(' ثانية');
         }
 
         $minutes = intdiv($seconds, 60);
         $remainingSeconds = $seconds % 60;
 
         if ($remainingSeconds === 0) {
-            return $minutes.' دقيقة';
+            return $minutes.__(' دقيقة');
         }
 
-        return sprintf('%d:%02d دقيقة', $minutes, $remainingSeconds);
+        return sprintf(__('%d:%02d دقيقة'), $minutes, $remainingSeconds);
     };
     $formatDurationMinutes = fn (?int $minutes): ?string => filled($minutes) && $minutes > 0
-        ? $minutes.' دقيقة'
+        ? $minutes.__(' دقيقة')
         : null;
 
     $linkUrl = filled($lessonItem?->link_url)
@@ -71,18 +71,19 @@
     $lessonIsOpen = ($lesson?->isCurrentlyOpen() ?? false) || ($hasImmediateLessonAccess ?? false);
     $lessonAvailabilityText = match (true) {
         $lessonIsOpen => null,
-        filled($lesson?->starts_at) && $lesson->starts_at->isFuture() => 'هذا الدرس سيفتح في '.$lesson->starts_at->format('Y-m-d H:i'),
-        filled($lesson?->ends_at) && $lesson->ends_at->isPast() => 'انتهت مدة إتاحة هذا الدرس في '.$lesson->ends_at->format('Y-m-d H:i'),
-        default => 'هذا الدرس مغلق حالياً.',
+        filled($lesson?->starts_at) && $lesson->starts_at->isFuture() => __('هذا الدرس سيفتح في ').$lesson->starts_at->format('Y-m-d H:i'),
+        filled($lesson?->ends_at) && $lesson->ends_at->isPast() => __('انتهت مدة إتاحة هذا الدرس في ').$lesson->ends_at->format('Y-m-d H:i'),
+        default => __('هذا الدرس مغلق حالياً.'),
     };
     $lessonItemIsOpen = fn ($item): bool => filled($item) && $item->isCurrentlyOpen();
-    $lessonItemAvailabilityText = function ($item, string $fallback = 'العنصر غير متاح حالياً.'): string {
+    $lessonItemAvailabilityText = function ($item, ?string $fallback = null): string {
+        $fallback ??= __('العنصر غير متاح حالياً.');
         if (blank($item)) {
             return $fallback;
         }
 
         if (! $item->is_active) {
-            return 'غير مفعل حالياً';
+            return __('غير مفعل حالياً');
         }
 
         return $fallback;
@@ -96,8 +97,8 @@
     $usedAttempts = $attempts['used'] ?? 0;
     $remainingAttempts = $attempts['remaining'] ?? null;
     $attemptsText = $attemptLimit === null
-        ? 'غير محدود'
-        : $usedAttempts.' / '.$attemptLimit.($remainingAttempts === 0 ? ' — انتهت المحاولات' : ' — متبقي '.$remainingAttempts);
+        ? __('غير محدود')
+        : $usedAttempts.' / '.$attemptLimit.($remainingAttempts === 0 ? __(' — انتهت المحاولات') : __(' — متبقي ').$remainingAttempts);
     $videoProgressPercentage = (int) ($studentVideoProgress?->progress_percentage ?? 0);
     $videoProgressId = $studentVideoProgress?->id;
     $videoLastPositionSeconds = (int) ($studentVideoProgress?->last_position_seconds ?? 0);
@@ -106,21 +107,21 @@
     $videoViewLimit = filled($lesson?->num_of_video_views) && $lesson->num_of_video_views > 0 ? (int) $lesson->num_of_video_views : null;
 @endphp
 
-<div class="bg-white" dir="rtl">
+<div class="bg-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <section class="max-w-7xl mx-auto px-4 md:px-8 py-6">
         @if (! $lessonItem)
             <div class="rounded-3xl bg-slate-50 border border-slate-100 p-8 text-center">
-                <p class="text-sm font-bold text-blue-950">لم يتم العثور على عنصر الدرس المطلوب.</p>
-                <a href="/subjects" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $activeColor }}">العودة للمواد</a>
+                <p class="text-sm font-bold text-blue-950">{{ __('لم يتم العثور على عنصر الدرس المطلوب.') }}</p>
+                <a href="/{{ \App\Support\WebsiteUrl::locale() }}/subjects" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $activeColor }}">{{ __('العودة للمواد') }}</a>
             </div>
         @else
             <nav class="flex flex-wrap items-center gap-1.5 text-xs text-gray-400 mb-6 font-bold">
-                <a href="/" style="--active-color: {{ $activeColor }}" class="hover:text-[var(--active-color)]">الرئيسية</a>
+                <a href="/{{ \App\Support\WebsiteUrl::locale() }}" style="--active-color: {{ $activeColor }}" class="hover:text-[var(--active-color)]">{{ __('الرئيسية') }}</a>
                 <span>/</span>
-                <a href="/subjects" style="--active-color: {{ $activeColor }}" class="hover:text-[var(--active-color)]">المواد</a>
+                <a href="/{{ \App\Support\WebsiteUrl::locale() }}/subjects" style="--active-color: {{ $activeColor }}" class="hover:text-[var(--active-color)]">{{ __('المواد') }}</a>
                 @if ($subjectName)
                     <span>/</span>
-                    <a href="/teachers?subject={{ $accountSubject?->id }}" style="--active-color: {{ $activeColor }}" class="hover:text-[var(--active-color)]">{{ $subjectName }}</a>
+                    <a href="/{{ \App\Support\WebsiteUrl::locale() }}/teachers?subject={{ $accountSubject?->id }}" style="--active-color: {{ $activeColor }}" class="hover:text-[var(--active-color)]">{{ $subjectName }}</a>
                 @endif
                 @if ($lessonTitle)
                     <span>/</span>
@@ -139,7 +140,7 @@
                             </div>
                             <h1 class="text-xl sm:text-2xl font-black text-blue-950">{{ $itemTitle }}</h1>
                             <p class="text-sm text-gray-500 font-semibold mt-3">{{ $lessonAvailabilityText }}</p>
-                            <p class="text-xs text-gray-400 font-medium mt-2">العنصر ظاهر في قائمة الدروس، لكن المحتوى لا يمكن فتحه خارج فترة الإتاحة.</p>
+                            <p class="text-xs text-gray-400 font-medium mt-2">{{ __('العنصر ظاهر في قائمة الدروس، لكن المحتوى لا يمكن فتحه خارج فترة الإتاحة.') }}</p>
                         </div>
                     @elseif (! $activeLessonItemIsOpen)
                         <div class="bg-slate-50 border border-slate-100 rounded-[24px] p-8 text-center shadow-sm">
@@ -148,7 +149,7 @@
                             </div>
                             <h1 class="text-xl sm:text-2xl font-black text-blue-950">{{ $itemTitle }}</h1>
                             <p class="text-sm text-gray-500 font-semibold mt-3">{{ $activeLessonItemAvailabilityText }}</p>
-                            <p class="text-xs text-gray-400 font-medium mt-2">العنصر ظاهر في قائمة الدروس، لكن المحتوى لا يمكن فتحه أثناء إيقافه.</p>
+                            <p class="text-xs text-gray-400 font-medium mt-2">{{ __('العنصر ظاهر في قائمة الدروس، لكن المحتوى لا يمكن فتحه أثناء إيقافه.') }}</p>
                         </div>
                     @elseif (! $activeLessonItemHasAccess)
                         <div class="bg-slate-50 border border-slate-100 rounded-[24px] p-8 text-center shadow-sm">
@@ -157,10 +158,10 @@
                             </div>
                             <h1 class="text-xl sm:text-2xl font-black text-blue-950">{{ $itemTitle }}</h1>
                             <p class="text-sm text-gray-500 font-semibold mt-3">
-                                {{ $isAuthenticated ? 'هذا العنصر متاح للمشتركين في الكورس فقط.' : 'يجب تسجيل الدخول أولاً لمشاهدة محتوى الدرس.' }}
+                                {{ $isAuthenticated ? __('هذا العنصر متاح للمشتركين في الكورس فقط.') : __('يجب تسجيل الدخول أولاً لمشاهدة محتوى الدرس.') }}
                             </p>
-                            <a href="{{ $isAuthenticated ? '/checkout?course='.$course?->id : '/login' }}" class="inline-flex mt-4 text-white text-sm font-bold py-3 px-8 rounded-xl transition-all" style="background-color: {{ $activeColor }}" onmouseover="this.style.backgroundColor='{{ $activeHoverColor }}'" onmouseout="this.style.backgroundColor='{{ $activeColor }}'">
-                                {{ $isAuthenticated ? 'اشترك الآن' : 'تسجيل الدخول' }}
+                            <a href="{{ \App\Support\WebsiteUrl::path($isAuthenticated ? '/checkout?course='.$course?->id : '/login') }}" class="inline-flex mt-4 text-white text-sm font-bold py-3 px-8 rounded-xl transition-all" style="background-color: {{ $activeColor }}" onmouseover="this.style.backgroundColor='{{ $activeHoverColor }}'" onmouseout="this.style.backgroundColor='{{ $activeColor }}'">
+                                {{ $isAuthenticated ? __('اشترك الآن') : __('تسجيل الدخول') }}
                             </a>
                         </div>
                     @elseif ($contentType === 'video')
@@ -316,39 +317,39 @@
                             @elseif ($videoViewLimitReached ?? false)
                                 <div class="w-full h-full flex flex-col items-center justify-center text-white gap-3 text-center px-6">
                                     <i class="fa-solid fa-circle-check text-5xl text-white/70"></i>
-                                    <p class="text-sm font-bold">تم استهلاك عدد مرات مشاهدة هذا الفيديو.</p>
+                                    <p class="text-sm font-bold">{{ __('تم استهلاك عدد مرات مشاهدة هذا الفيديو.') }}</p>
                                     @if ($videoViewLimit)
-                                        <p class="text-xs text-white/60">عدد المشاهدات المكتملة: {{ $videoCompletedWatchCount }} / {{ $videoViewLimit }}</p>
+                                        <p class="text-xs text-white/60">{{ __('عدد المشاهدات المكتملة:') }} {{ $videoCompletedWatchCount }} / {{ $videoViewLimit }}</p>
                                     @endif
                                 </div>
                             @elseif (filled($lessonItem->video_url))
                                 <div class="w-full h-full flex flex-col items-center justify-center text-white gap-3 text-center px-6">
                                     <i class="fa-solid fa-shield-halved text-5xl text-white/70"></i>
-                                    <p class="text-sm font-bold">تعذر تجهيز رابط تشغيل الفيديو المحمي حالياً.</p>
+                                    <p class="text-sm font-bold">{{ __('تعذر تجهيز رابط تشغيل الفيديو المحمي حالياً.') }}</p>
                                 </div>
                             @else
                                 <div class="w-full h-full flex flex-col items-center justify-center text-white gap-3">
                                     <i class="fa-regular fa-circle-play text-5xl text-white/70"></i>
-                                    <p class="text-sm font-bold">لم يتم إضافة رابط الفيديو بعد.</p>
+                                    <p class="text-sm font-bold">{{ __('لم يتم إضافة رابط الفيديو بعد.') }}</p>
                                 </div>
                             @endif
                         </div>
 
                         <div class="bg-gray-50 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div class="flex items-center gap-2 text-xs font-bold text-gray-500">
-                                <span>مدة العنصر:</span>
-                                <span class="text-gray-700">{{ $formatDurationSeconds($lessonItem->duration_seconds) ?? 'غير محددة' }}</span>
+                                <span>{{ __('مدة العنصر:') }}</span>
+                                <span class="text-gray-700">{{ $formatDurationSeconds($lessonItem->duration_seconds) ?? __('غير محددة') }}</span>
                             </div>
                             <div class="flex items-center gap-3 flex-1 sm:max-w-md">
                                 <span class="text-xs font-black" style="color: {{ $activeColor }}" x-text="`${progress}%`">{{ $videoProgressPercentage }}%</span>
                                 <div class="w-full h-2 rounded-full overflow-hidden" style="background-color: {{ $activeSoftColor }}">
                                     <div class="h-full rounded-full transition-all" x-bind:style="`width: ${progress}%; background-color: {{ $activeColor }}`"></div>
                                 </div>
-                                <span class="text-xs font-bold text-gray-400 whitespace-nowrap">تقدم المشاهدة الفعلي</span>
+                                <span class="text-xs font-bold text-gray-400 whitespace-nowrap">{{ __('تقدم المشاهدة الفعلي') }}</span>
                             </div>
                             @if ($videoViewLimit)
                                 <div class="text-xs font-bold text-gray-400">
-                                    المشاهدات المكتملة:
+                                    {{ __('المشاهدات المكتملة:') }}
                                     <span class="text-gray-700">{{ $videoCompletedWatchCount }} / {{ $videoViewLimit }}</span>
                                 </div>
                             @endif
@@ -363,17 +364,17 @@
                                 <div>
                                     <h1 class="text-xl sm:text-2xl font-black text-gray-800">{{ $itemTitle }}</h1>
                                     <span class="text-xs text-gray-400 block mt-1 font-semibold">
-                                        مدة الحل: {{ $formatDurationMinutes($lessonAssignments->max('duration_minutes')) ?? $formatDurationSeconds($lessonItem->duration_seconds) ?? '—' }}
+                                        {{ __('مدة الحل:') }} {{ $formatDurationMinutes($lessonAssignments->max('duration_minutes')) ?? $formatDurationSeconds($lessonItem->duration_seconds) ?? '—' }}
                                     </span>
                                     <span class="text-xs text-gray-400 block mt-1 font-semibold">
-                                        عدد المحاولات: {{ $attemptsText }}
+                                        {{ __('عدد المحاولات:') }} {{ $attemptsText }}
                                     </span>
                                 </div>
                             </div>
                             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                                 @foreach ($lessonAssignments as $assignment)
-                                    <a href="/home_work?assignment={{ $assignment->id }}&item={{ $lessonItem->id }}" class="w-full sm:w-auto text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center" style="background-color: {{ $activeColor }}" onmouseover="this.style.backgroundColor='{{ $activeHoverColor }}'" onmouseout="this.style.backgroundColor='{{ $activeColor }}'">
-                                        {{ $assignment->getTranslation('title', 'ar', false) ?: $assignment->title }}
+                                    <a href="/{{ \App\Support\WebsiteUrl::locale() }}/home_work?assignment={{ $assignment->id }}&item={{ $lessonItem->id }}" class="w-full sm:w-auto text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center" style="background-color: {{ $activeColor }}" onmouseover="this.style.backgroundColor='{{ $activeHoverColor }}'" onmouseout="this.style.backgroundColor='{{ $activeColor }}'">
+                                        {{ \App\Support\WebsiteTranslation::value($assignment, 'title') ?: $assignment->title }}
                                     </a>
                                 @endforeach
                             </div>
@@ -387,10 +388,10 @@
                                 <div>
                                     <h1 class="text-xl sm:text-2xl font-black text-gray-800">{{ $itemTitle }}</h1>
                                     <span class="text-xs text-gray-400 block mt-1 font-semibold">
-                                        مدة الاختبار: {{ $formatDurationMinutes($lessonExams->max('duration_minutes')) ?? $formatDurationSeconds($lessonItem->duration_seconds) ?? '—' }}
+                                        {{ __('مدة الاختبار:') }} {{ $formatDurationMinutes($lessonExams->max('duration_minutes')) ?? $formatDurationSeconds($lessonItem->duration_seconds) ?? '—' }}
                                     </span>
                                     <span class="text-xs text-gray-400 block mt-1 font-semibold">
-                                        عدد المحاولات: {{ $attemptsText }}
+                                        {{ __('عدد المحاولات:') }} {{ $attemptsText }}
                                     </span>
                                 </div>
                             </div>
@@ -401,13 +402,13 @@
                                     @endphp
 
                                     @if ($currentExamIsOpen)
-                                        <a href="/quiz?exam={{ $exam->id }}&item={{ $lessonItem->id }}" class="w-full sm:w-auto bg-[#E11D48] hover:bg-[#be123c] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
-                                            {{ $exam->getTranslation('title', 'ar', false) ?: $exam->title }}
+                                        <a href="/{{ \App\Support\WebsiteUrl::locale() }}/quiz?exam={{ $exam->id }}&item={{ $lessonItem->id }}" class="w-full sm:w-auto bg-[#E11D48] hover:bg-[#be123c] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
+                                            {{ \App\Support\WebsiteTranslation::value($exam, 'title') ?: $exam->title }}
                                         </a>
                                     @else
                                         <div class="w-full sm:w-auto bg-gray-100 text-gray-400 text-sm font-bold py-3 px-8 rounded-xl text-center cursor-not-allowed border border-gray-200">
-                                            <span class="block">{{ $exam->getTranslation('title', 'ar', false) ?: $exam->title }}</span>
-                                            <span class="block text-[10px] mt-1 font-semibold">{{ $lessonItemAvailabilityText($lessonItem, 'الاختبار مغلق حالياً.') }}</span>
+                                            <span class="block">{{ \App\Support\WebsiteTranslation::value($exam, 'title') ?: $exam->title }}</span>
+                                            <span class="block text-[10px] mt-1 font-semibold">{{ $lessonItemAvailabilityText($lessonItem, __('الاختبار مغلق حالياً.')) }}</span>
                                         </div>
                                     @endif
                                 @endforeach
@@ -421,11 +422,11 @@
                                 </div>
                                 <div>
                                     <h1 class="text-xl sm:text-2xl font-black text-gray-800">{{ $itemTitle }}</h1>
-                                    <span class="text-xs text-gray-400 block mt-1 font-semibold">رابط خارجي للدرس</span>
+                                    <span class="text-xs text-gray-400 block mt-1 font-semibold">{{ __('رابط خارجي للدرس') }}</span>
                                 </div>
                             </div>
                             <a href="{{ $linkUrl }}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto bg-[#2563EB] hover:bg-[#1d4ed8] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
-                                فتح الرابط
+                                {{ __('فتح الرابط') }}
                             </a>
                         </div>
                     @else
@@ -436,11 +437,11 @@
                                 </div>
                                 <div>
                                     <h1 class="text-xl sm:text-2xl font-black text-gray-800">{{ $itemTitle }}</h1>
-                                    <span class="text-xs text-gray-400 block mt-1 font-semibold">ملف مرفق للدرس</span>
+                                    <span class="text-xs text-gray-400 block mt-1 font-semibold">{{ __('ملف مرفق للدرس') }}</span>
                                 </div>
                             </div>
                             <a href="{{ asset('storage/'.$lessonItem->file_url) }}" target="_blank" class="w-full sm:w-auto bg-[#D97706] hover:bg-[#b45309] text-white text-sm font-bold py-3 px-8 rounded-xl transition-all text-center">
-                                تحميل الملف
+                                {{ __('تحميل الملف') }}
                             </a>
                         </div>
                     @endif
@@ -450,8 +451,8 @@
                             <h2 class="text-lg sm:text-xl font-black text-blue-950">{{ $itemTitle }}</h2>
                             <div class="flex flex-wrap items-center gap-3 text-xs text-gray-400 font-semibold">
                                 <span class="flex items-center gap-1"><i class="fa-regular fa-user"></i> {{ $teacherName }}</span>
-                                @if ($grade?->name)
-                                    <span class="flex items-center gap-1"><i class="fa-solid fa-graduation-cap"></i> {{ $grade->name }}</span>
+                                @if (\App\Support\WebsiteTranslation::value($grade, 'name'))
+                                    <span class="flex items-center gap-1"><i class="fa-solid fa-graduation-cap"></i> {{ \App\Support\WebsiteTranslation::value($grade, 'name') }}</span>
                                 @endif
                                 @if ($trackName)
                                     <span class="flex items-center gap-1"><i class="fa-solid fa-book-open"></i> {{ $trackName }}</span>
@@ -464,7 +465,7 @@
                         <div class="bg-amber-50 border-r-4 border-amber-500 rounded-2xl p-4 flex items-start gap-3">
                             <i class="fa-solid fa-circle-info text-amber-600 text-lg mt-0.5"></i>
                             <div class="text-right space-y-1">
-                                <h5 class="text-xs font-black text-amber-900">ملاحظة:</h5>
+                                <h5 class="text-xs font-black text-amber-900">{{ __('ملاحظة:') }}</h5>
                                 <p class="text-xs text-amber-800/90 font-medium leading-relaxed">{{ $itemDescription }}</p>
                             </div>
                         </div>
@@ -474,19 +475,19 @@
                 <aside class="lg:col-span-4 space-y-4">
                     <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
                         <div class="text-white p-5 text-right space-y-1" style="background-color: {{ $activeColor }}">
-                            <h3 class="text-base font-black tracking-wide">قائمة محتوى الدرس</h3>
+                            <h3 class="text-base font-black tracking-wide">{{ __('قائمة محتوى الدرس') }}</h3>
                             <p class="text-xs font-medium" style="color: {{ $activeMutedTextColor }}">{{ $lessonTitle ?: $courseTitle }}</p>
                         </div>
 
                         <div class="p-2 space-y-1.5 max-h-[520px] overflow-y-auto">
                             @foreach ($lessonItems as $playlistItem)
                                 @php
-                                    $playlistTitle = $playlistItem->getTranslation('title', 'ar', false) ?: $playlistItem->title;
+                                    $playlistTitle = \App\Support\WebsiteTranslation::value($playlistItem, 'title') ?: $playlistItem->title;
                                     $playlistItemType = $playlistItem->type instanceof LessonTypeEnum ? $playlistItem->type->value : (string) $playlistItem->type;
                                     $playlistIsLink = $playlistItemType === LessonTypeEnum::Link->value && filled($playlistItem->link_url);
                                     $playlistUrl = $playlistIsLink
                                         ? (Str::startsWith($playlistItem->link_url, ['http://', 'https://']) ? $playlistItem->link_url : url($playlistItem->link_url))
-                                        : "/lesson?item={$playlistItem->id}";
+                                        : \App\Support\WebsiteUrl::path("/lesson?item={$playlistItem->id}");
                                     $playlistType = match (true) {
                                         $playlistItemType === LessonTypeEnum::Assignments->value => 'assignment',
                                         $playlistItemType === LessonTypeEnum::Exams->value => 'exam',
@@ -521,7 +522,7 @@
                                             <div class="text-right">
                                                 <h4 class="text-xs font-bold {{ $isActive ? '' : 'text-blue-950' }}" style="{{ $isActive ? 'color: '.$activeColor : '' }}">{{ $playlistTitle }}</h4>
                                                 <span class="text-[10px] {{ $isActive ? '' : 'text-gray-400' }} block mt-0.5" style="{{ $isActive ? 'color: '.$activeColor : '' }}">
-                                                    {{ ! $lessonIsOpen ? 'غير متاح الآن' : ($playlistAvailabilityText ?: ($formatDurationSeconds($playlistItem->duration_seconds) ?? 'مغلق')) }}
+                                                    {{ ! $lessonIsOpen ? __('غير متاح الآن') : ($playlistAvailabilityText ?: ($formatDurationSeconds($playlistItem->duration_seconds) ?? __('مغلق'))) }}
                                                 </span>
                                             </div>
                                         </div>
@@ -542,7 +543,7 @@
                                             <div class="text-right">
                                                 <h4 class="text-xs font-bold {{ $isActive ? '' : 'text-blue-950' }}" style="{{ $isActive ? 'color: '.$activeColor : '' }}">{{ $playlistTitle }}</h4>
                                                 <span class="text-[10px] {{ $isActive ? '' : 'text-gray-400' }} block mt-0.5" style="{{ $isActive ? 'color: '.$activeColor : '' }}">
-                                                    {{ $formatDurationSeconds($playlistItem->duration_seconds) ?? 'مجاني' }}
+                                                    {{ $formatDurationSeconds($playlistItem->duration_seconds) ?? __('مجاني') }}
                                                 </span>
                                             </div>
                                         </div>
@@ -550,18 +551,18 @@
                                 @endif
                             @endforeach
 
-                            <a href="/packages" class="w-full border font-bold text-sm py-3.5 rounded-xl transition-colors bg-transparent flex items-center justify-center gap-2" style="border-color: {{ $activeColor }}33; color: {{ $activeColor }}" onmouseover="this.style.backgroundColor='{{ $activeSoftColor }}'" onmouseout="this.style.backgroundColor='transparent'">
+                            <a href="/{{ \App\Support\WebsiteUrl::locale() }}/packages" class="w-full border font-bold text-sm py-3.5 rounded-xl transition-colors bg-transparent flex items-center justify-center gap-2" style="border-color: {{ $activeColor }}33; color: {{ $activeColor }}" onmouseover="this.style.backgroundColor='{{ $activeSoftColor }}'" onmouseout="this.style.backgroundColor='transparent'">
                                 <i class="fa-solid fa-bolt text-xs"></i>
-                                اشترك الآن
+                                {{ __('اشترك الآن') }}
                             </a>
                         </div>
                     </div>
 
                     <div class="bg-gray-50 rounded-3xl p-5 border border-gray-100 flex items-start justify-between gap-4">
                         <div class="text-right space-y-1">
-                            <h4 class="text-xs font-black text-blue-950">واجهتك مشكلة؟</h4>
-                            <p class="text-[11px] text-gray-400 font-medium">تواصل مع الدعم الفني لحل أي مشكلة تقنية في المشاهدة.</p>
-                            <a href="#" class="text-[11px] font-bold inline-block pt-1 hover:underline" style="color: {{ $activeColor }}">مركز المساعدة ←</a>
+                            <h4 class="text-xs font-black text-blue-950">{{ __('واجهتك مشكلة؟') }}</h4>
+                            <p class="text-[11px] text-gray-400 font-medium">{{ __('تواصل مع الدعم الفني لحل أي مشكلة تقنية في المشاهدة.') }}</p>
+                            <a href="#" class="text-[11px] font-bold inline-block pt-1 hover:underline" style="color: {{ $activeColor }}">{{ __('مركز المساعدة ←') }}</a>
                         </div>
                         <span class="w-8 h-8 rounded-full flex items-center justify-center text-xs" style="background-color: {{ $activeColor }}1A; color: {{ $activeColor }}">
                             <i class="fa-regular fa-circle-question"></i>

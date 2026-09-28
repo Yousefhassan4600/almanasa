@@ -4,6 +4,7 @@ namespace App\Livewire\Website;
 
 use App\Actions\StudentPortal\Assessments\ManageAssessmentAttempt;
 use App\Models\Provider;
+use App\Support\WebsiteUrl;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -93,7 +94,7 @@ class AssessmentPage extends Component
         $this->resetErrorBag();
 
         if (! Auth::check()) {
-            return redirect('/login');
+            return redirect(WebsiteUrl::path('/login'));
         }
 
         $provider = Provider::query()->findOrFail($this->providerId);

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Actions\StudentPortal\Assessments\ManageAssessmentAttempt;
 use App\Actions\StudentPortal\Courses\CheckCourseSubscription;
 use App\Enums\AccountType;
 use App\Enums\CoursePeriodType;
@@ -88,7 +89,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
     {
         $provider = $this->provider();
 
-        $response = $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/login');
+        $response = $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/login');
 
         $response
             ->assertOk()
@@ -98,11 +99,11 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('wire:submit', false)
             ->assertDontSee('action="/login/send-otp"', false)
             ->assertDontSee('http://127.0.0.1:8000/livewire', false)
-            ->assertSee('href="/login"', false)
-            ->assertSee('href="/my_lessons"', false)
+            ->assertSee('href="/ar/login"', false)
+            ->assertSee('href="/ar/my_lessons"', false)
             ->assertSee('دروسي', false)
             ->assertDontSee('id="dropdownNvbarButton"', false)
-            ->assertDontSee('href="/teachers"', false)
+            ->assertDontSee('href="/ar/teachers"', false)
             ->assertDontSee('href="login.html"', false)
             ->assertDontSee('href="subjects.html"', false);
     }
@@ -113,10 +114,10 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $providerUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
 
         foreach ([
-            '/index.html' => '/',
-            '/login.html' => '/login',
-            '/subjects.html' => '/subjects',
-            '/home_work_done.html' => '/home_work_done',
+            '/index.html' => '/ar',
+            '/login.html' => '/ar/login',
+            '/subjects.html' => '/ar/subjects',
+            '/home_work_done.html' => '/ar/home_work_done',
         ] as $legacyUrl => $canonicalUrl) {
             $this->get($providerUrl.$legacyUrl)
                 ->assertRedirect($canonicalUrl)
@@ -124,16 +125,100 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         }
     }
 
+    public function test_legacy_urls_keep_query_strings_and_redirect_to_arabic(): void
+    {
+        $provider = $this->provider();
+        $providerUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
+
+        $this->get($providerUrl.'/teachers?subject=12')
+            ->assertRedirect('/ar/teachers?subject=12')
+            ->assertMovedPermanently();
+
+        $this->get($providerUrl.'/en/subjects.html?grade=3')
+            ->assertRedirect('/en/subjects?grade=3')
+            ->assertMovedPermanently();
+    }
+
+    public function test_english_website_uses_english_data_and_switches_to_same_arabic_page(): void
+    {
+        $provider = $this->provider();
+        Banner::query()->create([
+            'provider_id' => $provider->id,
+            'title' => ['en' => 'English banner title', 'ar' => 'عنوان عربي'],
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $providerUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
+
+        $englishResponse = $this->get($providerUrl.'/en?campaign=fall');
+
+        $englishResponse
+            ->assertOk()
+            ->assertSee('English banner title', false)
+            ->assertSee('href="/ar?campaign=fall"', false)
+            ->assertSee('fa-earth-africa', false)
+            ->assertSee('<span>ع</span>', false)
+            ->assertSee('href="/en/my_lessons"', false);
+
+        $this->assertSame(1, substr_count($englishResponse->getContent(), '<span>ع</span>'));
+
+        $this->get($providerUrl.'/ar?campaign=fall')
+            ->assertOk()
+            ->assertSee('عنوان عربي', false)
+            ->assertSee('<span>EN</span>', false)
+            ->assertSee('href="/en?campaign=fall"', false);
+    }
+
+    public function test_english_protected_page_and_logout_keep_english_locale(): void
+    {
+        $provider = $this->provider();
+        $providerUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
+
+        $this->get($providerUrl.'/en/my_lessons')->assertRedirect('/en/login');
+
+        $user = User::factory()->create();
+        $this->studentAccount($provider, $user);
+        $this->actingAs($user)
+            ->post($providerUrl.'/en/logout')
+            ->assertRedirect('/en/login');
+    }
+
+    public function test_english_login_livewire_redirect_keeps_locale(): void
+    {
+        $provider = $this->provider();
+        $providerUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
+
+        $this->get($providerUrl.'/en/login')->assertOk();
+
+        Livewire::test(LoginForm::class, ['providerId' => $provider->id])
+            ->set('dialCountryCode', '+20')
+            ->set('phone', '01012345678')
+            ->call('sendOtp')
+            ->assertRedirect('/en/otp');
+    }
+
+    public function test_assessment_result_urls_keep_english_locale(): void
+    {
+        $this->withSession(['website_locale' => 'en']);
+        $attempt = new StudentAttempt;
+        $attempt->id = 41;
+
+        $this->assertSame(
+            '/en/quiz_done?attempt=41',
+            app(ManageAssessmentAttempt::class)->resultUrl('exam', $attempt),
+        );
+    }
+
     public function test_protected_auth_pages_redirect_guests_to_canonical_login_url(): void
     {
         $provider = $this->provider();
         $providerUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
 
-        $this->get($providerUrl.'/otp')->assertRedirect('/login');
-        $this->get($providerUrl.'/register')->assertRedirect('/login');
-        $this->get($providerUrl.'/my_lessons')->assertRedirect('/login');
-        $this->get($providerUrl.'/cart')->assertRedirect('/login');
-        $this->get($providerUrl.'/checkout')->assertRedirect('/login');
+        $this->get($providerUrl.'/ar/otp')->assertRedirect('/ar/login');
+        $this->get($providerUrl.'/ar/register')->assertRedirect('/ar/login');
+        $this->get($providerUrl.'/ar/my_lessons')->assertRedirect('/ar/login');
+        $this->get($providerUrl.'/ar/cart')->assertRedirect('/ar/login');
+        $this->get($providerUrl.'/ar/checkout')->assertRedirect('/ar/login');
     }
 
     public function test_provider_branding_banner_and_footer_data_render_on_website(): void
@@ -155,7 +240,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+        $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/')
             ->assertOk()
             ->assertSee('Future Stars Academy', false)
             ->assertSee('storage/providers/logos/future-stars.png', false)
@@ -164,7 +249,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('storage/banners/home-hero.png', false)
             ->assertSee('نبذة الأكاديمية من قاعدة البيانات', false)
             ->assertSee('https://facebook.example/future-stars', false)
-            ->assertSee('href="/my_lessons"', false);
+            ->assertSee('href="/ar/my_lessons"', false);
     }
 
     public function test_new_phone_creates_user_and_provider_student_account_after_valid_otp(): void
@@ -177,7 +262,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->call('sendOtp')
             ->set('otp', '1234')
             ->call('verify')
-            ->assertRedirect('/register');
+            ->assertRedirect('/ar/register');
 
         $user = User::query()->where('phone', '01012345678')->firstOrFail();
 
@@ -206,7 +291,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
                 'code_hash' => bcrypt('1234'),
                 'expires_at' => now()->addMinutes(5)->timestamp,
             ],
-        ])->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/otp')
+        ])->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/otp')
             ->assertOk()
             ->assertSeeLivewire(LoginForm::class)
             ->assertSee('otp-verification-form', false)
@@ -214,7 +299,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('submitIfComplete', false)
             ->assertDontSee('action="/otp/verify"', false);
 
-        $this->actingAs($user)->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/register')
+        $this->actingAs($user)->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/register')
             ->assertOk()
             ->assertSeeLivewire(RegisterForm::class)
             ->assertSeeLivewire(AuthControls::class)
@@ -230,7 +315,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
 
         $this->post($providerUrl.'/login/send-otp')->assertStatus(405);
         $this->post($providerUrl.'/otp/verify')->assertStatus(405);
-        $this->post($providerUrl.'/register')->assertStatus(405);
+        $this->post($providerUrl.'/ar/register')->assertStatus(405);
 
         $this->assertGuest();
         $this->assertDatabaseMissing(Account::class, [
@@ -246,14 +331,14 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->studentAccount($provider, $user);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/register')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/register')
             ->assertOk()
             ->assertSee('تسجيل الخروج', false)
             ->assertSeeLivewire(AuthControls::class)
             ->assertSee('wire:click="logout"', false)
             ->assertDontSee('action="/logout"', false)
-            ->assertDontSee('href="/profile"', false)
-            ->assertDontSee('href="/cart"', false)
+            ->assertDontSee('href="/ar/profile"', false)
+            ->assertDontSee('href="/ar/cart"', false)
             ->assertSee('id="openSidebarBtn"', false)
             ->assertSee('id="mobileSidebar"', false);
     }
@@ -265,12 +350,12 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->studentAccount($provider, $user);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/')
             ->assertOk()
             ->assertSee('تسجيل الدخول', false)
             ->assertDontSee('تسجيل الخروج', false)
-            ->assertDontSee('href="/profile"', false)
-            ->assertDontSee('href="/cart"', false);
+            ->assertDontSee('href="/ar/profile"', false)
+            ->assertDontSee('href="/ar/cart"', false);
     }
 
     public function test_completed_profile_student_sees_profile_and_cart_icons(): void
@@ -281,11 +366,11 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->studentProfile($user);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/')
             ->assertOk()
             ->assertSee('تسجيل الخروج', false)
-            ->assertSee('href="/profile"', false)
-            ->assertSee('href="/cart"', false)
+            ->assertSee('href="/ar/profile"', false)
+            ->assertSee('href="/ar/cart"', false)
             ->assertDontSee('>الملف الشخصي<', false);
     }
 
@@ -369,9 +454,9 @@ class ProviderWebsiteStudentAuthTest extends TestCase
     {
         $provider = $this->provider();
 
-        $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+        $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/')
             ->assertOk()
-            ->assertSee('href="/login"', false)
+            ->assertSee('href="/ar/login"', false)
             ->assertSee('ابدأ رحلتك الآن', false)
             ->assertSee('استكشف المواد', false);
 
@@ -380,9 +465,9 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->studentProfile($user);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/')
             ->assertOk()
-            ->assertSee('href="/subjects"', false)
+            ->assertSee('href="/ar/subjects"', false)
             ->assertSee('استكشف المواد', false)
             ->assertDontSee('ابدأ رحلتك الآن', false);
     }
@@ -395,9 +480,9 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->studentProfile($user);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/')
             ->assertOk()
-            ->assertSee('href="/single_teacher"', false)
+            ->assertSee('href="/ar/single_teacher"', false)
             ->assertSee('استكشف المواد', false);
     }
 
@@ -437,18 +522,18 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+        $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/')
             ->assertOk()
-            ->assertDontSee('href="/teachers?subject=', false)
+            ->assertDontSee('href="/ar/teachers?subject=', false)
             ->assertDontSee('الرياضيات', false)
             ->assertDontSee('الفيزياء', false)
             ->assertDontSee('المزيد', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/')
             ->assertOk()
             ->assertSeeLivewire(HomeSubjects::class)
-            ->assertSee('href="/teachers?subject=', false)
+            ->assertSee('href="/ar/teachers?subject=', false)
             ->assertSee('الرياضيات', false)
             ->assertSee('الفيزياء', false)
             ->assertDontSee('fa-flask-vial', false);
@@ -503,11 +588,11 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/subjects')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/subjects')
             ->assertOk()
             ->assertSeeLivewire(SubjectsPage::class)
             ->assertSee('wire:model.live.debounce.300ms="search"', false)
-            ->assertSee('href="/teachers?subject=', false)
+            ->assertSee('href="/ar/teachers?subject=', false)
             ->assertSee('Grade 1', false)
             ->assertSee('الرياضيات', false)
             ->assertSee('الفيزياء', false)
@@ -614,7 +699,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/teachers?subject='.$mathAccountSubject->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/teachers?subject='.$mathAccountSubject->id)
             ->assertOk()
             ->assertSeeLivewire(TeachersPage::class)
             ->assertSee('الرياضيات', false)
@@ -785,7 +870,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/single_teacher?teacher='.$teacher->id.'&subject='.$accountSubject->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/single_teacher?teacher='.$teacher->id.'&subject='.$accountSubject->id)
             ->assertOk()
             ->assertSeeLivewire(SingleTeacherPage::class)
             ->assertSee('كورس الرياضيات', false)
@@ -802,11 +887,11 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('اختبار منتهي', false)
             ->assertDontSee('انتهى في', false)
             ->assertSee('غير متاح الآن', false)
-            ->assertDontSee('href="/lesson?item='.$inactiveItem->id.'"', false)
-            ->assertSee('href="/lesson?item='.$futureActiveLessonItem->id.'"', false)
-            ->assertDontSee('href="/lesson?item='.$futureItem->id.'"', false)
-            ->assertDontSee('href="/lesson?item='.$expiredItem->id.'"', false)
-            ->assertSee('href="/lesson?item='.$expiredExamItem->id.'"', false)
+            ->assertDontSee('href="/ar/lesson?item='.$inactiveItem->id.'"', false)
+            ->assertSee('href="/ar/lesson?item='.$futureActiveLessonItem->id.'"', false)
+            ->assertDontSee('href="/ar/lesson?item='.$futureItem->id.'"', false)
+            ->assertDontSee('href="/ar/lesson?item='.$expiredItem->id.'"', false)
+            ->assertSee('href="/ar/lesson?item='.$expiredExamItem->id.'"', false)
             ->assertDontSee('المراجعات النهائية', false);
     }
 
@@ -881,13 +966,13 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/single_teacher?teacher='.$teacher->id.'&subject='.$accountSubject->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/single_teacher?teacher='.$teacher->id.'&subject='.$accountSubject->id)
             ->assertOk()
             ->assertSee('شرح مدفوع', false)
-            ->assertDontSee('href="/lesson?item='.$paidItem->id.'"', false);
+            ->assertDontSee('href="/ar/lesson?item='.$paidItem->id.'"', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$paidItem->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/lesson?item='.$paidItem->id)
             ->assertOk()
             ->assertSee('هذا العنصر متاح للمشتركين في الكورس فقط.', false)
             ->assertDontSee('https://videos.example.test/paid-arabic', false);
@@ -902,13 +987,13 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/single_teacher?teacher='.$teacher->id.'&subject='.$accountSubject->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/single_teacher?teacher='.$teacher->id.'&subject='.$accountSubject->id)
             ->assertOk()
-            ->assertSee('href="/lesson?item='.$paidItem->id.'"', false)
+            ->assertSee('href="/ar/lesson?item='.$paidItem->id.'"', false)
             ->assertSee('مشترك', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$paidItem->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/lesson?item='.$paidItem->id)
             ->assertOk()
             ->assertSee('https://videos.example.test/paid-arabic', false)
             ->assertDontSee('هذا العنصر متاح للمشتركين في الكورس فقط.', false);
@@ -1002,15 +1087,15 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/my_lessons')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/my_lessons')
             ->assertOk()
             ->assertSeeLivewire(MyLessonsPage::class)
             ->assertSee('اللغة العربية', false)
             ->assertSee('الفيزياء', false)
             ->assertSee('نشط', false)
             ->assertSee('غير نشط', false)
-            ->assertSee('href="/lesson?item='.$lessonItem->id.'"', false)
-            ->assertSee('href="/checkout?course='.$expiredCourse->id.'"', false);
+            ->assertSee('href="/ar/lesson?item='.$lessonItem->id.'"', false)
+            ->assertSee('href="/ar/checkout?course='.$expiredCourse->id.'"', false);
     }
 
     public function test_cart_adds_course_and_uses_purchase_unit_prices_without_offer_price(): void
@@ -1066,7 +1151,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/cart?course='.$course->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/cart?course='.$course->id)
             ->assertOk()
             ->assertSeeLivewire(CartPage::class)
             ->assertSee('كورس الرياضيات', false)
@@ -1205,7 +1290,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/checkout?course='.$course->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/checkout?course='.$course->id)
             ->assertOk()
             ->assertSeeLivewire(CheckoutPage::class)
             ->assertSee('نوع الاشتراك', false)
@@ -1414,7 +1499,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$firstItem->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/lesson?item='.$firstItem->id)
             ->assertOk()
             ->assertSeeLivewire(LessonPage::class)
             ->assertSee('أساسيات الجبر', false)
@@ -1424,16 +1509,16 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('الشرح الأول: المفاهيم الأساسية', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$assignmentItem->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/lesson?item='.$assignmentItem->id)
             ->assertOk()
             ->assertSeeLivewire(LessonPage::class)
             ->assertSee('عنصر واجب الجبر', false)
             ->assertSee('عدد المحاولات: 0 / 2', false)
             ->assertSee('متبقي 2', false)
-            ->assertSee('href="/home_work?assignment='.$assignment->id.'&item='.$assignmentItem->id.'"', false);
+            ->assertSee('href="/ar/home_work?assignment='.$assignment->id.'&item='.$assignmentItem->id.'"', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$inactiveItem->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/lesson?item='.$inactiveItem->id)
             ->assertOk()
             ->assertSeeLivewire(LessonPage::class)
             ->assertSee('عنصر غير مفعل', false)
@@ -1442,7 +1527,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('https://videos.example.test/inactive-video', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$futureActiveLessonItem->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/lesson?item='.$futureActiveLessonItem->id)
             ->assertOk()
             ->assertSeeLivewire(LessonPage::class)
             ->assertSee('عنصر مستقبلي داخل الدرس', false)
@@ -1450,7 +1535,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertSee('https://videos.example.test/future-item-video', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$futureItem->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/lesson?item='.$futureItem->id)
             ->assertOk()
             ->assertSeeLivewire(LessonPage::class)
             ->assertSee('فيديو غير متاح الآن', false)
@@ -1459,15 +1544,15 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('https://videos.example.test/unavailable', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$expiredExamItem->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/lesson?item='.$expiredExamItem->id)
             ->assertOk()
             ->assertSeeLivewire(LessonPage::class)
             ->assertSee('اختبار منتهي', false)
             ->assertDontSee('انتهى في', false)
-            ->assertSee('href="/quiz?exam='.$expiredExam->id.'"', false);
+            ->assertSee('href="/ar/quiz?exam='.$expiredExam->id.'"', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$expiredExam->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/quiz?exam='.$expiredExam->id)
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
             ->assertDontSee('الاختبار مغلق حالياً', false)
@@ -1572,7 +1657,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/home_work?assignment='.$assignment->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/home_work?assignment='.$assignment->id)
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
             ->assertSee('What is velocity?', false)
@@ -1595,7 +1680,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->assertNull($startedAssignmentAttempt->studentAnswers->first()?->score);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$exam->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/quiz?exam='.$exam->id)
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
             ->assertSee('What is velocity?', false)
@@ -1638,7 +1723,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->assertNull($assignmentAttempt->studentAnswers->firstWhere('question_id', $statementQuestion->id)?->score);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/home_work_done?attempt='.$assignmentAttempt->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/home_work_done?attempt='.$assignmentAttempt->id)
             ->assertOk()
             ->assertSeeLivewire(AttemptResultPage::class)
             ->assertSee('في انتظار التصحيح اليدوي', false)
@@ -1647,7 +1732,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('Acceleration is velocity change over time.', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/home_work_done?attempt='.$assignmentAttempt->id.'&review=1')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/home_work_done?attempt='.$assignmentAttempt->id.'&review=1')
             ->assertOk()
             ->assertSeeLivewire(AttemptResultPage::class)
             ->assertSee('العودة للمادة', false)
@@ -1670,7 +1755,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->call('submit');
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/home_work?assignment='.$twoAttemptAssignment->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/home_work?assignment='.$twoAttemptAssignment->id)
             ->assertOk()
             ->assertSee('تم تسليم الواجب من قبل', false)
             ->assertSee('إعادة الواجب', false)
@@ -1678,7 +1763,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('What is velocity?', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/home_work?assignment='.$twoAttemptAssignment->id.'&retry=1')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/home_work?assignment='.$twoAttemptAssignment->id.'&retry=1')
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
             ->assertSee('What is velocity?', false);
@@ -1708,7 +1793,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'assignment'])
             ->set('assignmentId', $twoAttemptAssignment->id)
             ->call('submit')
-            ->assertRedirect('/home_work_done?attempt='.$secondLimitedAssignmentAttempt->id);
+            ->assertRedirect('/ar/home_work_done?attempt='.$secondLimitedAssignmentAttempt->id);
 
         $this->assertSame(2, StudentAttempt::query()
             ->where('student_user_id', $user->id)
@@ -1736,7 +1821,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->assertSame(10.0, (float) $examAttempt->studentAnswers->first()?->score);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz_done?attempt='.$examAttempt->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/quiz_done?attempt='.$examAttempt->id)
             ->assertOk()
             ->assertSeeLivewire(AttemptResultPage::class)
             ->assertSee('تم التصحيح', false)
@@ -1747,7 +1832,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('What is velocity?', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz_review?attempt='.$examAttempt->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/quiz_review?attempt='.$examAttempt->id)
             ->assertOk()
             ->assertSeeLivewire(AttemptResultPage::class)
             ->assertDontSee('أحسنت! لقد اجتزت الاختبار', false)
@@ -1784,7 +1869,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->call('submit');
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$twoAttemptExam->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/quiz?exam='.$twoAttemptExam->id)
             ->assertOk()
             ->assertSee('تم تسليم الاختبار من قبل', false)
             ->assertSee('إعادة الامتحان', false)
@@ -1792,7 +1877,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->assertDontSee('What is velocity?', false);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$twoAttemptExam->id.'&retry=1')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/quiz?exam='.$twoAttemptExam->id.'&retry=1')
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
             ->assertSee('What is velocity?', false);
@@ -1822,7 +1907,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->test(AssessmentPage::class, ['providerId' => $provider->id, 'type' => 'exam'])
             ->set('examId', $twoAttemptExam->id)
             ->call('submit')
-            ->assertRedirect('/quiz_done?attempt='.$secondLimitedAttempt->id);
+            ->assertRedirect('/ar/quiz_done?attempt='.$secondLimitedAttempt->id);
 
         $this->assertSame(2, StudentAttempt::query()
             ->where('student_user_id', $user->id)
@@ -1864,7 +1949,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->assertSame(0.0, (float) $timeoutAttempt->studentAnswers->sum('score'));
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz_done?attempt='.$timeoutAttempt->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/quiz_done?attempt='.$timeoutAttempt->id)
             ->assertOk()
             ->assertSee('0/2', false)
             ->assertDontSee('0/20', false);
@@ -1886,7 +1971,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$returnedExam->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/quiz?exam='.$returnedExam->id)
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
             ->assertSee('What is velocity?', false);
@@ -1902,7 +1987,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->assertNull($returnedStartedAttempt->studentAnswers->first()?->question_option_id);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/quiz?exam='.$returnedExam->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/quiz?exam='.$returnedExam->id)
             ->assertOk()
             ->assertSee('تم تسليم الاختبار من قبل', false);
 
@@ -1971,14 +2056,14 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $baseUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/teachers?subject='.$accountSubject->id)
+            ->get($baseUrl.'/ar/teachers?subject='.$accountSubject->id)
             ->assertOk()
             ->assertSeeLivewire(TeachersPage::class)
             ->assertSee('Mona Physics', false)
             ->assertSee('الفيزياء', false);
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/single_teacher')
+            ->get($baseUrl.'/ar/single_teacher')
             ->assertOk()
             ->assertSeeLivewire(SingleTeacherPage::class)
             ->assertSee('Mona Physics', false)
@@ -2147,16 +2232,16 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $baseUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/single_teacher?subject='.$accountSubject->id)
+            ->get($baseUrl.'/ar/single_teacher?subject='.$accountSubject->id)
             ->assertOk()
             ->assertSee('عنصر واجب منتهي', false)
             ->assertSee('عنصر اختبار منتهي', false)
             ->assertDontSee('انتهى في', false)
-            ->assertSee('href="/lesson?item='.$expiredAssignmentItem->id.'"', false)
-            ->assertSee('href="/lesson?item='.$expiredExamItem->id.'"', false);
+            ->assertSee('href="/ar/lesson?item='.$expiredAssignmentItem->id.'"', false)
+            ->assertSee('href="/ar/lesson?item='.$expiredExamItem->id.'"', false);
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/home_work?assignment='.$assignment->id.'&item='.$assignmentItem->id)
+            ->get($baseUrl.'/ar/home_work?assignment='.$assignment->id.'&item='.$assignmentItem->id)
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
             ->assertSee('#FEB008', false)
@@ -2178,37 +2263,37 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->firstOrFail();
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/home_work?assignment='.$assignment->id.'&item='.$assignmentItem->id)
+            ->get($baseUrl.'/ar/home_work?assignment='.$assignment->id.'&item='.$assignmentItem->id)
             ->assertOk()
             ->assertSee('/home_work?assignment='.$assignment->id.'&amp;item='.$assignmentItem->id.'&amp;retry=1', false)
             ->assertSee('إعادة الواجب', false);
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/home_work_done?attempt='.$assignmentAttempt->id)
+            ->get($baseUrl.'/ar/home_work_done?attempt='.$assignmentAttempt->id)
             ->assertOk()
             ->assertSeeLivewire(AttemptResultPage::class)
             ->assertSee('#FEB008', false)
-            ->assertSee('href="/single_teacher?subject='.$accountSubject->id.'"', false)
+            ->assertSee('href="/ar/single_teacher?subject='.$accountSubject->id.'"', false)
             ->assertSee('/home_work_done?attempt='.$assignmentAttempt->id.'&amp;review=1', false);
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/home_work_done?attempt='.$assignmentAttempt->id.'&review=1')
+            ->get($baseUrl.'/ar/home_work_done?attempt='.$assignmentAttempt->id.'&review=1')
             ->assertOk()
             ->assertSeeLivewire(AttemptResultPage::class)
             ->assertSee('#FEB008', false)
-            ->assertSee('href="/single_teacher?subject='.$accountSubject->id.'"', false)
+            ->assertSee('href="/ar/single_teacher?subject='.$accountSubject->id.'"', false)
             ->assertSee('What is force?', false)
             ->assertDontSee('أحسنت! لقد أنهيت الواجب', false);
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/home_work?assignment='.$expiredAssignment->id.'&item='.$expiredAssignmentItem->id)
+            ->get($baseUrl.'/ar/home_work?assignment='.$expiredAssignment->id.'&item='.$expiredAssignmentItem->id)
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
             ->assertDontSee('الواجب مغلق حالياً', false)
             ->assertSee('إنهاء الواجب', false);
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/quiz?exam='.$exam->id.'&item='.$examItem->id)
+            ->get($baseUrl.'/ar/quiz?exam='.$exam->id.'&item='.$examItem->id)
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
             ->assertSee('#FEB008', false)
@@ -2230,31 +2315,31 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->firstOrFail();
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/quiz_done?attempt='.$examAttempt->id)
+            ->get($baseUrl.'/ar/quiz_done?attempt='.$examAttempt->id)
             ->assertOk()
             ->assertSeeLivewire(AttemptResultPage::class)
             ->assertSee('#FEB008', false)
-            ->assertSee('href="/single_teacher?subject='.$accountSubject->id.'"', false)
+            ->assertSee('href="/ar/single_teacher?subject='.$accountSubject->id.'"', false)
             ->assertSee('/quiz_review?attempt='.$examAttempt->id, false);
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/quiz_review?attempt='.$examAttempt->id)
+            ->get($baseUrl.'/ar/quiz_review?attempt='.$examAttempt->id)
             ->assertOk()
             ->assertSeeLivewire(AttemptResultPage::class)
             ->assertSee('#FEB008', false)
-            ->assertSee('href="/single_teacher?subject='.$accountSubject->id.'"', false)
+            ->assertSee('href="/ar/single_teacher?subject='.$accountSubject->id.'"', false)
             ->assertSee('What is force?', false)
             ->assertDontSee('أحسنت! لقد اجتزت الاختبار', false);
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/quiz?exam='.$expiredExam->id.'&item='.$expiredExamItem->id)
+            ->get($baseUrl.'/ar/quiz?exam='.$expiredExam->id.'&item='.$expiredExamItem->id)
             ->assertOk()
             ->assertSeeLivewire(AssessmentPage::class)
             ->assertDontSee('الاختبار مغلق حالياً', false)
             ->assertSee('إنهاء الاختبار', false);
 
         $this->actingAs($studentUser)
-            ->get($baseUrl.'/quiz?exam='.$exam->id.'&item='.$examItem->id)
+            ->get($baseUrl.'/ar/quiz?exam='.$exam->id.'&item='.$examItem->id)
             ->assertOk()
             ->assertSee('/quiz?exam='.$exam->id.'&amp;item='.$examItem->id.'&amp;retry=1', false)
             ->assertSee('إعادة الامتحان', false);
@@ -2299,14 +2384,14 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($studentUser)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/my_lessons')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/my_lessons')
             ->assertOk()
             ->assertSeeLivewire(MyLessonsPage::class)
             ->assertSee('كورس الفيزياء', false)
             ->assertSee('Mona Physics', false)
             ->assertSee('نشط', false)
-            ->assertSee('href="/lesson?item='.$lessonItem->id.'"', false)
-            ->assertSee('href="/single_teacher?subject='.$accountSubject->id.'"', false)
+            ->assertSee('href="/ar/lesson?item='.$lessonItem->id.'"', false)
+            ->assertSee('href="/ar/single_teacher?subject='.$accountSubject->id.'"', false)
             ->assertDontSee('teacher=', false);
     }
 
@@ -2320,7 +2405,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $termPurchaseUnit = $fixture['termPurchaseUnit'];
 
         $this->actingAs($studentUser)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/cart?course='.$course->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/cart?course='.$course->id)
             ->assertOk()
             ->assertSeeLivewire(CartPage::class)
             ->assertSee('كورس الفيزياء', false)
@@ -2386,7 +2471,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($studentUser)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/checkout?course='.$course->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/checkout?course='.$course->id)
             ->assertOk()
             ->assertSeeLivewire(CheckoutPage::class)
             ->assertSee('نوع الاشتراك', false)
@@ -2432,7 +2517,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($studentUser)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/my_lessons')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/my_lessons')
             ->assertOk()
             ->assertSee('كورس الفيزياء', false)
             ->assertSee('نشط', false);
@@ -2487,7 +2572,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         ]);
 
         $this->actingAs($student)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/checkout?course='.$course->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/checkout?course='.$course->id)
             ->assertOk();
 
         $checkout = Livewire::actingAs($student)
@@ -2606,12 +2691,12 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->assertFalse(app(CheckCourseSubscription::class)->forLesson($otherLesson, $student->id));
 
         $this->actingAs($student)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/single_teacher?subject='.$fixture['accountSubject']->id)
-            ->assertSee('href="/lesson?item='.$item->id.'"', false)
-            ->assertDontSee('href="/lesson?item='.$otherItem->id.'"', false);
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/single_teacher?subject='.$fixture['accountSubject']->id)
+            ->assertSee('href="/ar/lesson?item='.$item->id.'"', false)
+            ->assertDontSee('href="/ar/lesson?item='.$otherItem->id.'"', false);
 
         $this->actingAs($student)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$item->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/lesson?item='.$item->id)
             ->assertOk()
             ->assertDontSee('هذا العنصر متاح للمشتركين في الكورس فقط.', false);
 
@@ -2670,11 +2755,11 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->assertTrue($subscription->ends_at->isAfter(now()->addDays(29)));
 
         $this->actingAs($student)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/single_teacher?subject='.$fixture['accountSubject']->id)
-            ->assertDontSee('href="/lesson?item='.$item->id.'"', false);
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/single_teacher?subject='.$fixture['accountSubject']->id)
+            ->assertDontSee('href="/ar/lesson?item='.$item->id.'"', false);
 
         $this->actingAs($student)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/lesson?item='.$item->id)
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/lesson?item='.$item->id)
             ->assertSee('هذا الدرس سيفتح في', false);
     }
 
@@ -2767,23 +2852,23 @@ class ProviderWebsiteStudentAuthTest extends TestCase
 
         $baseUrl = 'http://'.$provider->subdomain.'.'.config('almanasa.root_domain');
         $this->actingAs($student)
-            ->get($baseUrl.'/single_teacher?subject='.$fixture['accountSubject']->id)
+            ->get($baseUrl.'/ar/single_teacher?subject='.$fixture['accountSubject']->id)
             ->assertOk()
-            ->assertSee('href="/lesson?item='.$expiredItem->id.'"', false)
-            ->assertSee('href="/lesson?item='.$futureItem->id.'"', false)
-            ->assertSee('href="/lesson?item='.$homeworkItem->id.'"', false)
-            ->assertDontSee('href="/lesson?item='.$inactiveItem->id.'"', false)
+            ->assertSee('href="/ar/lesson?item='.$expiredItem->id.'"', false)
+            ->assertSee('href="/ar/lesson?item='.$futureItem->id.'"', false)
+            ->assertSee('href="/ar/lesson?item='.$homeworkItem->id.'"', false)
+            ->assertDontSee('href="/ar/lesson?item='.$inactiveItem->id.'"', false)
             ->assertDontSee('انتهى في', false)
             ->assertDontSee('يفتح في', false);
 
         $this->actingAs($student)
-            ->get($baseUrl.'/lesson?item='.$expiredItem->id)
+            ->get($baseUrl.'/ar/lesson?item='.$expiredItem->id)
             ->assertOk()
             ->assertSee('id="bunny-player-'.$expiredItem->id.'"', false)
             ->assertDontSee('انتهى في', false);
 
         $this->actingAs($student)
-            ->get($baseUrl.'/home_work?assignment='.$assignment->id.'&item='.$homeworkItem->id)
+            ->get($baseUrl.'/ar/home_work?assignment='.$assignment->id.'&item='.$homeworkItem->id)
             ->assertOk()
             ->assertSee('إنهاء الواجب', false)
             ->assertDontSee('الواجب مغلق حالياً', false);
@@ -2828,11 +2913,11 @@ class ProviderWebsiteStudentAuthTest extends TestCase
     {
         $provider = $this->provider();
 
-        $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+        $this->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/')
             ->assertOk()
             ->assertSeeLivewire(HomeCta::class)
             ->assertSee('جاهز للانطلاق نحو التفوق ؟', false)
-            ->assertSee('href="/login"', false)
+            ->assertSee('href="/ar/login"', false)
             ->assertSee('ابدأ رحلتك الآن', false);
     }
 
@@ -2843,7 +2928,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $this->studentAccount($provider, $user);
 
         $this->actingAs($user)
-            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/')
+            ->get('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/')
             ->assertOk()
             ->assertDontSee('جاهز للانطلاق نحو التفوق ؟', false);
     }
@@ -2861,7 +2946,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->call('sendOtp')
             ->set('otp', '1234')
             ->call('verify')
-            ->assertRedirect('/');
+            ->assertRedirect('/ar');
 
         $this->assertAuthenticatedAs($user);
         $this->assertSame(1, Account::query()->where('owner_user_id', $user->id)->count());
@@ -2881,7 +2966,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->call('sendOtp')
             ->set('otp', '1234')
             ->call('verify')
-            ->assertRedirect('/');
+            ->assertRedirect('/ar');
 
         $this->assertSame(2, Account::query()->where('owner_user_id', $user->id)->count());
         $this->assertSame(1, StudentProfile::query()->where('user_id', $user->id)->count());
@@ -2925,7 +3010,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->call('sendOtp')
             ->set('otp', '1234')
             ->call('verify')
-            ->assertRedirect('/register');
+            ->assertRedirect('/ar/register');
 
         $this->assertAuthenticatedAs($user);
     }
@@ -2954,7 +3039,7 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             ->set('gradeId', $grade->id)
             ->set('schoolName', 'Almanasa School')
             ->call('save')
-            ->assertRedirect('/');
+            ->assertRedirect('/ar');
 
         $this->assertDatabaseHas(StudentProfile::class, [
             'user_id' => $user->id,
@@ -2974,8 +3059,8 @@ class ProviderWebsiteStudentAuthTest extends TestCase
                 'current_account_id' => $account->id,
                 'current_provider_id' => $provider->id,
             ])
-            ->post('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/logout')
-            ->assertRedirect('/login');
+            ->post('http://'.$provider->subdomain.'.'.config('almanasa.root_domain').'/ar/logout')
+            ->assertRedirect('/ar/login');
 
         $this->assertGuest();
     }

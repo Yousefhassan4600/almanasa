@@ -26,11 +26,11 @@
         return ['icon' => 'fa-book-open', 'bg' => 'bg-purple-50', 'text' => ''];
     };
 
-    $displayGrade = $gradeName ?: 'كل الصفوف';
+    $displayGrade = $gradeName ?: __('كل الصفوف');
 @endphp
 
 <div>
-    <section class="relative bg-white pb-12" dir="rtl">
+    <section class="relative bg-white pb-12" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
         <div
             class="pt-16 pb-24 px-4 md:px-8 text-center text-white relative overflow-hidden"
             style="background: linear-gradient(90deg, {{ $themeColor }}, {{ $secondaryThemeColor }});"
@@ -44,13 +44,13 @@
 
             <div class="max-w-4xl mx-auto space-y-4 relative z-10">
                 <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
-                    تصفح المواد الدراسية
+                    {{ __('تصفح المواد الدراسية') }}
                 </h1>
                 <p class="text-purple-100 text-sm sm:text-base max-w-md mx-auto opacity-90">
                     @if ($hasGradeFilter)
-                        المواد المتاحة في صفك الدراسي داخل هذه الأكاديمية.
+                        {{ __('المواد المتاحة في صفك الدراسي داخل هذه الأكاديمية.') }}
                     @else
-                        استكشف جميع المواد المتاحة داخل هذه الأكاديمية.
+                        {{ __('استكشف جميع المواد المتاحة داخل هذه الأكاديمية.') }}
                     @endif
                 </p>
 
@@ -60,7 +60,7 @@
                         <input
                             type="search"
                             wire:model.live.debounce.300ms="search"
-                            placeholder="ابحث عن مادة..."
+                            placeholder="{{ __('ابحث عن مادة...') }}"
                             class="w-full bg-transparent border-none outline-none text-gray-700 placeholder-gray-400 py-2 text-sm focus:ring-0"
                         />
                     </div>
@@ -69,12 +69,12 @@
         </div>
     </section>
 
-    <section class="py-12 bg-white" dir="rtl">
+    <section class="py-12 bg-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
         <div class="max-w-7xl mx-auto px-4 md:px-8">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-10">
                 <div>
                     <h2 class="text-xl sm:text-2xl font-extrabold text-blue-950">
-                        المواد المتاحة في <span style="color: {{ $themeColor }}">{{ $displayGrade }}</span>
+                        {{ __('المواد المتاحة في') }} <span style="color: {{ $themeColor }}">{{ $displayGrade }}</span>
                     </h2>
                     @if ($stageName)
                         <p class="text-xs text-gray-400 mt-2">{{ $stageName }}</p>
@@ -83,7 +83,7 @@
                 <span
                     class="text-xs sm:text-sm text-gray-400 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100"
                 >
-                    {{ $subjects->count() }} مادة متوفرة
+                    {{ $subjects->count() }} {{ __('مادة متوفرة') }}
                 </span>
             </div>
 
@@ -94,13 +94,13 @@
                             $subject = $accountSubject->gradeSubject?->subject;
                             $track = $accountSubject->gradeSubject?->track;
                             $subjectName = $subject
-                                ? $subject->name
-                                : $accountSubject->name;
+                                ? (\App\Support\WebsiteTranslation::value($subject, 'name') ?: $subject->name)
+                                : (\App\Support\WebsiteTranslation::value($accountSubject, 'name') ?: $accountSubject->name);
                             $subjectDescription = $subject
-                                ? $subject->description
+                                ? (\App\Support\WebsiteTranslation::value($subject, 'description') ?: $subject->description)
                                 : null;
                             $trackName = $track
-                                ? ($track->getTranslation('name', 'ar', false) ?: $track->name)
+                                ? (\App\Support\WebsiteTranslation::value($track, 'name') ?: $track->name)
                                 : null;
                             $style = $styleFor($subjectName);
                         @endphp
@@ -123,10 +123,10 @@
                                 <h3 class="font-extrabold text-blue-950 text-base mb-1">{{ $subjectName }}</h3>
                                 <span class="text-[11px] text-gray-400 mb-3 flex items-center gap-1">
                                     <i class="fa-solid fa-user-tie text-[10px]"></i>
-                                    عدد {{ $accountSubject->active_teachers_count }} مدرسين
+                                    {{ __('عدد') }} {{ $accountSubject->active_teachers_count }} {{ __('مدرسين') }}
                                 </span>
                                 <p class="text-xs text-gray-400 leading-relaxed max-w-[200px] min-h-[36px] mb-4">
-                                    {{ $subjectDescription ?: 'مادة متاحة ضمن صفك الدراسي داخل الأكاديمية.' }}
+                                    {{ $subjectDescription ?: __('مادة متاحة ضمن صفك الدراسي داخل الأكاديمية.') }}
                                 </p>
                                 @if ($trackName)
                                     <span
@@ -138,13 +138,13 @@
                             </div>
 
                             <a
-                                href="/teachers?subject={{ $accountSubject->id }}"
+                                href="/{{ \App\Support\WebsiteUrl::locale() }}/teachers?subject={{ $accountSubject->id }}"
                                 class="w-full border text-center border-gray-200 text-gray-600 font-bold text-xs py-3 rounded-xl transition-colors bg-transparent"
                                 style="--hover-color: {{ $themeColor }}"
                                 onmouseover="this.style.color=this.style.getPropertyValue('--hover-color'); this.style.borderColor=this.style.getPropertyValue('--hover-color')"
                                 onmouseout="this.style.color=''; this.style.borderColor=''"
                             >
-                                عرض المدرسين <i class="fa-solid fa-chevron-left text-[9px] mr-1"></i>
+                                {{ __('عرض المدرسين') }} <i class="fa-solid fa-chevron-left text-[9px] mr-1"></i>
                             </a>
                         </div>
                     @endforeach
@@ -152,7 +152,7 @@
             @else
                 <div class="rounded-3xl bg-slate-50 border border-slate-100 p-8 text-center">
                     <p class="text-sm font-bold text-blue-950">
-                        لا توجد مواد مطابقة{{ $hasGradeFilter ? ' في صفك الدراسي' : '' }} حالياً.
+                        {{ __('لا توجد مواد مطابقة') }}{{ $hasGradeFilter ? __(' في صفك الدراسي') : '' }} {{ __('حالياً.') }}
                     </p>
                 </div>
             @endif

@@ -30,7 +30,7 @@
 
 <div>
     @if ($isAuthenticated ?? false)
-        <section class="bg-white" dir="rtl">
+        <section class="bg-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
             <div class="my-container max-w-7xl mx-auto px-4 md:px-8">
                 @if ($subjects->isNotEmpty())
                     <div
@@ -42,14 +42,14 @@
                                 $subject = $gradeSubject?->subject;
                                 $track = $gradeSubject?->track;
                                 $subjectName = $subject
-                                    ? $subject->name
-                                    : $accountSubject->name;
-                                $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
+                                    ? \App\Support\WebsiteTranslation::value($subject, 'name')
+                                    : \App\Support\WebsiteTranslation::value($accountSubject, 'name');
+                                $trackName = \App\Support\WebsiteTranslation::value($track, 'name') ?: $track?->name;
                                 $style = $styleFor($subjectName);
                             @endphp
 
                             <a
-                                href="/teachers?subject={{ $accountSubject->id }}"
+                                href="/{{ \App\Support\WebsiteUrl::locale() }}/teachers?subject={{ $accountSubject->id }}"
                                 class="group flex flex-col items-center shrink-0 w-24 sm:w-auto snap-start"
                             >
                                 <div
@@ -76,7 +76,7 @@
                         @endforeach
 
                         <a
-                            href="/subjects"
+                            href="/{{ \App\Support\WebsiteUrl::locale() }}/subjects"
                             class="group flex flex-col items-center shrink-0 w-24 sm:w-auto snap-start"
                         >
                             <div
@@ -87,14 +87,14 @@
                             <span
                                 class="mt-3 font-semibold text-blue-950 text-xs sm:text-base whitespace-nowrap"
                             >
-                                المزيد
+                                {{ __('المزيد') }}
                             </span>
                         </a>
                     </div>
                 @else
                     <div class="rounded-3xl bg-slate-50 border border-slate-100 p-6 text-center">
                         <p class="text-sm font-bold text-blue-950">
-                            لا توجد مواد متاحة{{ $hasGradeFilter ? ' لصفك الدراسي' : '' }} حالياً.
+                            {{ __('لا توجد مواد متاحة') }}{{ $hasGradeFilter ? __(' لصفك الدراسي') : '' }} {{ __('حالياً.') }}
                         </p>
                     </div>
                 @endif

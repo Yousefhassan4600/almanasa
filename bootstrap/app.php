@@ -2,11 +2,13 @@
 
 use App\Http\Middleware\EnsureCurrentAccount;
 use App\Http\Middleware\RoleBearerToken;
+use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\SetWebsiteLocale;
+use App\Support\WebsiteUrl;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use App\Http\Middleware\SetLocale;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,12 +19,15 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-             'role.token' => RoleBearerToken::class,
+            'role.token' => RoleBearerToken::class,
             'current.account' => EnsureCurrentAccount::class,
             'set.locale' => SetLocale::class,
+            'website.locale' => SetWebsiteLocale::class,
         ]);
 
-        $middleware->redirectGuestsTo('/login');
+        $middleware->redirectGuestsTo(fn (Request $request): string => in_array($request->route('locale'), ['ar', 'en'], true)
+            ? WebsiteUrl::path('/login')
+            : '/login');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\SetWebsiteLocale;
 use App\Support\AuditLogger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        app('translator')->addJsonPath(lang_path('website'));
+        Livewire::addPersistentMiddleware([SetWebsiteLocale::class]);
+
         Event::listen([
             'eloquent.created: *',
             'eloquent.updated: *',

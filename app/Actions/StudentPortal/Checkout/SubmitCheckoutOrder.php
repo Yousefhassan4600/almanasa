@@ -36,7 +36,7 @@ class SubmitCheckoutOrder
 
             if ($isCodePayment) {
                 if (blank($providerCode)) {
-                    throw ValidationException::withMessages(['providerCode' => 'يرجى إدخال الكود.']);
+                    throw ValidationException::withMessages(['providerCode' => __('يرجى إدخال الكود.')]);
                 }
 
                 $code = ProviderCode::query()
@@ -46,7 +46,7 @@ class SubmitCheckoutOrder
                     ->first();
 
                 if (! $code) {
-                    throw ValidationException::withMessages(['providerCode' => 'الكود غير صحيح.']);
+                    throw ValidationException::withMessages(['providerCode' => __('الكود غير صحيح.')]);
                 }
             }
 

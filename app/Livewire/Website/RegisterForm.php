@@ -11,6 +11,7 @@ use App\Models\Country;
 use App\Models\EducationStage;
 use App\Models\Grade;
 use App\Models\StudentProfile;
+use App\Support\WebsiteUrl;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
@@ -67,11 +68,11 @@ class RegisterForm extends Component
         $this->providerId = $providerId;
 
         if (! Auth::check()) {
-            return $this->redirect('/login', navigate: false);
+            return $this->redirect(WebsiteUrl::path('/login'), navigate: false);
         }
 
         if (Auth::user()?->studentProfile()->exists()) {
-            return $this->redirect('/', navigate: false);
+            return $this->redirect(WebsiteUrl::path(), navigate: false);
         }
     }
 
@@ -84,7 +85,7 @@ class RegisterForm extends Component
 
         $this->completeStudentRegistration->handle($user, $data, $this->avatar);
 
-        return $this->redirect('/', navigate: false);
+        return $this->redirect(WebsiteUrl::path(), navigate: false);
     }
 
     public function render(): mixed

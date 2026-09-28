@@ -86,8 +86,10 @@ class Provider extends Model
                 return $value;
             }
 
+            $otherLocale = app()->getLocale() === 'ar' ? 'en' : 'ar';
+
             return $decodedValue[app()->getLocale()]
-                ?? $decodedValue[config('app.fallback_locale')]
+                ?? $decodedValue[$otherLocale]
                 ?? collect($decodedValue)->first();
         });
     }

@@ -8,15 +8,15 @@
     $grade = $accountSubject?->gradeSubject?->grade;
     $stage = $grade?->educationStage;
     $track = $accountSubject?->gradeSubject?->track;
-    $subjectName = $subject ? $subject->name : 'المادة';
-    $subjectDescription = $subject ? $subject->description : null;
-    $trackName = $track ? ($track->getTranslation('name', 'ar', false) ?: $track->name) : null;
+    $subjectName = $subject ? \App\Support\WebsiteTranslation::value($subject, 'name') : __('المادة');
+    $subjectDescription = $subject ? \App\Support\WebsiteTranslation::value($subject, 'description') : null;
+    $trackName = $track ? (\App\Support\WebsiteTranslation::value($track, 'name') ?: $track->name) : null;
 @endphp
 
 <div>
     <section
         class="{{ $themeSoftClass }} py-12 md:py-20 overflow-hidden"
-        dir="rtl"
+        dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}"
     >
         <div class="max-w-7xl mx-auto px-4 md:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -28,7 +28,7 @@
                                 style="background-color: {{ $themeColor }}"
                             >
                                 <i class="fa-solid fa-graduation-cap text-[10px]"></i>
-                                {{ $stage->name }}
+                                {{ \App\Support\WebsiteTranslation::value($stage, 'name') }}
                             </span>
                         @endif
 
@@ -55,7 +55,7 @@
                     </div>
 
                     <p class="text-xs sm:text-sm text-gray-500 leading-relaxed max-w-xl mx-auto lg:mx-0">
-                        {{ $subjectDescription ?: ($isStandaloneTeacher ? 'استكشف محتوى هذه المادة مع المعلم مباشرة.' : 'اختر المعلم المناسب لهذه المادة من المعلمين المتاحين داخل الأكاديمية.') }}
+                        {{ $subjectDescription ?: ($isStandaloneTeacher ? __('استكشف محتوى هذه المادة مع المعلم مباشرة.') : __('اختر المعلم المناسب لهذه المادة من المعلمين المتاحين داخل الأكاديمية.')) }}
                     </p>
                 </div>
 
@@ -72,10 +72,10 @@
         </div>
     </section>
 
-    <section class="py-16 bg-white" dir="rtl">
+    <section class="py-16 bg-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
         <div class="max-w-7xl mx-auto px-4 md:px-8">
             <h2 class="text-2xl sm:text-3xl font-extrabold text-blue-950 text-center mb-12">
-                اختر المعلم المناسب لك
+                {{ __('اختر المعلم المناسب لك') }}
             </h2>
 
             @if ($teachers->isNotEmpty())
@@ -93,14 +93,14 @@
                                 : $teacherCourses->flatMap->prices->map(fn ($price) => $price->offer_price ?? $price->price)->filter()->min();
                             $weeklyLectures = $teacherCourses->pluck('weekly_lectures_count')->filter()->max();
                             $teacherName = $isStandaloneTeacher
-                                ? ($teacher->owner?->name ?: $provider->owner?->name ?: 'معلم')
-                                : ($teacher->teacher?->owner?->name ?: 'معلم');
+                                ? ($teacher->owner?->name ?: $provider->owner?->name ?: __('معلم'))
+                                : ($teacher->teacher?->owner?->name ?: __('معلم'));
                             $teacherImage = (! $isStandaloneTeacher && $teacher->image)
                                 ? asset('storage/'.$teacher->image)
                                 : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200';
                             $teacherUrl = $isStandaloneTeacher
-                                ? "/single_teacher?subject={$accountSubject?->id}"
-                                : "/single_teacher?teacher={$teacher->id}&subject={$accountSubject?->id}";
+                                ? \App\Support\WebsiteUrl::path("/single_teacher?subject={$accountSubject?->id}")
+                                : \App\Support\WebsiteUrl::path("/single_teacher?teacher={$teacher->id}&subject={$accountSubject?->id}");
                         @endphp
 
                         <div
@@ -117,7 +117,7 @@
                                 </div>
                                 <h3 class="font-extrabold text-blue-950 text-base mb-1">{{ $teacherName }}</h3>
                                 <p class="text-xs text-gray-400 mb-2">
-                                    خبرة {{ $teacher->experience_years }} سنوات
+                                    {{ __('خبرة') }} {{ $teacher->experience_years }} {{ __('سنوات') }}
                                 </p>
                                 {{-- <div class="flex items-center gap-1 text-xs text-amber-500 font-bold mb-4">
                                     <i class="fa-solid fa-star text-[10px]"></i>
@@ -130,11 +130,11 @@
                                     <span class="block text-sm font-bold" style="color: {{ $themeColor }}">
                                         {{ $monthlyPrice ? number_format((float) $monthlyPrice).' EGP' : '—' }}
                                     </span>
-                                    <span class="block text-[10px] text-gray-400 mt-0.5">سعر الاشتراك الشهري</span>
+                                    <span class="block text-[10px] text-gray-400 mt-0.5">{{ __('سعر الاشتراك الشهري') }}</span>
                                 </div>
                                 <div>
                                     <span class="block text-sm font-bold text-blue-950">{{ $weeklyLectures ?: '—' }}</span>
-                                    <span class="block text-[10px] text-gray-400 mt-0.5">محاضرة أسبوعياً</span>
+                                    <span class="block text-[10px] text-gray-400 mt-0.5">{{ __('محاضرة أسبوعياً') }}</span>
                                 </div>
                             </div>
 
@@ -143,7 +143,7 @@
                                 class="w-full border font-bold text-xs py-3 rounded-xl transition-colors bg-transparent text-center"
                                 style="border-color: {{ $themeColor }}66; color: {{ $themeColor }}"
                             >
-                                عرض التفاصيل
+                                {{ __('عرض التفاصيل') }}
                             </a>
                         </div>
                     @endforeach
@@ -151,10 +151,10 @@
             @else
                 <div class="rounded-3xl bg-slate-50 border border-slate-100 p-8 text-center">
                     <p class="text-sm font-bold text-blue-950">
-                        لا يوجد معلمون متاحون لهذه المادة حالياً.
+                        {{ __('لا يوجد معلمون متاحون لهذه المادة حالياً.') }}
                     </p>
-                    <a href="/subjects" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $themeColor }}">
-                        العودة لاختيار مادة أخرى
+                    <a href="/{{ \App\Support\WebsiteUrl::locale() }}/subjects" class="inline-flex mt-4 text-sm font-bold" style="color: {{ $themeColor }}">
+                        {{ __('العودة لاختيار مادة أخرى') }}
                     </a>
                 </div>
             @endif

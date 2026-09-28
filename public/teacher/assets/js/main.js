@@ -23,10 +23,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const closeBtn = document.getElementById("closeSidebarBtn");
   const sidebar = document.getElementById("mobileSidebar");
   const overlay = document.getElementById("sidebarOverlay");
+  const sidebarHiddenClass = document.documentElement.dir === "ltr" ? "-translate-x-full" : "translate-x-full";
 
   // دالة الإغلاق الآمنة
   function closeSidebar() {
-    if (sidebar) sidebar.classList.add("translate-x-full");
+    if (sidebar) sidebar.classList.add(sidebarHiddenClass);
     if (overlay) {
       overlay.classList.remove("opacity-100");
       setTimeout(() => overlay.classList.add("hidden"), 300);
@@ -36,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // تشغيل السايد بار عند الضغط على زر الفتح (تأمين بـ if)
   if (openBtn && sidebar && overlay) {
     openBtn.addEventListener("click", () => {
-      sidebar.classList.remove("translate-x-full");
+      sidebar.classList.remove(sidebarHiddenClass);
       overlay.classList.remove("hidden");
       setTimeout(() => overlay.classList.add("opacity-100"), 10);
     });

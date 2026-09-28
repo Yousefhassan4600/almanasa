@@ -114,7 +114,7 @@ class CheckoutPage extends Component
         $cart = Auth::check() ? $this->manageStudentCart->cart($provider, Auth::id()) : null;
 
         if (! $paymentMethod || ! $cart || $cart->items->isEmpty()) {
-            $this->addError('checkout', 'لا يمكن إتمام الدفع قبل اختيار وسيلة دفع وإضافة مواد للسلة.');
+            $this->addError('checkout', __('لا يمكن إتمام الدفع قبل اختيار وسيلة دفع وإضافة مواد للسلة.'));
 
             return;
         }
@@ -133,10 +133,10 @@ class CheckoutPage extends Component
         }
 
         $this->validate($rules, [
-            'providerCode.required' => 'يرجى إدخال الكود.',
-            'transferImage.required' => 'يرجى رفع صورة التحويل.',
-            'transferImage.image' => 'صورة التحويل يجب أن تكون ملف صورة.',
-            'transferImage.max' => 'حجم صورة التحويل يجب ألا يتجاوز 2MB.',
+            'providerCode.required' => __('يرجى إدخال الكود.'),
+            'transferImage.required' => __('يرجى رفع صورة التحويل.'),
+            'transferImage.image' => __('صورة التحويل يجب أن تكون ملف صورة.'),
+            'transferImage.max' => __('حجم صورة التحويل يجب ألا يتجاوز 2MB.'),
         ]);
 
         try {

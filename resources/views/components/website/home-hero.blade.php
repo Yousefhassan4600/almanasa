@@ -6,22 +6,20 @@
 @php
     $isTeacher = $provider->type === \App\Enums\ProviderType::StandaloneTeacher;
     $themeColor = $provider->websitePrimaryColor();
-    $title = $banner?->getTranslation('title', 'ar', false)
-        ?: $banner?->getTranslation('title', 'en', false)
-        ?: 'تعلم من أفضل المعلمين في جميع المواد الدراسية';
-    $subtitle = $banner?->getTranslation('subtitle', 'ar', false)
-        ?: $banner?->getTranslation('subtitle', 'en', false)
-        ?: 'فيديوهات تفاعلية، تمارين وامتحانات ذكية، تقارير متابعة تفصيلية لتحقيق أفضل النتائج.';
+    $title = \App\Support\WebsiteTranslation::value($banner, 'title')
+        ?: __('تعلم من أفضل المعلمين في جميع المواد الدراسية');
+    $subtitle = \App\Support\WebsiteTranslation::value($banner, 'subtitle')
+        ?: __('فيديوهات تفاعلية، تمارين وامتحانات ذكية، تقارير متابعة تفصيلية لتحقيق أفضل النتائج.');
     $defaultBannerImage = $isTeacher ? '/teacher/assets/images/herostudent.png' : '/academy/assets/images/herostudent.png';
     $bannerImage = filled($banner?->cover) ? (filter_var($banner->cover, FILTER_VALIDATE_URL) ? $banner->cover : asset('storage/'.$banner->cover)) : $defaultBannerImage;
     $exploreUrl = match (true) {
-        ! \Illuminate\Support\Facades\Auth::check() => '/login',
-        $isTeacher => '/single_teacher',
-        default => '/subjects',
+        ! \Illuminate\Support\Facades\Auth::check() => \App\Support\WebsiteUrl::path('/login'),
+        $isTeacher => \App\Support\WebsiteUrl::path('/single_teacher'),
+        default => \App\Support\WebsiteUrl::path('/subjects'),
     };
 @endphp
 
-<section class="relative bg-gradient-to-b from-[#F3F0FF] to-white pt-12 pb-6 px-4 md:px-8 overflow-hidden" dir="rtl">
+<section class="relative bg-gradient-to-b from-[#F3F0FF] to-white pt-12 pb-6 px-4 md:px-8 overflow-hidden" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <div class="my-container max-w-7xl mx-auto">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16">
             <div class="lg:col-span-7 text-center lg:text-right space-y-6">
@@ -35,13 +33,13 @@
 
                 <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
                     @guest
-                        <a href="/login" class="w-full sm:w-auto text-white font-semibold text-lg px-8 py-4 rounded-[12px] shadow-lg transition-all hover:shadow-xl active:scale-95 text-center" style="background-color: {{ $themeColor }}">
-                            ابدأ رحلتك الآن
+                        <a href="/{{ \App\Support\WebsiteUrl::locale() }}/login" class="w-full sm:w-auto text-white font-semibold text-lg px-8 py-4 rounded-[12px] shadow-lg transition-all hover:shadow-xl active:scale-95 text-center" style="background-color: {{ $themeColor }}">
+                            {{ __('ابدأ رحلتك الآن') }}
                         </a>
                     @endguest
 
                     <a href="{{ $exploreUrl }}" class="w-full sm:w-auto bg-transparent font-semibold text-lg px-8 py-4 rounded-[12px] transition-all active:scale-95 text-center border-2" style="color: {{ $themeColor }}; border-color: {{ $themeColor }}">
-                        استكشف المواد
+                        {{ __('استكشف المواد') }}
                     </a>
                 </div>
             </div>

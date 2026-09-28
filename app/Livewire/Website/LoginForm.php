@@ -4,6 +4,7 @@ namespace App\Livewire\Website;
 
 use App\Actions\StudentPortal\Auth\ManageWebsiteOtp;
 use App\Actions\StudentPortal\Layout\LoadProviderTheme;
+use App\Support\WebsiteUrl;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -59,7 +60,7 @@ class LoginForm extends Component
         $this->otpSent = true;
         $this->resetOtpFields();
 
-        return $this->redirect('/otp', navigate: false);
+        return $this->redirect(WebsiteUrl::path('/otp'), navigate: false);
     }
 
     public function verify(): mixed
@@ -86,10 +87,10 @@ class LoginForm extends Component
         $account->owner->loadMissing('studentProfile');
 
         if (! $account->owner->studentProfile) {
-            return $this->redirect('/register', navigate: false);
+            return $this->redirect(WebsiteUrl::path('/register'), navigate: false);
         }
 
-        return $this->redirect('/', navigate: false);
+        return $this->redirect(WebsiteUrl::path(), navigate: false);
     }
 
     public function resetChallenge(): void

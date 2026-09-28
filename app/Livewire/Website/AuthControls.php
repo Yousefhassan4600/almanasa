@@ -4,6 +4,7 @@ namespace App\Livewire\Website;
 
 use App\Actions\StudentPortal\Layout\CountCartItems;
 use App\Models\Provider;
+use App\Support\WebsiteUrl;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -33,7 +34,7 @@ class AuthControls extends Component
         request()->session()->invalidate();
         request()->session()->regenerateToken();
 
-        return $this->redirect('/login', navigate: false);
+        return $this->redirect(WebsiteUrl::path('/login'), navigate: false);
     }
 
     #[On('cart-updated')]

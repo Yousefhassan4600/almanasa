@@ -3,7 +3,7 @@
     <form id="phone-verification-form" wire:submit="sendOtp" class="space-y-6">
         <div class="grid grid-cols-[105px_1fr] gap-3">
             <div class="space-y-2 text-right">
-                <label class="text-xs font-black text-blue-950 mr-1">الكود</label>
+                <label class="text-xs font-black text-blue-950 mr-1">{{ __('الكود') }}</label>
                 <input type="text" wire:model="dialCountryCode" placeholder="+20"
                     class="w-full bg-[#F3F4F9] text-gray-700 text-sm font-black px-4 py-4 rounded-2xl border-2 border-transparent focus:outline-none transition-all tracking-wider text-left"
                     dir="ltr">
@@ -11,7 +11,7 @@
             </div>
 
             <div class="space-y-2 text-right">
-                <label class="text-xs font-black text-blue-950 mr-1">رقم الهاتف</label>
+                <label class="text-xs font-black text-blue-950 mr-1">{{ __('رقم الهاتف') }}</label>
                 <div class="relative">
                     <input type="tel" wire:model="phone" placeholder="010XXXXXXXX"
                         class="w-full bg-[#F3F4F9] text-gray-700 text-sm font-black px-4 py-4 rounded-2xl border-2 border-transparent focus:outline-none transition-all tracking-wider placeholder:tracking-normal text-right placeholder:text-right"
@@ -28,8 +28,8 @@
             <button type="submit"
                 class="w-full text-white font-black text-sm py-4 rounded-2xl transition-all shadow-md flex items-center justify-center gap-2"
                 style="background-color: {{ $themeColor }}">
-                <span wire:loading.remove wire:target="sendOtp">إرسال كود التحقق</span>
-                <span wire:loading wire:target="sendOtp">جاري الإرسال...</span>
+                <span wire:loading.remove wire:target="sendOtp">{{ __('إرسال كود التحقق') }}</span>
+                <span wire:loading wire:target="sendOtp">{{ __('جاري الإرسال...') }}</span>
                 <i class="fa-solid fa-arrow-left text-xs"></i>
             </button>
         </div>
@@ -102,10 +102,10 @@
         }"
         x-on:submit="$wire.otp = digits.join('')"
     >
-        <p class="text-[11px] font-bold text-gray-400 text-center">كود التطوير الحالي: {{ $developmentOtp }}</p>
+        <p class="text-[11px] font-bold text-gray-400 text-center">{{ __('كود التطوير الحالي:') }} {{ $developmentOtp }}</p>
 
         <div class="space-y-2">
-            <label class="block text-xs font-black text-gray-400 text-center mb-4">كود التحقق</label>
+            <label class="block text-xs font-black text-gray-400 text-center mb-4">{{ __('كود التحقق') }}</label>
 
             <div class="flex justify-center gap-3 md:gap-4" dir="ltr">
                 <input type="text" inputmode="numeric" maxlength="1" x-ref="otp0" x-model="digits[0]" x-on:input="handleInput(0, $event)" x-on:keydown="handleBackspace(0, $event)" x-on:paste="handlePaste($event)" class="otp-field w-14 h-16 md:w-16 md:h-20 bg-white border-2 border-gray-200 rounded-2xl text-center text-xl font-black text-blue-950 focus:outline-none transition-all shadow-sm">
@@ -123,13 +123,13 @@
                 class="w-full text-white font-black text-sm py-4 rounded-2xl transition-all shadow-md flex items-center justify-center gap-2"
                 style="background-color: {{ $themeColor }}">
                 <i class="fa-regular fa-circle-check text-xs"></i>
-                <span wire:loading.remove wire:target="verify">تأكيد الرمز</span>
-                <span wire:loading wire:target="verify">جاري التحقق...</span>
+                <span wire:loading.remove wire:target="verify">{{ __('تأكيد الرمز') }}</span>
+                <span wire:loading wire:target="verify">{{ __('جاري التحقق...') }}</span>
             </button>
         </div>
 
         <button type="button" wire:click="resetChallenge" class="w-full text-center text-xs font-bold text-gray-400 hover:text-gray-600">
-            تغيير رقم الهاتف
+            {{ __('تغيير رقم الهاتف') }}
         </button>
     </form>
 @endif

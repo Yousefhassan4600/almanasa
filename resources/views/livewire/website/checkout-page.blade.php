@@ -3,14 +3,13 @@
     $secondaryThemeColor = $provider->websiteSecondaryColor();
     $subtotal = (float) ($cart?->subtotal ?? 0);
     $total = (float) ($cart?->total ?? 0);
-    $money = fn (float|int|string|null $amount): string => number_format((float) $amount, 2).' ج.م';
+    $money = fn (float|int|string|null $amount): string => number_format((float) $amount, 2).__(' ج.م');
     $unitLabel = function ($unit): string {
         if (! $unit) {
             return '';
         }
 
-        return $unit->getTranslation('name', 'ar', false)
-            ?: $unit->getTranslation('name', 'en', false)
+        return \App\Support\WebsiteTranslation::value($unit, 'name')
             ?: $unit->type?->value
             ?: '';
     };
@@ -18,13 +17,12 @@
         $paymentMethod = $providerPaymentMethod?->paymentMethod;
 
         if (! $paymentMethod) {
-            return 'وسيلة دفع';
+            return __('وسيلة دفع');
         }
 
-        return $paymentMethod->getTranslation('name', 'ar', false)
-            ?: $paymentMethod->getTranslation('name', 'en', false)
+        return \App\Support\WebsiteTranslation::value($paymentMethod, 'name')
             ?: $paymentMethod->slug
-            ?: 'وسيلة دفع';
+            ?: __('وسيلة دفع');
     };
     $methodIcon = function ($providerPaymentMethod): string {
         $slug = $providerPaymentMethod?->paymentMethod?->slug;
@@ -45,14 +43,14 @@
         : $selectedPaymentMethod?->phone_holder;
 @endphp
 
-<div class="bg-white" dir="rtl">
+<div class="bg-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <section class="max-w-7xl mx-auto px-4 md:px-8 py-8 font-sans">
         <nav class="flex items-center gap-1.5 text-xs text-gray-400 mb-8 font-medium">
-            <a href="/" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">الرئيسية</a>
+            <a href="/{{ \App\Support\WebsiteUrl::locale() }}" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('الرئيسية') }}</a>
             <span>/</span>
-            <a href="/cart" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">السلة</a>
+            <a href="/{{ \App\Support\WebsiteUrl::locale() }}/cart" class="transition-colors" style="--hover-color: {{ $themeColor }}" onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')" onmouseout="this.style.color=''">{{ __('السلة') }}</a>
             <span>/</span>
-            <span class="text-gray-600 font-bold">الدفع</span>
+            <span class="text-gray-600 font-bold">{{ __('الدفع') }}</span>
         </nav>
 
         @if ($submittedOrderNumber)
@@ -63,23 +61,23 @@
                 <p class="text-xs font-black text-emerald-600 bg-emerald-50 rounded-full px-4 py-2 inline-flex mb-4">
                     {{ $submittedOrderNumber }}
                 </p>
-                <h1 class="text-2xl md:text-3xl font-black text-blue-950">{{ $paidWithCode ? 'تم تفعيل الكود' : 'تم إرسال الطلب' }}</h1>
+                <h1 class="text-2xl md:text-3xl font-black text-blue-950">{{ $paidWithCode ? __('تم تفعيل الكود') : __('تم إرسال الطلب') }}</h1>
                 <p class="text-sm font-bold text-gray-400 mt-3 leading-7">
-                    {{ $paidWithCode ? 'تم تفعيل الاشتراك ويمكنك بدء التعلم الآن من صفحة دروسي.' : 'طلبك الآن في انتظار موافقة الإدارة. سنقوم بتفعيل الاشتراك بعد مراجعة بيانات الدفع.' }}
+                    {{ $paidWithCode ? __('تم تفعيل الاشتراك ويمكنك بدء التعلم الآن من صفحة دروسي.') : __('طلبك الآن في انتظار موافقة الإدارة. سنقوم بتفعيل الاشتراك بعد مراجعة بيانات الدفع.') }}
                 </p>
                 <div class="flex flex-col sm:flex-row gap-3 justify-center mt-8">
-                    <a href="/my_lessons" class="text-white font-black text-sm py-3.5 px-8 rounded-2xl transition-all" style="background-color: {{ $themeColor }}">
-                        دروسي
+                    <a href="/{{ \App\Support\WebsiteUrl::locale() }}/my_lessons" class="text-white font-black text-sm py-3.5 px-8 rounded-2xl transition-all" style="background-color: {{ $themeColor }}">
+                        {{ __('دروسي') }}
                     </a>
-                    <a href="/" class="font-black text-sm py-3.5 px-8 rounded-2xl border transition-all" style="color: {{ $themeColor }}; border-color: {{ $themeColor }}55">
-                        العودة للرئيسية
+                    <a href="/{{ \App\Support\WebsiteUrl::locale() }}" class="font-black text-sm py-3.5 px-8 rounded-2xl border transition-all" style="color: {{ $themeColor }}; border-color: {{ $themeColor }}55">
+                        {{ __('العودة للرئيسية') }}
                     </a>
                 </div>
             </div>
         @else
         <form wire:submit="submitOrder" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div class="lg:col-span-8 bg-white border border-gray-100 rounded-[2.5rem] p-6 md:p-10 shadow-sm space-y-8">
-                <h1 class="text-2xl md:text-3xl font-black" style="color: {{ $themeColor }}">إتمام عملية الدفع</h1>
+                <h1 class="text-2xl md:text-3xl font-black" style="color: {{ $themeColor }}">{{ __('إتمام عملية الدفع') }}</h1>
 
                 @error('checkout')
                     <div class="rounded-2xl bg-red-50 border border-red-100 p-4 text-red-600 text-sm font-bold">
@@ -90,7 +88,7 @@
                 <div class="space-y-4">
                     <h3 class="text-sm font-black text-gray-800 flex items-center gap-2">
                         <i class="fa-regular fa-calendar-check text-gray-400"></i>
-                        نوع الاشتراك
+                        {{ __('نوع الاشتراك') }}
                     </h3>
 
                     @if ($purchaseUnits->isNotEmpty())
@@ -108,14 +106,14 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="text-sm text-gray-400 font-semibold">لا توجد أنواع اشتراك مفعلة حالياً.</p>
+                        <p class="text-sm text-gray-400 font-semibold">{{ __('لا توجد أنواع اشتراك مفعلة حالياً.') }}</p>
                     @endif
                 </div>
 
                 <div class="space-y-4">
                     <h3 class="text-sm font-black text-gray-800 flex items-center gap-2">
                         <i class="fa-regular fa-credit-card text-gray-400"></i>
-                        اختر وسيلة الدفع
+                        {{ __('اختر وسيلة الدفع') }}
                     </h3>
 
                     @if ($paymentMethods->isNotEmpty())
@@ -135,7 +133,7 @@
                         </div>
                     @else
                         <div class="rounded-2xl bg-amber-50 border border-amber-100 p-5 text-amber-700 text-sm font-bold">
-                            لا توجد وسائل دفع مفعلة لهذا المزود حالياً.
+                            {{ __('لا توجد وسائل دفع مفعلة لهذا المزود حالياً.') }}
                         </div>
                     @endif
                 </div>
@@ -143,14 +141,14 @@
                 @if ($selectedPaymentMethod)
                     @if ($selectedPaymentMethod->paymentMethod?->is_code)
                         <div class="space-y-2 pt-2 text-right">
-                            <label for="checkout-provider-code" class="text-sm font-black text-gray-800 block">أدخل الكود</label>
+                            <label for="checkout-provider-code" class="text-sm font-black text-gray-800 block">{{ __('أدخل الكود') }}</label>
                             <input
                                 id="checkout-provider-code"
                                 type="text"
                                 wire:model="providerCode"
                                 autocomplete="off"
                                 dir="ltr"
-                                placeholder="أدخل الكود الذي حصلت عليه"
+                                placeholder="{{ __('أدخل الكود الذي حصلت عليه') }}"
                                 class="w-full bg-[#F3F4F9] text-gray-800 text-sm font-bold px-4 py-4 rounded-xl border border-transparent focus:outline-none focus:border-blue-400 transition-all"
                             >
                             @error('providerCode')
@@ -161,19 +159,19 @@
                     <div class="space-y-4 pt-2">
                         <h3 class="text-sm font-black text-gray-800 flex items-center gap-2">
                             <i class="fa-solid fa-money-bill-transfer text-gray-400"></i>
-                            بيانات التحويل
+                            {{ __('بيانات التحويل') }}
                         </h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="space-y-1.5 text-right">
                                 <label class="text-xs font-bold text-gray-400 block">
-                                    {{ $selectedPaymentMethod->paymentMethod?->is_bank ? 'رقم الحساب' : 'رقم الموبايل' }}
+                                    {{ $selectedPaymentMethod->paymentMethod?->is_bank ? __('رقم الحساب') : __('رقم الموبايل') }}
                                 </label>
                                 <div class="relative">
                                     <input
                                         type="text"
                                         readonly
-                                        value="{{ $paymentIdentifier ?: 'غير محدد' }}"
+                                        value="{{ $paymentIdentifier ?: __('غير محدد') }}"
                                         class="w-full bg-[#F3F4F9] text-gray-800 text-sm font-black px-4 py-4 rounded-xl text-left tracking-wider"
                                         dir="ltr"
                                     >
@@ -185,7 +183,7 @@
                                             style="--hover-color: {{ $themeColor }}"
                                             onmouseover="this.style.color=this.style.getPropertyValue('--hover-color')"
                                             onmouseout="this.style.color=''"
-                                            title="نسخ"
+                                            title="{{ __('نسخ') }}"
                                         >
                                             <i class="fa-regular fa-copy"></i>
                                         </button>
@@ -194,7 +192,7 @@
                             </div>
 
                             <div class="space-y-1.5 text-right">
-                                <label class="text-xs font-bold text-gray-400 block">اسم المستلم</label>
+                                <label class="text-xs font-bold text-gray-400 block">{{ __('اسم المستلم') }}</label>
                                 <input
                                     type="text"
                                     readonly
@@ -206,36 +204,36 @@
 
                         @if ($selectedPaymentMethod->paymentMethod?->require_proof)
                             <div class="space-y-1.5 text-right">
-                                <label class="text-xs font-bold text-gray-400 block">صورة التحويل</label>
+                                <label class="text-xs font-bold text-gray-400 block">{{ __('صورة التحويل') }}</label>
                                 <label class="bg-[#F3F4F9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-dashed border-gray-300 transition-all cursor-pointer">
                                     <div class="flex items-center gap-3">
                                         <span class="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-gray-400">
                                             <i class="fa-regular fa-image text-lg"></i>
                                         </span>
                                         <div>
-                                            <span class="text-xs font-black text-gray-600 block">رفع صورة التحويل</span>
-                                            <span class="text-[11px] font-bold text-gray-400 block mt-1">PNG / JPG حتى 2MB</span>
+                                            <span class="text-xs font-black text-gray-600 block">{{ __('رفع صورة التحويل') }}</span>
+                                            <span class="text-[11px] font-bold text-gray-400 block mt-1">{{ __('PNG / JPG حتى 2MB') }}</span>
                                         </div>
                                     </div>
                                     <span class="text-xs font-black text-white rounded-xl px-4 py-2" style="background-color: {{ $themeColor }}">
-                                        اختر صورة
+                                        {{ __('اختر صورة') }}
                                     </span>
                                     <input type="file" wire:model="transferImage" accept="image/*" class="hidden">
                                 </label>
 
                                 <div wire:loading wire:target="transferImage" class="text-xs font-bold text-gray-400 mt-2">
-                                    جاري رفع الصورة...
+                                    {{ __('جاري رفع الصورة...') }}
                                 </div>
 
                                 @if ($transferImage)
                                     <div class="bg-[#F8F9FD] border border-gray-200 rounded-xl p-3 flex items-center justify-between gap-3">
                                         <div class="flex items-center gap-3 min-w-0">
-                                            <img src="{{ $transferImage->temporaryUrl() }}" alt="صورة التحويل" class="w-16 h-16 object-cover rounded-lg border border-gray-200 shadow-sm">
+                                            <img src="{{ $transferImage->temporaryUrl() }}" alt="{{ __('صورة التحويل') }}" class="w-16 h-16 object-cover rounded-lg border border-gray-200 shadow-sm">
                                             <div class="text-right min-w-0">
                                                 <p class="text-xs font-bold text-blue-950 truncate max-w-[220px]">{{ $transferImage->getClientOriginalName() }}</p>
                                                 <p class="text-[10px] text-emerald-500 font-bold flex items-center gap-1 mt-0.5">
                                                     <i class="fa-solid fa-circle-check"></i>
-                                                    الصورة جاهزة للإرسال
+                                                    {{ __('الصورة جاهزة للإرسال') }}
                                                 </p>
                                             </div>
                                         </div>
@@ -252,11 +250,11 @@
                         @endif
 
                         <div class="space-y-1.5 text-right">
-                            <label class="text-xs font-bold text-gray-400 block">رقم العملية / ملاحظة الدفع</label>
+                            <label class="text-xs font-bold text-gray-400 block">{{ __('رقم العملية / ملاحظة الدفع') }}</label>
                             <input
                                 type="text"
                                 wire:model="transactionReference"
-                                placeholder="اختياري"
+                                placeholder="{{ __('اختياري') }}"
                                 class="w-full bg-[#F3F4F9] text-gray-800 text-sm font-bold px-4 py-4 rounded-xl border border-transparent focus:outline-none transition-all"
                             >
                             @error('transactionReference')
@@ -277,15 +275,15 @@
                 >
                     <span wire:loading.remove wire:target="submitOrder">
                         <i class="fa-solid fa-lock text-xs"></i>
-                        {{ $selectedPaymentMethod?->paymentMethod?->is_code ? 'تفعيل الكود' : 'تأكيد عملية الدفع' }}
+                        {{ $selectedPaymentMethod?->paymentMethod?->is_code ? __('تفعيل الكود') : __('تأكيد عملية الدفع') }}
                     </span>
-                    <span wire:loading wire:target="submitOrder">جاري إرسال الطلب...</span>
+                    <span wire:loading wire:target="submitOrder">{{ __('جاري إرسال الطلب...') }}</span>
                 </button>
             </div>
 
             <aside class="lg:col-span-4 space-y-4">
                 <div class="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm">
-                    <h2 class="text-lg font-black text-blue-950 mb-5">ملخص الطلب</h2>
+                    <h2 class="text-lg font-black text-blue-950 mb-5">{{ __('ملخص الطلب') }}</h2>
 
                     @if ($items->isNotEmpty())
                         <div class="space-y-4 mb-6">
@@ -294,34 +292,34 @@
                                     $gradeSubject = $item->course?->accountSubject?->gradeSubject;
                                     $subject = $gradeSubject?->subject;
                                     $track = $gradeSubject?->track;
-                                    $subjectName = $subject ? $subject->name : null;
-                                    $trackName = $track?->getTranslation('name', 'ar', false) ?: $track?->name;
+                                    $subjectName = $subject ? \App\Support\WebsiteTranslation::value($subject, 'name') : null;
+                                    $trackName = \App\Support\WebsiteTranslation::value($track, 'name') ?: $track?->name;
                                     $subjectDetails = collect([$subjectName, $trackName])->filter()->join(' - ');
                                 @endphp
 
                                 <div class="flex justify-between gap-3 text-sm">
                                     <div>
-                                        <h3 class="font-black text-blue-950">{{ $item->title }}</h3>
+                                        <h3 class="font-black text-blue-950">{{ \App\Support\WebsiteTranslation::value($item->course, 'title') ?: $item->title }}</h3>
                                         @if ($subjectDetails)
                                             <p class="text-xs font-bold text-gray-400 mt-1">{{ $subjectDetails }}</p>
                                         @endif
-                                        <p class="text-xs font-bold text-gray-400 mt-1">{{ $item->purchaseUnit?->getTranslation('name', 'ar', false) ?: $item->purchaseUnit?->type?->value }}</p>
+                                        <p class="text-xs font-bold text-gray-400 mt-1">{{ \App\Support\WebsiteTranslation::value($item->purchaseUnit, 'name') ?: $item->purchaseUnit?->type?->value }}</p>
                                     </div>
                                     <span class="font-black whitespace-nowrap" style="color: {{ $themeColor }}">{{ $money($item->unit_price) }}</span>
                                 </div>
                             @endforeach
                         </div>
                     @else
-                        <p class="text-sm text-gray-400 font-bold mb-6">السلة فارغة.</p>
+                        <p class="text-sm text-gray-400 font-bold mb-6">{{ __('السلة فارغة.') }}</p>
                     @endif
 
                     <div class="bg-[#F3F4F9] rounded-2xl p-5 space-y-3 text-xs font-bold text-gray-500">
                         <div class="flex justify-between">
-                            <span>سعر الاشتراك</span>
+                            <span>{{ __('سعر الاشتراك') }}</span>
                             <span>{{ $money($subtotal) }}</span>
                         </div>
                         <div class="border-t border-white pt-3 flex justify-between items-baseline">
-                            <span class="text-blue-950">الإجمالي</span>
+                            <span class="text-blue-950">{{ __('الإجمالي') }}</span>
                             <span class="text-xl font-black" style="color: {{ $themeColor }}">{{ $money($total) }}</span>
                         </div>
                     </div>
@@ -333,12 +331,12 @@
                             <i class="fa-regular fa-comments"></i>
                         </span>
                         <div>
-                            <h3 class="text-sm font-black text-blue-950">هل تحتاج لمساعدة؟</h3>
-                            <p class="text-[11px] text-gray-400 font-semibold">فريقنا متاح لمساعدتك في أي وقت</p>
+                            <h3 class="text-sm font-black text-blue-950">{{ __('هل تحتاج لمساعدة؟') }}</h3>
+                            <p class="text-[11px] text-gray-400 font-semibold">{{ __('فريقنا متاح لمساعدتك في أي وقت') }}</p>
                         </div>
                     </div>
                     <a href="#" class="text-xs font-bold px-4 py-2 rounded-xl border" style="color: {{ $themeColor }}; border-color: {{ $themeColor }}33">
-                        تحدث معنا
+                        {{ __('تحدث معنا') }}
                     </a>
                 </div>
             </aside>

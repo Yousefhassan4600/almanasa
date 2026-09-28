@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Enums\ProviderType;
 use App\Livewire\Website\LoginForm;
 use App\Models\Provider;
+use App\Support\WebsiteTranslation;
+use App\Support\WebsiteUrl;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +15,7 @@ use Illuminate\Support\Str;
 
 class AcademySiteController extends Controller
 {
-    public function __invoke(string $accountSubdomain, ?string $page = null): Response|RedirectResponse
+    public function __invoke(string $accountSubdomain, string $locale, ?string $page = null): Response|RedirectResponse
     {
         $provider = Provider::query()
             ->where('subdomain', $accountSubdomain)
@@ -29,35 +31,38 @@ class AcademySiteController extends Controller
         $requestedPage = trim($page ?? '', '/');
 
         if (preg_match('/^[A-Za-z0-9_\-\/]+\.html$/', $requestedPage) === 1) {
-            return redirect($this->canonicalPageUrl($requestedPage), 301);
+            $canonicalUrl = $this->canonicalPageUrl($requestedPage);
+            $queryString = request()->getQueryString();
+
+            return redirect($canonicalUrl.($queryString ? '?'.$queryString : ''), 301);
         }
 
         $page = $this->normalizePage($page);
 
         if (in_array($page, ['login.html', 'otp.html'], true) && Auth::check() && Auth::user()?->studentProfile()->exists()) {
-            return redirect('/');
+            return redirect(WebsiteUrl::path());
         }
 
         if ($page === 'otp.html' && ! session()->has(LoginForm::challengeKeyFor($provider->id))) {
-            return redirect('/login');
+            return redirect(WebsiteUrl::path('/login'));
         }
 
         if ($page === 'register.html') {
             if (! Auth::check()) {
-                return redirect('/login');
+                return redirect(WebsiteUrl::path('/login'));
             }
 
             if (Auth::user()?->studentProfile()->exists()) {
-                return redirect('/');
+                return redirect(WebsiteUrl::path());
             }
         }
 
         if (in_array($page, ['profile.html', 'my_lessons.html', 'cart.html', 'checkout.html', 'home_work.html', 'quiz.html', 'home_work_done.html', 'quiz_done.html', 'quiz_review.html'], true) && ! Auth::check()) {
-            return redirect('/login');
+            return redirect(WebsiteUrl::path('/login'));
         }
 
         if (in_array($page, ['cart.html', 'checkout.html', 'home_work.html', 'quiz.html', 'home_work_done.html', 'quiz_done.html', 'quiz_review.html'], true) && ! Auth::user()?->studentProfile()->exists()) {
-            return redirect('/register');
+            return redirect(WebsiteUrl::path('/register'));
         }
 
         $template = $this->templateFor($provider);
@@ -165,6 +170,20 @@ class AcademySiteController extends Controller
         $html = $this->canonicalizePageUrls($html);
         $html = $this->applyWebsiteTheme($html, $provider);
         $html = $this->injectLivewireAssets($html);
+        $html = $this->translateStaticHtml($html);
+
+        $javascriptKeys = [
+            'ممتاز', 'جيد جداً', '18 ساعة و 45 دقيقة', '10 ساعات و 15 دقيقة',
+            '8 ساعات و 30 دقيقة', 'اختبار الوحدة الأولى', 'اختبار الدرس الثالث',
+            'منذ أسبوعين', 'منذ 3 أيام', 'الجبر والعمليات الحسابية',
+            'سرعة حل المسائل اللفظية', 'التركيز في خطوات البرهان الهندسي',
+            'مراجعة قوانين حساب المثلثات', 'لا توجد امتحانات مضافة بعد.',
+        ];
+        $websiteJavascriptTranslations = array_combine(
+            $javascriptKeys,
+            array_map(fn (string $key): string => __($key), $javascriptKeys),
+        );
+        $html = str_replace('</head>', '<script>window.websiteTranslations = @json($websiteJavascriptTranslations); window.websiteTranslate = function (key) { return window.websiteTranslations[key] || key; };</script>'."\n</head>", $html);
 
         $homeBanner = $page === 'index.html'
             ? $provider->banners()
@@ -174,10 +193,58 @@ class AcademySiteController extends Controller
                 ->first()
             : null;
 
-        return Blade::render($html, [
+        $renderedHtml = Blade::render($html, [
             'provider' => $provider,
             'homeBanner' => $homeBanner,
+            'websiteJavascriptTranslations' => $websiteJavascriptTranslations,
         ]);
+
+        if (WebsiteUrl::locale() === 'en') {
+            $renderedHtml = str_replace('lang="ar"', 'lang="en"', $renderedHtml);
+            $renderedHtml = str_replace('dir="rtl"', 'dir="ltr"', $renderedHtml);
+            $renderedHtml = str_replace('</head>', '<link rel="stylesheet" href="/css/website-direction.css">'."\n</head>", $renderedHtml);
+        }
+
+        return $renderedHtml;
+    }
+
+    private function translateStaticHtml(string $html): string
+    {
+        $parts = preg_split('/(<(?:script|style)\b[^>]*>.*?<\/(?:script|style)>)/is', $html, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+        if (! $parts) {
+            return $html;
+        }
+
+        foreach ($parts as &$part) {
+            if (preg_match('/^<(?:script|style)\b/i', $part) === 1) {
+                continue;
+            }
+
+            $part = preg_replace_callback(
+                '/(?<=>)([^<>]*[\p{Arabic}][^<>]*)(?=<)/u',
+                fn (array $matches): string => $this->translationExpression($matches[1]),
+                $part,
+            ) ?? $part;
+
+            $part = preg_replace_callback(
+                '/\b(placeholder|title|alt|aria-label)="([^"<>]*[\p{Arabic}][^"<>]*)"/u',
+                fn (array $matches): string => $matches[1].'="'.$this->translationExpression($matches[2]).'"',
+                $part,
+            ) ?? $part;
+        }
+
+        return implode('', $parts);
+    }
+
+    private function translationExpression(string $text): string
+    {
+        preg_match('/^(\s*)(.*?)(\s*)$/us', $text, $matches);
+
+        $key = preg_replace('/\s+/u', ' ', trim($matches[2] ?? $text));
+        $escapedKey = str_replace(['\\', "'"], ['\\\\', "\\'"], $key);
+
+        return ($matches[1] ?? '')."{{ __('{$escapedKey}') }}".($matches[3] ?? '');
     }
 
     private function injectAuthForm(string $html, Provider $provider, string $page): string
@@ -340,14 +407,14 @@ HTML;
 
         $isStandaloneTeacher = $provider->type === ProviderType::StandaloneTeacher;
         $exploreUrl = match (true) {
-            ! Auth::check() => '/login',
-            $isStandaloneTeacher => '/single_teacher',
-            default => '/subjects',
+            ! Auth::check() => WebsiteUrl::path('/login'),
+            $isStandaloneTeacher => WebsiteUrl::path('/single_teacher'),
+            default => WebsiteUrl::path('/subjects'),
         };
         $themeColor = $this->themeColor($provider);
         $startJourney = Auth::check()
             ? ''
-            : '<a href="/login" class="w-full sm:w-auto text-white font-semibold text-lg px-8 py-4 rounded-[12px] shadow-lg transition-all hover:shadow-xl active:scale-95 text-center" style="background-color: '.$themeColor.'">ابدأ رحلتك الآن</a>';
+            : '<a href="'.WebsiteUrl::path('/login').'" class="w-full sm:w-auto text-white font-semibold text-lg px-8 py-4 rounded-[12px] shadow-lg transition-all hover:shadow-xl active:scale-95 text-center" style="background-color: '.$themeColor.'">ابدأ رحلتك الآن</a>';
 
         $actions = '<div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">'
             .$startJourney
@@ -596,14 +663,14 @@ HTML;
         ) ?? $html;
 
         $replacements = [
-            'أهلاً بك، أحمد' => 'أهلاً بك، '.e($user->name ?: 'طالب'),
-            'طالب في الصف العاشر' => e($profile?->grade?->name ?? 'طالب'),
+            'أهلاً بك، أحمد' => __('أهلاً بك،').' '.e($user->name ?: __('طالب')),
+            'طالب في الصف العاشر' => e(WebsiteTranslation::value($profile?->grade, 'name') ?? __('طالب')),
             '+20 01015620825' => e(trim(($user->dial_country_code ?? '').' '.$user->phone)),
             'Mona Physics Platform' => e($provider->name),
-            'Primary' => e($profile?->education_stage?->name ?? 'غير محدد'),
-            'Two' => e($profile?->grade?->name ?? 'غير محدد'),
-            'el tahrer' => e($profile?->school_name ?? 'غير محدد'),
-            'Cairo' => e($profile?->city?->name ?? 'غير محدد'),
+            'Primary' => e(WebsiteTranslation::value($profile?->education_stage, 'name') ?? __('غير محدد')),
+            'Two' => e(WebsiteTranslation::value($profile?->grade, 'name') ?? __('غير محدد')),
+            'el tahrer' => e($profile?->school_name ?? __('غير محدد')),
+            'Cairo' => e(WebsiteTranslation::value($profile?->city, 'name') ?? __('غير محدد')),
         ];
 
         return str_replace(array_keys($replacements), array_values($replacements), $html);
@@ -622,6 +689,6 @@ HTML;
     {
         $page = Str::beforeLast($page, '.html');
 
-        return $page === 'index' ? '/' : '/'.$page;
+        return WebsiteUrl::path($page === 'index' ? '/' : '/'.$page);
     }
 }

@@ -6,8 +6,8 @@
     $studentName = $student?->name ?: __('طالب');
     $gradeName = \App\Support\WebsiteTranslation::value($studentProfile?->grade, 'name');
     $avatar = $studentProfile?->avatar
-        ? asset('storage/'.$studentProfile->avatar)
-        : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120&h=120';
+        ? (filter_var($studentProfile->avatar, FILTER_VALIDATE_URL) ? $studentProfile->avatar : asset('storage/'.ltrim($studentProfile->avatar, '/')))
+        : null;
 
     $statusFor = function ($subscription): array {
         if ($subscription->is_active) {
@@ -46,7 +46,13 @@
         <div class="space-y-8">
                     <div class="flex flex-col items-center text-center space-y-3">
                         <div class="relative shrink-0">
-                            <img src="{{ $avatar }}" alt="{{ $studentName }}" class="w-16 h-16 lg:w-20 lg:h-20 rounded-full object-cover ring-4 ring-slate-50">
+                            @if ($avatar)
+                                <img src="{{ $avatar }}" alt="{{ $studentName }}" class="w-16 h-16 lg:w-20 lg:h-20 rounded-full object-cover ring-4 ring-slate-50">
+                            @else
+                                <div role="img" aria-label="{{ $studentName }}" class="w-16 h-16 lg:w-20 lg:h-20 rounded-full ring-4 ring-slate-50 bg-slate-100 text-blue-950 flex items-center justify-center text-2xl font-black">
+                                    {{ mb_substr($studentName, 0, 1) }}
+                                </div>
+                            @endif
                             <span class="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></span>
                         </div>
                         <div>
@@ -76,7 +82,7 @@
         </div>
 
         <div class="pt-6 border-t border-gray-50 mt-8 hidden lg:block text-center">
-            <span class="text-[10px] font-bold text-gray-400">EduLearn Dashboard v2.0</span>
+            <span class="text-[10px] font-bold text-gray-400">{{ $provider->name }}</span>
         </div>
     </aside>
 
@@ -125,11 +131,12 @@
                                     $courseTitle = \App\Support\WebsiteTranslation::value($course, 'title') ?: $course?->title ?: $subjectName;
                                     $trackName = \App\Support\WebsiteTranslation::value($track, 'name') ?: $track?->name;
                                     $teacherName = $isStandaloneTeacher
-                                        ? ($course?->provider?->owner?->name ?: $provider->owner?->name ?: __('المعلم'))
+                                        ? ($course?->provider?->name ?: $course?->provider?->owner?->name ?: $provider->owner?->name ?: __('المعلم'))
                                         : ($teacher?->teacher?->owner?->name ?: __('المعلم'));
-                                    $teacherImage = $teacher?->image
-                                        ? asset('storage/'.$teacher->image)
-                                        : 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120&h=120';
+                                    $teacherImagePath = $isStandaloneTeacher ? $course?->provider?->logo : $teacher?->image;
+                                    $teacherImage = filled($teacherImagePath)
+                                        ? (filter_var($teacherImagePath, FILTER_VALIDATE_URL) ? $teacherImagePath : asset('storage/'.ltrim($teacherImagePath, '/')))
+                                        : null;
                                     $firstLesson = $subscription->lesson ?: $course?->lessons?->first(fn ($lesson) => $lesson->isCurrentlyOpen() && $lesson->items->contains(fn ($item) => $item->isCurrentlyOpen()));
                                     $firstItem = $firstLesson?->items?->first(fn ($item) => $item->isCurrentlyOpen());
                                     $continueUrl = $firstItem
@@ -162,7 +169,13 @@
                                         </div>
 
                                         <div class="bg-[#F8F9FD] rounded-2xl p-3 flex items-center gap-3">
-                                            <img src="{{ $teacherImage }}" alt="{{ $teacherName }}" class="w-10 h-10 rounded-xl object-cover">
+                                            @if ($teacherImage)
+                                                <img src="{{ $teacherImage }}" alt="{{ $teacherName }}" class="w-10 h-10 rounded-xl object-cover">
+                                            @else
+                                                <div role="img" aria-label="{{ $teacherName }}" class="w-10 h-10 rounded-xl bg-slate-100 text-blue-950 flex items-center justify-center text-sm font-black">
+                                                    {{ mb_substr($teacherName, 0, 1) }}
+                                                </div>
+                                            @endif
                                             <div class="text-right">
                                                 <h3 class="text-xs font-black text-blue-950">{{ $teacherName }}</h3>
                                                 <p class="text-[10px] font-bold text-gray-400 mt-0.5">{{ __('المعلم') }}</p>

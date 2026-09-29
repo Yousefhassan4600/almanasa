@@ -31,7 +31,7 @@ class LoadMyLessons
                 'purchaseUnit:id,type,name',
                 'lesson.items' => fn ($query) => $query->where('is_active', true)->oldest('sort_order')->oldest('id'),
                 'course:id,provider_id,account_subject_id,academy_teacher_id,title,thumbnail',
-                'course.provider:id,owner_user_id,type',
+                'course.provider:id,owner_user_id,type,name,logo',
                 'course.provider.owner:id,first_name,last_name',
                 'course.academyTeacher:id,teacher_account_id,image',
                 'course.academyTeacher.teacher:id,owner_user_id',

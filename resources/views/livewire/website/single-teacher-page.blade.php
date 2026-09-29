@@ -10,10 +10,11 @@
     $stage = $grade?->educationStage;
     $track = $accountSubject?->gradeSubject?->track;
     $teacherName = $isStandaloneTeacher
-        ? ($teacher?->owner?->name ?: $provider?->owner?->name ?: __('معلم'))
+        ? ($provider?->name ?: $teacher?->owner?->name ?: $provider?->owner?->name ?: __('معلم'))
         : ($teacher?->teacher?->owner?->name ?: __('معلم'));
-    $teacherImage = (! $isStandaloneTeacher && $teacher?->image)
-        ? asset('storage/'.$teacher->image)
+    $teacherImagePath = $isStandaloneTeacher ? $provider?->logo : $teacher?->image;
+    $teacherImage = filled($teacherImagePath)
+        ? (filter_var($teacherImagePath, FILTER_VALIDATE_URL) ? $teacherImagePath : asset('storage/'.ltrim($teacherImagePath, '/')))
         : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200';
     $courseTitle = \App\Support\WebsiteTranslation::value($course, 'title') ?: $course?->title ?: (\App\Support\WebsiteTranslation::value($subject, 'name') ?: __('الكورس'));
     $courseDescription = \App\Support\WebsiteTranslation::value($course, 'description') ?: $course?->description;

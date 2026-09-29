@@ -70,6 +70,9 @@ use App\Models\Track;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -81,6 +84,8 @@ class ProviderWebsiteStudentAuthTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        config(['almanasa.website_otp_driver' => 'fixed']);
 
         $this->withSession([]);
     }
@@ -267,6 +272,8 @@ class ProviderWebsiteStudentAuthTest extends TestCase
         $user = User::query()->where('phone', '01012345678')->firstOrFail();
 
         $this->assertAuthenticatedAs($user);
+        $this->assertNotNull($user->fresh()->getRememberToken());
+        $this->assertNotNull(Cookie::queued(Auth::guard('web')->getRecallerName()));
         $this->assertNotNull($user->verified_at);
         $this->assertDatabaseHas(Account::class, [
             'provider_id' => $provider->id,
@@ -275,6 +282,46 @@ class ProviderWebsiteStudentAuthTest extends TestCase
             'is_active' => true,
         ]);
         $this->assertSame($provider->id, session('current_provider_id'));
+    }
+
+    public function test_sms_login_sends_a_fresh_code_and_verifies_it(): void
+    {
+        config([
+            'almanasa.website_otp_driver' => 'sms',
+            'services.whysms.api_token' => 'test-token',
+            'services.whysms.sender_id' => 'Almanasa',
+        ]);
+        Http::preventStrayRequests();
+        Http::fake(['bulk.whysms.com/*' => Http::response(['status' => 'success'])]);
+        $provider = $this->provider();
+
+        Livewire::test(LoginForm::class, ['providerId' => $provider->id])
+            ->set('phone', '01012345678')
+            ->call('sendOtp')
+            ->assertRedirect('/ar/otp');
+
+        Http::assertSent(fn ($request): bool => $request['recipient'] === '+201012345678'
+            && $request['api_token'] === 'test-token'
+            && preg_match('/^Your verification code is [0-9]{4}$/', $request['message']) === 1);
+    }
+
+    public function test_sms_delivery_failure_does_not_create_a_challenge(): void
+    {
+        config([
+            'almanasa.website_otp_driver' => 'sms',
+            'services.whysms.api_token' => 'test-token',
+            'services.whysms.sender_id' => 'Almanasa',
+        ]);
+        Http::preventStrayRequests();
+        Http::fake(['bulk.whysms.com/*' => Http::response(['status' => 'error'], 500)]);
+        $provider = $this->provider();
+
+        Livewire::test(LoginForm::class, ['providerId' => $provider->id])
+            ->set('phone', '01012345678')
+            ->call('sendOtp')
+            ->assertHasErrors(['phone']);
+
+        $this->assertFalse(session()->has('website_auth_challenge_'.$provider->id));
     }
 
     public function test_otp_and_register_pages_render_livewire_components(): void

@@ -78,7 +78,7 @@ class LoginForm extends Component
             request()->ip(),
         );
 
-        Auth::login($account->owner);
+        Auth::login($account->owner, remember: true);
         session()->regenerate();
         session()->put('current_account_id', $account->id);
         session()->put('current_provider_id', $provider->id);
@@ -107,7 +107,7 @@ class LoginForm extends Component
         return view('livewire.website.login-form', [
             'provider' => $theme['provider'],
             'themeColor' => $theme['themeColor'],
-            'developmentOtp' => config('almanasa.website_otp_code'),
+            'developmentOtp' => config('almanasa.website_otp_driver') === 'fixed' ? config('almanasa.website_otp_code') : null,
         ]);
     }
 

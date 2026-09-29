@@ -9,4 +9,5 @@ return [
     'teacher_template_path' => public_path('teacher'),
     'teacher_template_asset_path' => '/teacher/assets/',
     'website_otp_code' => env('WEBSITE_OTP_CODE', '1234'),
+    'website_otp_driver' => env('WEBSITE_OTP_DRIVER', 'sms'),
 ];

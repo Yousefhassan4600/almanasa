@@ -5,13 +5,14 @@ namespace App\Actions\StudentPortal\Auth;
 use App\Actions\StudentPortal\ResolveProviderStudentAccount;
 use App\Models\Account;
 use App\Models\Provider;
+use App\Services\WhySmsService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
 class ManageWebsiteOtp
 {
-    public function __construct(private ResolveProviderStudentAccount $resolveProviderStudentAccount) {}
+    public function __construct(private ResolveProviderStudentAccount $resolveProviderStudentAccount, private WhySmsService $whySmsService) {}
 
     /**
      * @return array{dialCountryCode: string, phone: string}
@@ -27,13 +28,29 @@ class ManageWebsiteOtp
             ]);
         }
 
+        $code = config('almanasa.website_otp_driver') === 'fixed'
+            ? (string) config('almanasa.website_otp_code')
+            : str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+
+        if (config('almanasa.website_otp_driver') !== 'fixed') {
+            try {
+                $this->whySmsService->sendOtp($dialCountryCode.ltrim($phone, '0'), $code);
+            } catch (\RuntimeException $exception) {
+                report($exception);
+
+                throw ValidationException::withMessages([
+                    'phone' => __('Unable to send the verification code. Please try again.'),
+                ]);
+            }
+        }
+
         RateLimiter::hit($rateKey, 60);
 
         session()->put($this->challengeKey($providerId), [
             'provider_id' => $providerId,
             'dial_country_code' => $dialCountryCode,
             'phone' => $phone,
-            'code_hash' => Hash::make((string) config('almanasa.website_otp_code')),
+            'code_hash' => Hash::make($code),
             'expires_at' => now()->addMinutes(5)->timestamp,
         ]);
 

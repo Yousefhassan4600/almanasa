@@ -102,7 +102,9 @@
         }"
         x-on:submit="$wire.otp = digits.join('')"
     >
-        <p class="text-[11px] font-bold text-gray-400 text-center">{{ __('كود التطوير الحالي:') }} {{ $developmentOtp }}</p>
+        @if ($developmentOtp !== null)
+            <p class="text-[11px] font-bold text-gray-400 text-center">{{ __('كود التطوير الحالي:') }} {{ $developmentOtp }}</p>
+        @endif
 
         <div class="space-y-2">
             <label class="block text-xs font-black text-gray-400 text-center mb-4">{{ __('كود التحقق') }}</label>

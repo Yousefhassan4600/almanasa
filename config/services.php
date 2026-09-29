@@ -46,4 +46,11 @@ return [
         'upload_expiration_seconds' => (int) env('BUNNY_STREAM_UPLOAD_EXPIRATION_SECONDS', 86400),
     ],
 
+    'whysms' => [
+        'api_token' => env('WHYSMS_API_TOKEN'),
+        'sender_id' => env('WHYSMS_SENDER_ID'),
+        'endpoint' => env('WHYSMS_ENDPOINT', 'https://bulk.whysms.com/api/http/sms/send'),
+        'otp_message' => env('WHYSMS_OTP_MESSAGE', 'Your verification code is :code'),
+    ],
+
 ];
